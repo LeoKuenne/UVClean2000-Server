@@ -9,7 +9,10 @@
     <div v-show="prop_showAddForm"
       class="fixed top-0 left-0 h-full w-full
       bg-black bg-opacity-50 flex justify-center items-center">
-      <FormAddUVCDevice @close="prop_showAddForm = false" :device="device" @add="addDevice"
+      <FormAddUVCDevice
+        @close="prop_showAddForm = false"
+        :editDevice="device"
+        @add="addDevice($event)"
         class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
       </FormAddUVCDevice>
     </div>
@@ -35,13 +38,13 @@ export default {
     showAddForm() {
       this.prop_showAddForm = true;
     },
-    addDevice() {
-      console.log(this.device);
+    addDevice(device) {
+      this.$emit('deviceAdd', device);
       this.prop_showAddForm = false;
-      this.device = {
-        name: '',
-        serialnumber: '',
-      };
+      // this.device = {
+      //   name: '',
+      //   serialnumber: '',
+      // };
     },
   },
 

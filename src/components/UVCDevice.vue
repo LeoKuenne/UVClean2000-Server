@@ -1,73 +1,84 @@
 <template>
-  <div id="device" class="bg-gray-200 rounded-lg overflow-hidden m-5">
+  <div class="rounded-lg overflow-hidden m-5 w-80">
     <div class="bg-gray-300 p-2 items-center">
       <div class="flex flex-row justify-between items-center">
         <div>
           <h3 class="text-md font-bold text-gray-800">{{device.name}}</h3>
-          <h4 class="text-sm text-gray-600">{{device.serialnumber}}</h4>
+          <h4 class="text-sm text-gray-600">SN: {{device.serialnumber}}</h4>
         </div>
         <button
           class="rounded border text-center px-5 m-0 border-gray-500 font-normal"
-          @click="$emit('edit')">Edit</button>
+          @click="$emit('edit', device)">Edit</button>
       </div>
     </div>
     <div class="p-2 grid grid-cols-2 space-y-2 items-center">
-        <label for="b_device_state">Devie State</label>
-        <button id="b_device_state"
-          v-bind:class="{ 'bg-green-500': device.state, 'bg-red-500': !device.state }"
-          @click="$emit('stateChanged', {
-            device: device.serialnumber,
-            prop: 'state',
-            newValue: !device.state
-          })">
-          {{state}}
-        </button>
+      <label for="b_device_state">Devie State</label>
+      <button id="b_device_state"
+        v-bind:class="{ 'bg-green-500': device.state, 'bg-red-500': !device.state }"
+        @click="$emit('stateChange', {
+          serialnumber: device.serialnumber,
+          prop: 'state',
+          newValue: !device.state
+        })">
+        {{state}}
+      </button>
 
-        <label for="b_eventmode">Eventmode</label>
-        <button id="b_eventmode"
-          v-bind:class="{ 'bg-green-500': device.eventMode, 'bg-red-500': !device.eventMode }"
-          @click="$emit('stateChanged', {
-            device: device.serialnumber,
-            prop: 'eventMode',
-            newValue: !device.eventMode
-          })">
-          {{eventMode}}
-        </button>
+      <label for="b_eventmode">Eventmode</label>
+      <button id="b_eventmode"
+        v-bind:class="{ 'bg-green-500': device.eventMode, 'bg-red-500': !device.eventMode }"
+        @click="$emit('stateChange', {
+          serialnumber: device.serialnumber,
+          prop: 'eventMode',
+          newValue: !device.eventMode
+        })">
+        {{eventMode}}
+      </button>
 
-        <label for="b_identify">Identify</label>
-        <button id="b_identify"
-          v-bind:class="{ 'bg-green-500': device.identifyMode, 'bg-red-500': !device.identifyMode }"
-          @click="$emit('stateChanged', {
-            device: device.serialnumber,
-            prop: 'identifyMode',
-            newValue: !device.identifyMode
-          })">
-          {{identifyMode}}
-        </button>
-        <label for="s_engine_level">Engine Level</label>
-        <select name="engine_level"
-          id="s_engine_level"
-          @change="$emit('stateChanged', {
-            device: device.serialnumber,
-            prop: 'engineLevel',
-            newValue: $event.target.value
-          })">
-          <option value="0">0</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-        <h4 class="pt-5 font-bold col-span-2">Statistics:</h4>
-        <span>Error state</span>
-        <span class="text-right">{{device.error}}</span>
+      <label for="b_identify">Identify</label>
+      <button id="b_identify"
+        v-bind:class="{ 'bg-green-500': device.identifyMode, 'bg-red-500': !device.identifyMode }"
+        @click="$emit('stateChange', {
+          serialnumber: device.serialnumber,
+          prop: 'identifyMode',
+          newValue: !device.identifyMode
+        })">
+        {{identifyMode}}
+      </button>
+      <label for="s_engine_level">Engine Level</label>
+      <select name="engine_level"
+        id="s_engine_level"
+        @change="$emit('stateChange', {
+          serialnumber: device.serialnumber,
+          prop: 'engineLevel',
+          newValue: $event.target.value
+        })">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="b_device_dummy">Device dummy data</label>
+      <button id="b_device_dummy"
+        v-bind:class="{ 'bg-green-500': device.dummyData, 'bg-red-500': !device.dummyData }"
+        @click="$emit('stateChange', {
+          serialnumber: device.serialnumber,
+          prop: 'dummyData',
+          newValue: !device.dummyData
+        })">
+        {{dummyData}}
+      </button>
 
-        <span>Current Volume</span>
-        <span class="text-right">{{device.current}} L/M^3</span>
+      <h4 class="pt-5 font-bold col-span-2">Statistics:</h4>
+      <span>Error state</span>
+      <span class="text-right">{{device.lastError}}</span>
 
-        <span>Rotation speed</span>
-        <span class="text-right">{{device.rotationspeed}} R/min</span>
+      <span>Current Volume</span>
+      <span class="text-right">{{device.airVolume}} L/M^3</span>
+
+      <span>Rotation speed</span>
+      <span class="text-right">{{device.rotationSpeed}} R/min</span>
     </div>
   </div>
 </template>
@@ -100,6 +111,14 @@ export default {
       },
       set() {
         return this.device.identifyMode ? 'An' : 'Aus';
+      },
+    },
+    dummyData: {
+      get() {
+        return this.device.dummyData ? 'An' : 'Aus';
+      },
+      set() {
+        return this.device.dummyData ? 'An' : 'Aus';
       },
     },
   },

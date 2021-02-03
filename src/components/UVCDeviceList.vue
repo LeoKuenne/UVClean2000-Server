@@ -3,11 +3,11 @@
       <h2 class="p-5 text-lg font-bold">Devices</h2>
       <div class="flex flex-row flex-wrap content-center justify-center">
           <UVCDevice
+            @edit="editDevice($event)"
+            v-on="$listeners"
             v-for="device in devices"
-            :key="device.name"
-            :device="device"
-            @edit="editDevice(device)"
-            v-on="$listeners">
+            :key="device.serialnumber"
+            :device="device">
           </UVCDevice>
       </div>
       <div
@@ -17,8 +17,10 @@
         >
         <FormAddUVCDevice
           @close="prop_showEditForm = false"
-          :device="prop_editDevice"
-          @edit="updateDevice"
+          @update="updateDevice($event)"
+          @delete="deleteDevice($event)"
+          :editDevice="prop_editDevice"
+          :isEdit="true"
           class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
           </FormAddUVCDevice>
       </div>
@@ -41,7 +43,12 @@ export default {
       this.prop_showEditForm = true;
     },
     updateDevice(device) {
-      console.log(device);
+      this.$emit('deviceUpdate', device);
+      this.prop_showEditForm = false;
+    },
+    deleteDevice(serialnumber) {
+      this.$emit('deviceDelete', serialnumber);
+      this.prop_showEditForm = false;
     },
   },
   data() {
