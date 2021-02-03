@@ -11,10 +11,10 @@
 import UVCGroup from './UVCGroup.vue';
 
 export default {
-    name: 'UVCGroupList',
-    components: {
-        UVCGroup,
-    },
-    props: ['dataGroups'],
+  name: 'UVCGroupList',
+  components: {
+    UVCGroup,
+  },
+  props: ['dataGroups'],
 };
 </script>

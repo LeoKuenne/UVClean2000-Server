@@ -10,7 +10,7 @@
 </template>
 <script>
 export default {
-    name: 'UVCGroup',
-    props: ['group'],
+  name: 'UVCGroup',
+  props: ['group'],
 };
 </script>
