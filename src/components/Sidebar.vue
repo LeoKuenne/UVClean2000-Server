@@ -1,11 +1,26 @@
 <template>
-  <div id="sidebar" title="Overview" class="flex flex-col p-5 bg-gray-200 w-min whitespace-nowrap">
+  <div id="sidebar" title="Overview"
+    class="flex flex-col p-5 w-min whitespace-nowrap primary-color text-white">
     <h1 class="text-xl font-bold">Overview</h1>
-    <button @click="$emit('showDevices')" class="w-full mx-0">Show Devices</button>
-    <button @click="$emit('showGroups')" class="w-full mx-0">Show Groups</button>
-
+    <button
+      @click="$emit('showDevices')"
+      class="w-full mx-0 rounded border text-center
+      border-white font-normal bg-transparent">
+      Show Devices
+    </button>
+    <button
+      @click="$emit('showGroups')"
+      class="w-full mx-0 rounded border text-center
+      border-white font-normal bg-transparent">
+      Show Groups
+    </button>
     <h1 class="text-xl font-bold pt-5">Controls</h1>
-    <button @click="showAddForm" class="w-full mx-0">Add UVCClean</button>
+    <button
+      @click="showAddForm"
+      class="w-full mx-0 rounded border text-center
+      border-white font-normal bg-transparent">
+      Add UVCClean
+    </button>
     <div v-show="prop_showAddForm"
       class="fixed top-0 left-0 h-full w-full
       bg-black bg-opacity-50 flex justify-center items-center">

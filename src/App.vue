@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="bg-gray-100 flex min-h-screen shadow-md">
+  <div id="app" class="flex min-h-screen shadow-md text-color">
     <Sidebar
       @showDevices="currentView = 'UVCDeviceList'"
       @showGroups="currentView = 'UVCGroupList'"

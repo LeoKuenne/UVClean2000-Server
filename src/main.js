@@ -10,7 +10,7 @@ new Vue({
   render: (h) => h(App),
   data: {
     dataDevices: [
-      {},
+      { name: 'Test', serialnumber: '123456789' },
     ],
     dataGroups: [],
     socket,
@@ -20,7 +20,7 @@ new Vue({
       socket.emit('leave', this.username);
     };
 
-    fetch('/devices').then((response) => response.json())
+    fetch('http://localhost:3000/devices').then((response) => response.json())
       .then((data) => {
         console.log(data);
         this.dataDevices = data;

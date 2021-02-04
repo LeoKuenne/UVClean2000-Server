@@ -1,13 +1,13 @@
 <template>
-  <div class="rounded-lg overflow-hidden m-5 w-80">
-    <div class="bg-gray-300 p-2 items-center">
+  <div class="rounded-lg overflow-hidden m-5 w-80 border-primary-color border">
+    <div class="primary-color p-2 items-center text-white">
       <div class="flex flex-row justify-between items-center">
         <div>
-          <h3 class="text-md font-bold text-gray-800">{{device.name}}</h3>
-          <h4 class="text-sm text-gray-600">SN: {{device.serialnumber}}</h4>
+          <h3 class="text-md font-bold">{{device.name}}</h3>
+          <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
         </div>
         <button
-          class="rounded border text-center px-5 m-0 border-gray-500 font-normal"
+          class="rounded border text-center px-5 m-0 border-white font-normal bg-transparent"
           @click="$emit('edit', device)">Edit</button>
       </div>
     </div>
