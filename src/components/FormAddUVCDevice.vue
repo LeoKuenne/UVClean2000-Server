@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col">
-    <h1 class="text-xl font-bold pb-5">Add new Device</h1>
+  <div class="flex flex-col text-color">
+    <h1 class="text-xl font-bold pb-5">{{heading}}</h1>
     <label for="add_devicename">Devicename</label>
     <input id="add_devicename"
       v-bind:value="editDevice.name"
@@ -43,6 +43,9 @@ export default {
   computed: {
     okProp() {
       return this.isEdit ? 'Update' : 'Add';
+    },
+    heading() {
+      return this.isEdit ? 'Update Device' : 'Add Device';
     },
   },
   data() {

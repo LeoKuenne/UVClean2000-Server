@@ -26,10 +26,20 @@
       bg-black bg-opacity-50 flex justify-center items-center">
       <FormAddUVCDevice
         @close="prop_showAddForm = false"
-        :editDevice="device"
         @add="addDevice($event)"
+        :isEdit="false"
+        :editDevice="device"
         class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
       </FormAddUVCDevice>
+<!--
+        <FormAddUVCDevice
+          @close="prop_showEditForm = false"
+          @update="updateDevice($event)"
+          @delete="deleteDevice($event)"
+          :editDevice="prop_editDevice"
+          :isEdit="true"
+          class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
+          </FormAddUVCDevice> -->
     </div>
   </div>
 </template>

@@ -6,7 +6,7 @@
       @deviceAdd="deviceAdd($event)">
     </Sidebar>
     <component v-bind:is="currentViewComponent"
-      :devices="this.$root.$data.dataDevices"
+      :devices="deviceList"
       :groups="this.$root.$data.dataGroups"
       class="flex-grow"
       @stateChange="stateChange($event)"
@@ -31,6 +31,10 @@ export default {
   computed: {
     currentViewComponent() {
       return this.currentView;
+    },
+    deviceList() {
+      console.log('DeviceList getter/setter');
+      return this.$root.$data.dataDevices;
     },
   },
   methods: {

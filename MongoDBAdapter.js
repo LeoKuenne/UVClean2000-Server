@@ -5,7 +5,10 @@ module.exports = class MongoDBAdapter {
     this.uri = uri;
     this.databaseName = databaseName;
 
-    mongoose.connect(this.uri + this.databaseName, { useNewUrlParser: true, useUnifiedTopology: true });
+    mongoose.connect(this.uri + this.databaseName, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }).catch();
     this.db = mongoose.connection;
     this.db.on('error', console.error.bind(console, 'connection error:'));
 
@@ -24,6 +27,9 @@ module.exports = class MongoDBAdapter {
     this.UVCDevice = mongoose.model('UVCDevice', this.uvcDeviceSchema);
     this.db.once('open', () => {
       console.log(`Database ${this.uri}/${this.databaseName} connected.`);
+    });
+    this.db.once('error', (err) => {
+      console.log(`Database ${this.uri}/${this.databaseName}: Error occured: ${err}`);
     });
   }
 
@@ -85,11 +91,12 @@ module.exports = class MongoDBAdapter {
   }
 
   async getDevice(id) {
-    const device = await this.UVCDevice.findById(id, (err) => {
+    console.log(`Database: Getting Device with Serialnumber: ${id}`);
+    const device = await this.UVCDevice.findById({ _id: id }, (err) => {
       if (err) return console.error(err);
     });
 
-    if (device === undefined) throw new Error('Device not found!');
+    if (device === null || device === undefined) throw new Error('Device not found!');
 
     return {
       serialnumber: device._id,
