@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const { Server } = require('http');
 const socketio = require('socket.io');
 const mqtt = require('mqtt');
@@ -20,7 +21,7 @@ app.get('/', (req, res) => {
   res.sendFile(`${__dirname}/dist/index.html`);
 });
 
-app.get('/devices', async (req, res) => {
+app.get('/devices', cors(), async (req, res) => {
   const db = await mongoDB.getDevices();
   res.json(db);
 });
