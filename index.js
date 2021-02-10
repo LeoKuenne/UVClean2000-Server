@@ -1,5 +1,6 @@
 const express = require('express');
-const { Server } = require('http');
+const fs = require('fs');
+const https = require('https');
 const socketio = require('socket.io');
 const mqtt = require('mqtt');
 const MongoDBAdapter = require('./MongoDBAdapter');
@@ -10,9 +11,14 @@ const uri = 'mongodb://127.0.0.1:27017/';
 const database = 'uvclean-test';
 const mongoDB = new MongoDBAdapter(uri, database);
 
+const options = {
+  key: fs.readFileSync('./ssl/localhost_key.pem'),
+  cert: fs.readFileSync('./ssl/localhost_cert.pem'),
+};
+
 const app = express();
-const http = Server(app);
-const io = socketio(http);
+const httpsServer = https.createServer(options, app);
+const io = socketio(httpsServer);
 
 app.use(express.static(`${__dirname}/dist`));
 
@@ -171,7 +177,7 @@ io.on('connection', (socket) => {
   });
 });
 
-http.listen(port, () => {
+httpsServer.listen(port, () => {
   console.log(`listening on ${port}`);
 });
 

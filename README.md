@@ -22,6 +22,9 @@ A Client has properties and functions:
   - IP-Address
   - Device Name
 
+## MongoDB Startup
+"C:\Program Files\MongoDB\Server\4.4\bin\mongod.exe" --serviceName MongoDB-UVCleanServer --serviceDisplayName MongoDB-UVCleanServer --serviceUser Leo --dbpath dbData/
+
 ## Project setup
 ```
 npm install
