@@ -9,6 +9,7 @@ module.exports = class MongoDBAdapter {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     }).catch();
+<<<<<<< Updated upstream
     this.db = mongoose.connection;
     this.db.on('error', console.error.bind(console, 'connection error:'));
 
@@ -25,6 +26,12 @@ module.exports = class MongoDBAdapter {
     });
 
     this.UVCDevice = mongoose.model('UVCDevice', this.uvcDeviceSchema);
+=======
+
+    this.db = mongoose.connection;
+    this.db.on('error', console.error.bind(console, 'connection error:'));
+
+>>>>>>> Stashed changes
     this.db.once('open', () => {
       console.log(`Database ${this.uri}/${this.databaseName} connected.`);
     });
