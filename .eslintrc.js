@@ -4,6 +4,7 @@ module.exports = {
     commonjs: true,
     es6: true,
     node: true,
+    "jest/globals": true,
   },
   extends: [
     'plugin:vue/essential',
@@ -18,6 +19,7 @@ module.exports = {
   },
   plugins: [
     'vue',
+    'jest',
   ],
   rules: {
   },
