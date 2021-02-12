@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
-const AirVolume = require('./models/airVolume');
+const AirVolumeModel = require('./models/airVolume');
+const AlarmStateModel = require('./models/alarmState');
+const RotationSpeedModel = require('./models/rotationSpeed');
 const UVCDeviceModel = require('./models/device');
 
 module.exports = class MongoDBAdapter {
@@ -14,6 +16,7 @@ module.exports = class MongoDBAdapter {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
+      useFindAndModify: true,
     }, (err) => {
       if (err) { throw new Error(err); }
     });
@@ -50,9 +53,20 @@ module.exports = class MongoDBAdapter {
   /**
    * Adds a Device to the MongoDB 'devices' database. Throws an error if the validation fails.
    * @param {Object} device Deviceobject that must have the properties _id and name
+   * @returns {mongoose.Document<any>} The saved mongoose document
    */
   async addDevice(deviceData) {
-    const docDevice = new UVCDeviceModel(deviceData);
+    if (deviceData.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
+
+    const device = {
+      _id: deviceData.serialnumber,
+    };
+
+    Object.keys(deviceData).forEach((key) => {
+      device[key] = deviceData[key];
+    });
+
+    const docDevice = new UVCDeviceModel(device);
     const err = docDevice.validateSync();
     if (err !== undefined) throw err;
     return docDevice.save();
@@ -61,13 +75,54 @@ module.exports = class MongoDBAdapter {
   /**
    * Gets an device with the given deviceID.
    * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @returns {Object} The device object
    */
   async getDevice(deviceID) {
     if (typeof deviceID !== 'string') { throw new Error('DeviceID has to be a string'); }
 
-    const d = await UVCDeviceModel.findById(deviceID).exec();
-    if (d === null) throw new Error('Device does not exists');
+    const device = await UVCDeviceModel.findOne({
+      _id: deviceID,
+    }).populate('currentAlarm', 'date lamp state').exec();
+
+    if (device === null || device === undefined) throw new Error('Device does not exists');
+
+    const d = {
+      serialnumber: device._id,
+      name: device.name,
+      state: device.state,
+      engineLevel: device.engineLevel,
+      currentAlarm: device.currentAlarm,
+      identifyMode: device.identifyMode,
+      eventMode: device.eventMode,
+      rotationSpeed: device.rotationSpeed,
+      currentAirVolume: device.currentAirVolume,
+    };
     return d;
+  }
+
+  /**
+   * Gets all devices.
+   */
+  async getDevices() {
+    const db = await UVCDeviceModel.find().exec();
+    // eslint-disable-next-line prefer-const
+    let devices = [];
+    db.map((device) => {
+      const d = {
+        serialnumber: device._id,
+        name: device.name,
+        state: device.state,
+        engineLevel: device.engineLevel,
+        currentAlarm: device.currentAlarm,
+        identifyMode: device.identifyMode,
+        eventMode: device.eventMode,
+        rotationSpeed: device.rotationSpeed,
+        currentAirVolume: device.currentAirVolume,
+      };
+      devices.push(d);
+    });
+
+    return devices;
   }
 
   /**
@@ -77,8 +132,16 @@ module.exports = class MongoDBAdapter {
    * serialnumber and the propertie to change with the new value
    * @returns Returns updated device
    */
-  async updateDevice(device) {
-    if (device._id === undefined) throw new Error('Device ID must be defined');
+  async updateDevice(deviceData) {
+    if (deviceData.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
+
+    const device = {
+      _id: deviceData.serialnumber,
+    };
+
+    Object.keys(deviceData).forEach((key) => {
+      device[key] = deviceData[key];
+    });
 
     const d = await UVCDeviceModel.findOneAndUpdate(
       { _id: device._id },
@@ -95,10 +158,21 @@ module.exports = class MongoDBAdapter {
    * @returns Deleted updated device
    */
   async deleteDevice(deviceID) {
-    if (deviceID === undefined) throw new Error('Device ID must be defined');
+    if (typeof deviceID !== 'string') { throw new Error('DeviceID has to be a string'); }
 
-    const d = await UVCDeviceModel.findOneAndRemove({ _id: deviceID }).exec();
-    if (d === null) throw new Error('Device does not exists');
+    const device = await UVCDeviceModel.findOneAndRemove({ _id: deviceID }).exec();
+    if (device === null) throw new Error('Device does not exists');
+    const d = {
+      serialnumber: device._id,
+      name: device.name,
+      state: device.state,
+      engineLevel: device.engineLevel,
+      currentAlarm: device.currentAlarm,
+      identifyMode: device.identifyMode,
+      eventMode: device.eventMode,
+      rotationSpeed: device.rotationSpeed,
+      currentAirVolume: device.currentAirVolume,
+    };
     return d;
   }
 
@@ -107,19 +181,94 @@ module.exports = class MongoDBAdapter {
    * field to that document
    * @param {Object} airVolume The Object with the device id respectively serialnumber of that
    * device and the current volume
-   * @returns Returns the airVolume Object
+   * @returns Returns the airVolume document
    */
   async addAirVolume(airVolume) {
-    const docAirVolume = new AirVolume(airVolume);
+    const docAirVolume = new AirVolumeModel(airVolume);
     const err = docAirVolume.validateSync();
     if (err !== undefined) throw err;
 
     await docAirVolume.save();
 
     await this.updateDevice({
-      _id: airVolume.device,
-      currentAirVolume: docAirVolume._id,
+      serialnumber: airVolume.device,
+      currentAirVolume: airVolume.volume,
     });
     return docAirVolume;
+  }
+
+  /**
+   * Gets all AirVolume documents that match the deviceID
+   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @returns {Array} Returns an array of AirVolumes that match the deviceID
+   */
+  async getAirVolume(deviceID) {
+    return AirVolumeModel.find({ device: deviceID }, '-_id device volume date').exec();
+  }
+
+  /**
+   * Adds an alarmState document which holds a current alarm, the device, the lamp and date
+   * @param {Object} alarmState The Object with the device id respectively serialnumber of that
+   * device and the current alarm and lamp
+   * @returns Returns the alarmState document
+   */
+  async setAlarmState(alarmState) {
+    const docAlarmState = new AlarmStateModel(alarmState);
+    const err = docAlarmState.validateSync();
+    if (err !== undefined) throw err;
+
+    await docAlarmState.save();
+
+    UVCDeviceModel.updateOne({
+      _id: alarmState.device,
+    }, {
+      $set: {
+        [`currentAlarm.${alarmState.lamp - 1}`]: docAlarmState._id,
+      },
+    }, (err, res) => {
+      if (err !== null) { console.error(err); throw err; }
+    });
+
+    // if (device === null) throw new Error('Device does not exists');
+
+    return docAlarmState;
+  }
+
+  /**
+   * Gets all AlarmState documents that match the deviceID
+   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @returns {Array} Returns an array of AlarmState that match the deviceID
+   */
+  async getAlarmState(deviceID) {
+    return AlarmStateModel.find({ device: deviceID }, 'device lamp state date').exec();
+  }
+
+  /**
+   * Adds a Rotation Speed document to the database.
+   * @param {Object} rotationSpeed The RotationSpeed object with the device id
+   * respectively serialnumber of that
+   * device and the rotationSpeed
+   * @returns {Document<any>} Returns the RotationSpeed Document
+   */
+  async addRotationSpeed(rotationSpeed) {
+    const docRotationSpeed = new RotationSpeedModel(rotationSpeed);
+    const err = docRotationSpeed.validateSync();
+    if (err !== undefined) throw err;
+
+    await docRotationSpeed.save();
+
+    await this.updateDevice({
+      serialnumber: rotationSpeed.device,
+      rotationSpeed: rotationSpeed.rotationSpeed,
+    });
+    return docRotationSpeed;
+  }
+
+  /**
+   * Gets all RotationSpeed documents of that device
+   * @param {String} deviceID The device ID respectively serialnumber of that device
+   */
+  async getRotationSpeeds(deviceID) {
+    return RotationSpeedModel.find({ device: deviceID }, '-_id device rotationSpeed date').exec();
   }
 };

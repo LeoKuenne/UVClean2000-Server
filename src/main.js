@@ -38,21 +38,21 @@ new Vue({
       if (d !== undefined) { d[props.prop] = props.value; }
     });
 
-    socket.on('device_Added', (device) => {
-      console.log('Event: device_Added', device);
+    socket.on('device_added', (device) => {
+      console.log('Event: device_added', device);
       this.dataDevices.push(device);
     });
 
-    socket.on('device_Updated', (device) => {
-      console.log('Event: device_Updated', device);
+    socket.on('device_updated', (device) => {
+      console.log('Event: device_updated', device);
       const dev = this.dataDevices.filter((d) => device.serialnumber === d.serialnumber)[0];
       console.log(dev);
       if (dev !== undefined) { dev.name = device.name; }
     });
 
-    socket.on('device_Deleted', (device) => {
-      console.log('Event: device_Deleted', device);
-      const dev = this.dataDevices.filter((d) => device.serialnumber === d.serialnumber)[0];
+    socket.on('device_deleted', (serialnumber) => {
+      console.log('Event: device_deleted', serialnumber);
+      const dev = this.dataDevices.filter((d) => serialnumber === d.serialnumber)[0];
       const index = this.dataDevices.indexOf(dev);
       this.dataDevices.splice(index, 1);
     });

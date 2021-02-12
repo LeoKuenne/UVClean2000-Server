@@ -25,6 +25,28 @@ A Client has properties and functions:
 ## MongoDB Startup
 "C:\Program Files\MongoDB\Server\4.4\bin\mongod.exe" --serviceName MongoDB-UVCleanServer --serviceDisplayName MongoDB-UVCleanServer --serviceUser Leo --dbpath dbData/
 
+## MQTT Helper
+mqtt sub -h 192.168.5.60 -t UVClean/# -v
+mqtt publish -h 192.168.5.60 -t UVClean/0002145702154/change_state/engineState -m false
+
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/1 | 4.06
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/2 | 8.21
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/3 | 7.58
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/4 | 8.19
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/5 | 7.57
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/6 | 4.06
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/7 | 8.19
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/8 | 7.57
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/9 | 4.06
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/10 | 8.19
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/11 | 7.57
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/12 | 4.06
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/13 | 8.19
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/14 | 7.55
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/15 | 7.58
+Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/16 | 3.04
+Event: MQTT-Message: UVClean/0002145702154/state_changed/Tacho | 4.88
+
 ## Project setup
 ```
 npm install

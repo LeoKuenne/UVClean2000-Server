@@ -7,11 +7,11 @@ const uvcDeviceSchema = new mongoose.Schema({
   name: { type: String, default: 'UVCClean Gerät' },
   state: { type: Boolean, default: true },
   engineLevel: { type: Number, default: 0 },
-  currentError: [{ type: Schema.Types.ObjectId, ref: 'LastError' }],
+  currentAlarm: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
   identifyMode: { type: Boolean, default: false },
   eventMode: { type: Boolean, default: false },
   rotationSpeed: { type: Number, default: 0 },
-  currentAirVolume: [{ type: Schema.Types.ObjectId, ref: 'AirVolume' }],
+  currentAirVolume: { type: Number, default: 0 },
 });
 
 const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema, 'devices');
