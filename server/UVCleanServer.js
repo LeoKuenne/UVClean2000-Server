@@ -6,7 +6,6 @@ const mqtt = require('mqtt');
 const EventEmitter = require('events');
 const MongooseError = require('mongoose').Error;
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
-const DeviceUpdateModule = require('./controlModules/Command/_UpdateDeviceModule');
 const controlModules = require('./controlModules/ControlModules').modules;
 
 console.log.bind('| UVCleanServer:');
@@ -24,7 +23,7 @@ class UVCleanServer extends EventEmitter {
     this.httpServer = http.createServer(this.app);
     this.io = socketio(this.httpServer);
 
-    this.app.use(express.static(`${__dirname}/dashboard/dist`));
+    this.app.use(express.static(`${__dirname}/dashboard/`));
 
     this.app.get('/', (req, res) => {
       res.sendFile(`${__dirname}/dashboard/dist/index.html`);

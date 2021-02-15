@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const AirVolumeModel = require('./models/airVolume');
 const AlarmStateModel = require('./models/alarmState');
 const RotationSpeedModel = require('./models/rotationSpeed');
-const UVCDeviceModel = require('./models/device');
+const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 
 module.exports = class MongoDBAdapter {
   /**
@@ -118,7 +118,7 @@ module.exports = class MongoDBAdapter {
       const d = {
         serialnumber: device._id,
         name: device.name,
-        state: device.state,
+        engineState: device.engineState,
         engineLevel: device.engineLevel,
         currentAlarm: device.currentAlarm,
         identifyMode: device.identifyMode,

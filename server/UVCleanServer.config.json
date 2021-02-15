@@ -6,7 +6,7 @@
     "cert": "./ssl/localhost_cert.pem"
   },
   "mqtt": {
-    "broker": "192.168.5.60",
+    "broker": "127.0.0.1",
     "port": 1883
   },
   "database": {
