@@ -1,0 +1,19 @@
+{
+  "http": {
+    "port": 3000,
+    "secure": false,
+    "key": "./ssl/localhost_key.pem",
+    "cert": "./ssl/localhost_cert.pem"
+  },
+  "mqtt": {
+    "broker": "192.168.5.60",
+    "port": 1883
+  },
+  "database": {
+    "mongoDB": {
+      "uri": "127.0.0.1",
+      "port": 27017,
+      "database": "uvclean-server"
+    }
+  }
+}

@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
-const MongoDBAdapter = require('../../MongoDBAdapter.js');
+const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
 let database;
 
 it('MongoDBAdapter connects to database', async () => {
-  database = new MongoDBAdapter(global.__MONGO_URI__, '');
+  database = new MongoDBAdapter(global.__MONGO_URI__.replace('mongodb://', ''), '');
   await database.connect();
   expect(database.db).toBeDefined();
   await database.close();
@@ -27,7 +27,7 @@ it.skip('MongoDBAdapter connects to wrong database and throws error', async () =
 
 describe('MongoDBAdapter Functions', () => {
   beforeAll(async () => {
-    database = new MongoDBAdapter(global.__MONGO_URI__, '');
+    database = new MongoDBAdapter(global.__MONGO_URI__.replace('mongodb://', ''), '');
     await database.connect();
   });
 

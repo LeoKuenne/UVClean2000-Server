@@ -23,7 +23,7 @@ A Client has properties and functions:
   - Device Name
 
 ## MongoDB Startup
-"C:\Program Files\MongoDB\Server\4.4\bin\mongod.exe" --serviceName MongoDB-UVCleanServer --serviceDisplayName MongoDB-UVCleanServer --serviceUser Leo --dbpath dbData/
+mongod.exe --serviceName MongoDB-UVCleanServer --serviceDisplayName MongoDB-UVCleanServer --serviceUser Leo --dbpath dbData/
 
 ## MQTT Helper
 mqtt sub -h 192.168.5.60 -t UVClean/# -v
