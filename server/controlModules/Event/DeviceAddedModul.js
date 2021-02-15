@@ -9,7 +9,7 @@ function socketIO(eventemitter, ioSocket, ioServer) {
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
   console.log(`${module.exports.name} removing socketIO module`);
-  // eventemitter.removeAllListeners('deviceAdded');
+  eventemitter.removeAllListeners('deviceAdded');
 }
 
 function mqtt(eventemitter, mqttClient) {

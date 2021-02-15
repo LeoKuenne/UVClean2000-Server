@@ -1,19 +1,15 @@
 function socketIO(eventemitter, ioSocket, ioServer) {
   console.log(`${module.exports.name} registering socketIO module`);
-  ioSocket.on('device_delete', (props) => {
-    console.log('Event: device_delete ', props);
 
-    const device = {
-      serialnumber: props,
-    };
-
-    eventemitter.emit('deleteDevice', device);
+  eventemitter.on('deviceDeleted', (device) => {
+    console.log('Sending device_deleted', device);
+    ioSocket.emit('device_deleted', device);
   });
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
   console.log(`${module.exports.name} removing socketIO module`);
-  ioSocket.removeAllListeners('device_delete');
+  eventemitter.removeAllListeners('deviceDeleted');
 }
 
 function mqtt(eventemitter, mqttClient) {
@@ -26,15 +22,10 @@ function removeMQTT(eventemitter, ioSocket, ioServer) {
 
 function database(eventemitter, db) {
   console.log(`${module.exports.name} registering database module`);
-  eventemitter.on('deleteDevice', async (device) => {
-    const d = await db.deleteDevice(device.serialnumber);
-    eventemitter.emit('deviceDeleted', d.serialnumber);
-  });
 }
 
 function removeDatabase(eventemitter, db) {
   console.log(`${module.exports.name} removing database module`);
-  eventemitter.removeAllListeners('deleteDevice');
 }
 
 function registerModules(eventemitter, ioSocket, ioServer, mqttClient, databaseAdapter) {
@@ -44,7 +35,7 @@ function registerModules(eventemitter, ioSocket, ioServer, mqttClient, databaseA
 }
 
 module.exports = {
-  name: 'Command - DeleteDevice',
+  name: 'Event - deviceDeleted',
   registerModules,
   socketIOModule: socketIO,
   mqttClientModule: mqtt,

@@ -56,3 +56,39 @@ describe('SocketIO Section', () => {
     expect(fn).toHaveBeenCalledTimes(0);
   });
 });
+
+describe('Database Section', () => {
+  it('database Module emits deviceDeleted event and deletes device', (done) => {
+    const database = {
+      deleteDevice: (serialnumber) => new Promise((res, rej) => res({ serialnumber })),
+    };
+
+    const eventemitter = new EventEmitter();
+    eventemitter.on('deviceDeleted', (serialnumber) => {
+      expect(serialnumber).toBe('1');
+      done();
+    });
+
+    deleteDeviceModule.databaseModule(eventemitter, database);
+    eventemitter.emit('deleteDevice', { serialnumber: '1' });
+  });
+
+  it('database Module gets removed with removeDatabaseModule', () => {
+    const database = {};
+
+    const fn = jest.fn();
+
+    const eventemitter = new EventEmitter();
+    eventemitter.on('deviceDeleted', fn);
+
+    const spy = jest.spyOn(eventemitter, 'removeAllListeners');
+
+    deleteDeviceModule.databaseModule(eventemitter, database);
+    deleteDeviceModule.removeDatabaseModule(eventemitter, database);
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    eventemitter.emit('deleteDevice', { serialnumber: '1' });
+
+    expect(fn).toHaveBeenCalledTimes(0);
+  });
+});
