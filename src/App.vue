@@ -48,7 +48,7 @@ export default {
       this.$root.$data.socket.emit('device_update', device);
     },
     deviceDelete(serialnumber) {
-      this.$root.$data.socket.emit('device_delete', serialnumber);
+      this.$root.$data.socket.emit('device_delete', { serialnumber });
     },
   },
   created() {

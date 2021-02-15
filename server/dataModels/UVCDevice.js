@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 const uvcDeviceSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   name: { type: String, default: 'UVCClean Gerät' },
-  engineState: { type: Boolean, default: true },
+  engineState: { type: Boolean, default: false },
   engineLevel: { type: Number, default: 0 },
   currentAlarm: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
   identifyMode: { type: Boolean, default: false },

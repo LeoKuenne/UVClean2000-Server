@@ -35,15 +35,8 @@ describe('SocketIO Section', () => {
 
     expect(eventemitter.emit).toHaveBeenCalledTimes(1);
     expect(eventemitter.emit).toHaveBeenCalledWith('addDevice', {
-      currentAirVolume: 0,
-      currentError: '',
-      engineLevel: 1,
-      eventMode: false,
-      identifyMode: false,
       name: 'Test',
-      rotationSpeed: 0,
       serialnumber: 1,
-      state: false,
     });
   });
 
@@ -76,6 +69,10 @@ describe('Database Section', () => {
   it('Database Module saves Device on device_add event on eventemitter', (done) => {
     const database = {
       addDevice: (dev) => new Promise((res, rej) => res()),
+      getDevice: (id) => new Promise((res, rej) => res({
+        serialnumber: 1,
+        name: 'Test',
+      })),
     };
 
     class MyEmitter extends EventEmitter {}

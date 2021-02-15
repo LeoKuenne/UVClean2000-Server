@@ -15,6 +15,7 @@ module.exports = class MongoDBAdapter {
     if (uri === undefined || databaseName === undefined) throw new Error('uri and databaseName must be defined');
     this.uri = uri;
     this.databaseName = databaseName;
+    mongoose.set('useFindAndModify', false);
   }
 
   async connect() {
@@ -96,7 +97,7 @@ module.exports = class MongoDBAdapter {
     const d = {
       serialnumber: device._id,
       name: device.name,
-      state: device.state,
+      engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentAlarm: device.currentAlarm,
       identifyMode: device.identifyMode,
@@ -127,6 +128,7 @@ module.exports = class MongoDBAdapter {
         currentAirVolume: device.currentAirVolume,
       };
       devices.push(d);
+      return device;
     });
 
     return devices;
@@ -172,7 +174,7 @@ module.exports = class MongoDBAdapter {
     const d = {
       serialnumber: device._id,
       name: device.name,
-      state: device.state,
+      engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentAlarm: device.currentAlarm,
       identifyMode: device.identifyMode,
@@ -232,7 +234,7 @@ module.exports = class MongoDBAdapter {
       $set: {
         [`currentAlarm.${alarmState.lamp - 1}`]: docAlarmState._id,
       },
-    }, (e, res) => {
+    }, (e) => {
       if (e !== null) { console.error(e); throw e; }
     });
 

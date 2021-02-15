@@ -82,6 +82,6 @@ describe('MQTT Section', () => {
       newValue: true,
     });
 
-    expect(mqttClient.publish).toHaveBeenCalledWith('UVClean/1/changeState/state', true);
+    expect(mqttClient.publish).toHaveBeenCalledWith('UVClean/1/changeState/engineState', 'true');
   });
 });

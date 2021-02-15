@@ -4,7 +4,7 @@ function socketIO(eventemitter, ioSocket, ioServer) {
     console.log('Event: device_delete ', props);
 
     const device = {
-      serialnumber: props,
+      serialnumber: props.serialnumber,
     };
 
     eventemitter.emit('deleteDevice', device);

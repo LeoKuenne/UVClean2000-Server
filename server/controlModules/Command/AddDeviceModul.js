@@ -6,13 +6,6 @@ function socketIO(eventemitter, ioSocket, ioServer) {
     const device = {
       serialnumber: props.serialnumber,
       name: props.name,
-      state: false,
-      engineLevel: 1,
-      currentError: '',
-      identifyMode: false,
-      eventMode: false,
-      rotationSpeed: 0,
-      currentAirVolume: 0,
     };
 
     eventemitter.emit('addDevice', device);
@@ -37,9 +30,10 @@ function database(eventemitter, db) {
 
   eventemitter.on('addDevice', async (device) => {
     console.log(`adding Device ${device.serialnumber} | ${device.name} to database`);
-    await db.addDevice(device).then(() => {
-      console.log('added Device to database, sending deviceAdded event', device.serialnumber, device.name);
-      eventemitter.emit('deviceAdded', device);
+    await db.addDevice(device);
+    await db.getDevice(device.serialnumber).then((dev) => {
+      console.log('added Device to database, sending deviceAdded event', dev);
+      eventemitter.emit('deviceAdded', dev);
     }).catch((err) => {
       console.error(err);
     });

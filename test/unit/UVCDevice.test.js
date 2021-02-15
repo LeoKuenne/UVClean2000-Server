@@ -13,10 +13,10 @@ describe('parseStates function', () => {
     expect(UVCDevice.parseStates('eventMode', undefined, 'Test')).toBe(false);
   });
 
-  it('Parses identify correctly', () => {
-    expect(UVCDevice.parseStates('identify', undefined, false)).toBe(false);
-    expect(UVCDevice.parseStates('identify', undefined, true)).toBe(true);
-    expect(UVCDevice.parseStates('identify', undefined, 'Test')).toBe(false);
+  it('Parses identifyMode correctly', () => {
+    expect(UVCDevice.parseStates('identifyMode', undefined, false)).toBe(false);
+    expect(UVCDevice.parseStates('identifyMode', undefined, true)).toBe(true);
+    expect(UVCDevice.parseStates('identifyMode', undefined, 'Test')).toBe(false);
   });
 
   it('Parses tacho correctly', () => {

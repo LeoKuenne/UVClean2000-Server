@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
-const UVCDeviceModel = require('../../../server/databaseAdapters/mongoDB/models/device');
+const UVCDeviceModel = require('../../../server/dataModels/UVCDevice').uvcDeviceModel;
 
 const deviceData = {
   _id: '1',
   name: 'Device 1',
-  state: true,
+  engineState: true,
   engineLevel: 1,
   currentAlarm: [],
   identifyMode: false,
@@ -39,7 +39,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice._id).toBeDefined();
     expect(savedUVCDevice._id).toBe(deviceData._id);
     expect(savedUVCDevice.name).toBe(deviceData.name);
-    expect(savedUVCDevice.state).toBe(deviceData.state);
+    expect(savedUVCDevice.engineState).toBe(deviceData.engineState);
     expect(savedUVCDevice.engineLevel).toBe(deviceData.engineLevel);
     expect(savedUVCDevice.currentAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(deviceData.identifyMode);
@@ -60,7 +60,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice._id).toBeDefined();
     expect(savedUVCDevice._id).toBe(device._id);
     expect(savedUVCDevice.name).toBe(device.name);
-    expect(savedUVCDevice.state).toBe(true);
+    expect(savedUVCDevice.engineState).toBe(false);
     expect(savedUVCDevice.engineLevel).toBe(0);
     expect(savedUVCDevice.currentAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(false);
