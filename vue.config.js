@@ -1,6 +1,6 @@
 const path = require('path');
 
 module.exports = {
-  outputDir: path.resolve(__dirname, './server/dashboard/dist'),
-  assetsDir: '../static',
+  // outputDir: path.resolve(__dirname, './server/dashboard/dist'),
+  // assetsDir: '../static',
 };

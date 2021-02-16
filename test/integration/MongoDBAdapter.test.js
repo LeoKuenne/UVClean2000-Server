@@ -114,6 +114,14 @@ describe('MongoDBAdapter Functions', () => {
       for (let i = 0; i < dbData.length; i += 1) {
         expect(dbData[i].serialnumber).toBe(`MongoDBAdapter_Test_${i + 1}`);
         expect(dbData[i].name).toBe(`Test Device ${i + 1}`);
+        expect(dbData[i].engineState).toBe(false);
+        expect(dbData[i].engineLevel).toBe(0);
+        expect(dbData[i].currentAlarm).toBeDefined();
+        expect(dbData[i].currentLampValue).toBeDefined();
+        expect(dbData[i].identifyMode).toBe(false);
+        expect(dbData[i].eventMode).toBe(false);
+        expect(dbData[i].rotationSpeed).toBe(0);
+        expect(dbData[i].currentAirVolume).toBe(0);
       }
     });
 
@@ -375,6 +383,167 @@ describe('MongoDBAdapter Functions', () => {
         expect(alarmStates[i].device).toBe('TestDevice');
         expect(alarmStates[i].lamp).toBe(alarms[i].lamp);
         expect(alarmStates[i].state).toBe(alarms[i].state);
+      }
+    });
+  });
+
+  describe('LampValue functions', () => {
+    beforeEach(async () => {
+      await database.clearCollection('devices');
+      await database.clearCollection('lampValues');
+    });
+
+    it('addLampValue adds a LampValue Document correct and returns the object', async () => {
+      const lampValue = {
+        device: 'TestDevice',
+        lamp: 1,
+        value: 100,
+      };
+
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const addedLampValue = await database.addLampValue(lampValue);
+      expect(addedLampValue.device).toBe(lampValue.device);
+      expect(addedLampValue.lamp).toBe(lampValue.lamp);
+      expect(addedLampValue.state).toBe(lampValue.state);
+
+      const d = await database.getDevice(device.serialnumber);
+      expect(d.currentLampValue[lampValue.lamp - 1]._id).toStrictEqual(addedLampValue._id);
+    });
+
+    it('addLampValue throws an error if the validation fails', async () => {
+      const lampValue = {
+        lamp: 1,
+        value: 100,
+      };
+      await database.addLampValue(lampValue).catch((e) => {
+        expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
+      });
+    });
+
+    it('addLampValue throws an error if the device does not exists', async () => {
+      const lampValue = {
+        device: 'TestDevice',
+        lamp: 1,
+        value: 100,
+      };
+
+      await database.addLampValue(lampValue).catch((e) => {
+        expect(e.toString()).toBe('Error: Device does not exists');
+      });
+    });
+
+    it('addLampValue changes the LampValue of a device proberly', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const lampValues = [];
+      for (let i = 1; i <= 10; i += 1) {
+        lampValues.push({
+          device: 'TestDevice',
+          lamp: i,
+          value: i * 10,
+        });
+      }
+
+      await Promise.all(
+        lampValues.map(async (a) => {
+          await database.addLampValue(a);
+        }),
+      );
+
+      const databaseDevice = await database.getDevice(device.serialnumber);
+
+      for (let i = 1; i <= databaseDevice.currentLampValue.length; i += 1) {
+        const lampValue = databaseDevice.currentLampValue[i - 1];
+        expect(lampValue.lamp).toBe(i);
+        expect(lampValue.value).toBe(lampValues[i - 1].value);
+      }
+    });
+
+    it('getLampValues gets all LampValues of one device', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const values = [];
+      for (let i = 1; i <= 10; i += 1) {
+        values.push({
+          device: 'TestDevice',
+          lamp: i,
+          value: i * 10,
+        });
+      }
+
+      await Promise.all(
+        values.map(async (a) => {
+          await database.addLampValue(a);
+        }),
+      );
+
+      const lampValues = await database.getLampValues('TestDevice');
+
+      expect(values.length).toBe(lampValues.length);
+
+      for (let i = 0; i < values.length; i += 1) {
+        expect(lampValues[i].device).toBe('TestDevice');
+        expect(lampValues[i].lamp).toBe(values[i].lamp);
+        expect(lampValues[i].value).toBe(values[i].value);
+      }
+    });
+
+    it('getLampValues gets all LampValues of one device and one lamp', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const values = [];
+      for (let i = 1; i <= 10; i += 1) {
+        values.push({
+          device: 'TestDevice',
+          lamp: i + (i % 2),
+          value: i * 10,
+        });
+      }
+
+      await Promise.all(
+        values.map(async (a) => {
+          await database.addLampValue(a);
+        }),
+      );
+
+      const lampValues = [];
+
+      for (let i = 0; i < 5; i += 1) {
+        lampValues[i] = await database.getLampValues('TestDevice', (i + 1) * 2);
+      }
+
+      expect(lampValues.length).toBe(5);
+
+      for (let i = 0; i < lampValues.length; i += 1) {
+        const lampValuesAtLamp = lampValues[i];
+        expect(lampValuesAtLamp.length).toBe(2);
+        for (let j = 0; j < lampValuesAtLamp.length; j += 1) {
+          const element = lampValuesAtLamp[j];
+          expect(element.device).toBe('TestDevice');
+          expect(element.lamp).toBe((i + 1) * 2);
+          expect(element.value).toBe((i * 2 + j + 1) * 10);
+        }
       }
     });
   });

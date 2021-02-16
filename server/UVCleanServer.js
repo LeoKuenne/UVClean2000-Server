@@ -21,7 +21,12 @@ class UVCleanServer extends EventEmitter {
 
     this.app = express();
     this.httpServer = http.createServer(this.app);
-    this.io = socketio(this.httpServer);
+    this.io = socketio(this.httpServer, {
+      cors: {
+        origin: 'http://localhost:8080',
+        methods: ['GET', 'POST'],
+      },
+    });
 
     this.app.use(express.static(`${__dirname}/dashboard/`));
 

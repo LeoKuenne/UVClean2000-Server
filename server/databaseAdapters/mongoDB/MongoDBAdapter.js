@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const AirVolumeModel = require('./models/airVolume');
 const AlarmStateModel = require('./models/alarmState');
+const LampValueModel = require('./models/lampValue');
 const RotationSpeedModel = require('./models/rotationSpeed');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 
@@ -90,7 +91,8 @@ module.exports = class MongoDBAdapter {
 
     const device = await UVCDeviceModel.findOne({
       _id: deviceID,
-    }).populate('currentAlarm', 'date lamp state').exec();
+    }).populate('currentAlarm', 'date lamp state')
+      .populate('currentLampValue', 'date lamp value').exec();
 
     if (device === null || device === undefined) throw new Error('Device does not exists');
 
@@ -100,6 +102,7 @@ module.exports = class MongoDBAdapter {
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentAlarm: device.currentAlarm,
+      currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
       rotationSpeed: device.rotationSpeed,
@@ -122,6 +125,7 @@ module.exports = class MongoDBAdapter {
         engineState: device.engineState,
         engineLevel: device.engineLevel,
         currentAlarm: device.currentAlarm,
+        currentLampValue: device.currentLampValue,
         identifyMode: device.identifyMode,
         eventMode: device.eventMode,
         rotationSpeed: device.rotationSpeed,
@@ -177,6 +181,7 @@ module.exports = class MongoDBAdapter {
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentAlarm: device.currentAlarm,
+      currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
       rotationSpeed: device.rotationSpeed,
@@ -250,6 +255,47 @@ module.exports = class MongoDBAdapter {
    */
   async getAlarmState(deviceID) {
     return AlarmStateModel.find({ device: deviceID }, 'device lamp state date').exec();
+  }
+
+  /**
+   * Adds an lampValue document which holds the current value, the device, the lamp and date
+   * @param {Object} lampValue The Object with the device id respectively serialnumber of that
+   * device and the current value and lamp
+   * @returns Returns the lampValue document
+   */
+  async addLampValue(lampValue) {
+    const docLampValue = new LampValueModel(lampValue);
+    const err = docLampValue.validateSync();
+    if (err !== undefined) throw err;
+
+    await docLampValue.save();
+
+    UVCDeviceModel.updateOne({
+      _id: lampValue.device,
+    }, {
+      $set: {
+        [`currentLampValue.${lampValue.lamp - 1}`]: docLampValue._id,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    });
+
+    // if (device === null) throw new Error('Device does not exists');
+
+    return docLampValue;
+  }
+
+  /**
+   * Gets all LampValues documents that match the deviceID
+   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {Number} [lampID] The Lamp of which values should be get
+   * @returns {Array} Returns an array of LampValues that match the deviceID
+   */
+  async getLampValues(deviceID, lampID) {
+    if (lampID !== undefined) {
+      return LampValueModel.find({ device: deviceID, lamp: lampID }, 'device lamp value date').exec();
+    }
+    return LampValueModel.find({ device: deviceID }, 'device lamp value date').exec();
   }
 
   /**

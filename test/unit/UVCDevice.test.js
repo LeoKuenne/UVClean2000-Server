@@ -25,10 +25,10 @@ describe('parseStates function', () => {
     expect(UVCDevice.parseStates('tacho', undefined, 'Test')).toBe(NaN);
   });
 
-  it('Parses airVolume correctly', () => {
-    expect(UVCDevice.parseStates('airVolume', undefined, 1)).toBe(1);
-    expect(UVCDevice.parseStates('airVolume', undefined, 10)).toBe(10);
-    expect(UVCDevice.parseStates('airVolume', undefined, 'Test')).toBe(NaN);
+  it('Parses currentAirVolume correctly', () => {
+    expect(UVCDevice.parseStates('currentAirVolume', undefined, 1)).toBe(1);
+    expect(UVCDevice.parseStates('currentAirVolume', undefined, 10)).toBe(10);
+    expect(UVCDevice.parseStates('currentAirVolume', undefined, 'Test')).toBe(NaN);
   });
 
   it('Parses engineLevel correctly', () => {
