@@ -55,3 +55,23 @@ describe('SocketIO Section', () => {
     expect(fn).toHaveBeenCalledTimes(0);
   });
 });
+
+describe('MQTT Section', () => {
+  it('MQTT Module unsubscribes from device when it is deleted', () => {
+    const eventemitter = new EventEmitter();
+
+    const mqttClient = {
+      unsubscribe: jest.fn(),
+    };
+
+    const device = {
+      serialnumber: '1',
+      name: 'Test',
+    };
+
+    deviceDeletedModule.mqttClientModule(eventemitter, mqttClient);
+    eventemitter.emit('deviceDeleted', device);
+
+    expect(mqttClient.unsubscribe).toHaveBeenCalledWith(`UVClean/${device.serialnumber}/#`);
+  });
+});

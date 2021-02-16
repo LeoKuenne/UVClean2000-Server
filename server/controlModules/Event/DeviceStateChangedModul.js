@@ -14,30 +14,26 @@ function removeSocketIO(eventemitter, ioSocket, ioServer) {
 
 function mqtt(eventemitter, mqttClient) {
   console.log(`${module.exports.name} registering mqtt module`);
-  mqttClient.subscribe('UVClean/+/stateChanged/#', (err) => {
-    if (!err) {
-      mqttClient.on('message', (topic, message) => {
-        console.log(`Got MQTT message at topic ${topic} with message ${message}`);
-        const topicArray = topic.split('/');
-        const newState = {
-          serialnumber: `${topicArray[1]}`,
-          prop: `${topicArray[3]}`,
-        };
+  mqttClient.on('message', (topic, message) => {
+    console.log(`Got MQTT message at topic ${topic} with message ${message}`);
+    const topicArray = topic.split('/');
+    const newState = {
+      serialnumber: `${topicArray[1]}`,
+      prop: `${topicArray[3]}`,
+    };
 
-        const parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
+    const parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
 
-        if (typeof parsed === 'object') {
-          if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
-            newState.lamp = parsed.lamp;
-            newState.newValue = parsed.value;
-          }
-        } else {
-          newState.newValue = parsed;
-        }
-
-        eventemitter.emit('deviceStateChanged', newState);
-      });
+    if (typeof parsed === 'object') {
+      if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
+        newState.lamp = parsed.lamp;
+        newState.newValue = parsed.value;
+      }
+    } else {
+      newState.newValue = parsed;
     }
+
+    eventemitter.emit('deviceStateChanged', newState);
   });
 }
 

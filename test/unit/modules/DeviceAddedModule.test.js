@@ -55,3 +55,23 @@ describe('SocketIO Section', () => {
     expect(fn).toHaveBeenCalledTimes(0);
   });
 });
+
+describe('MQTT Section', () => {
+  it('MQTT Module subscribes to device when it is added', () => {
+    const eventemitter = new EventEmitter();
+
+    const mqttClient = {
+      subscribe: jest.fn(),
+    };
+
+    const device = {
+      serialnumber: '1',
+      name: 'Test',
+    };
+
+    deviceAddedModule.mqttClientModule(eventemitter, mqttClient);
+    eventemitter.emit('deviceAdded', device);
+
+    expect(mqttClient.subscribe).toHaveBeenCalledWith(`UVClean/${device.serialnumber}/#`);
+  });
+});

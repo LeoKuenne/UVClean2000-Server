@@ -14,6 +14,9 @@ function removeSocketIO(eventemitter, ioSocket, ioServer) {
 
 function mqtt(eventemitter, mqttClient) {
   console.log(`${module.exports.name} registering mqtt module`);
+  eventemitter.on('deviceAdded', (device) => {
+    mqttClient.subscribe(`UVClean/${device.serialnumber}/#`);
+  });
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {
