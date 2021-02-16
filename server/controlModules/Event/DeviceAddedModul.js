@@ -2,7 +2,7 @@ function socketIO(eventemitter, ioSocket, ioServer) {
   console.log(`${module.exports.name} registering socketIO module`);
 
   eventemitter.on('deviceAdded', (device) => {
-    console.log('Sending device_added', device);
+    console.log(`Sending device_added to socket ${ioSocket.id}`, device);
     ioSocket.emit('device_added', device);
   });
 }

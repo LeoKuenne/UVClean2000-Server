@@ -65,6 +65,7 @@ class UVCleanServer extends EventEmitter {
         console.log(`HTTP listening on ${this.config.http.port}`);
       });
 
+      console.log(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
       this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
       // Register all Database Modules
@@ -72,12 +73,19 @@ class UVCleanServer extends EventEmitter {
         module.databaseModule(this, this.database);
       });
 
-      this.client.on('connect', () => {
-        console.log('Connected to MQTT Server');
+      this.client.on('connect', async () => {
+        console.log(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
         // Register all MQTT Modules
         controlModules.forEach((module) => {
           module.mqttClientModule(this, this.client);
+        });
+
+        // Subscribe to all devices that already exists
+        const db = await this.database.getDevices();
+        db.forEach((device) => {
+          console.log(`Subscribing to UVClean/${device.serialnumber}/#`);
+          this.client.subscribe(`UVClean/${device.serialnumber}/#`);
         });
       });
 
@@ -99,7 +107,7 @@ class UVCleanServer extends EventEmitter {
           console.log('A dashboard disconnected');
           // Remove all SocketIO Modules
           controlModules.forEach((module) => {
-            module.removeSocketIOModule(this, socket, this.io);
+            // module.removeSocketIOModule(this, socket, this.io);
           });
         });
       });
