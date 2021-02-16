@@ -6,6 +6,6 @@ const tacho = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 });
 
-const tachoModel = mongoose.model('Tacho', tacho, 'tacho');
+const tachoModel = mongoose.model('Tacho', tacho);
 
 module.exports = tachoModel;

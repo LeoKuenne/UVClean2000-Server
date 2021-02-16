@@ -7,6 +7,6 @@ const alarmState = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 });
 
-const AlarmStateModel = mongoose.model('AlarmState', alarmState, 'alarms');
+const AlarmStateModel = mongoose.model('AlarmState', alarmState);
 
 module.exports = AlarmStateModel;

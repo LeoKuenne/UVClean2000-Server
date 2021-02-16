@@ -9,7 +9,6 @@ const deviceData = {
   currentAlarm: [],
   identifyMode: false,
   eventMode: false,
-  tacho: 100,
   airVolume: 200,
 };
 
@@ -44,7 +43,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.currentAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(deviceData.identifyMode);
     expect(savedUVCDevice.eventMode).toBe(deviceData.eventMode);
-    expect(savedUVCDevice.tacho).toBe(deviceData.tacho);
+    expect(savedUVCDevice.tacho).toBeUndefined();
     expect(savedUVCDevice.airVolume).toBeUndefined();
   });
 
@@ -65,8 +64,8 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.currentAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(false);
     expect(savedUVCDevice.eventMode).toBe(false);
-    expect(savedUVCDevice.tacho).toBe(0);
-    expect(savedUVCDevice.currentAirVolume).toBeDefined();
+    expect(savedUVCDevice.tacho).toBeUndefined();
+    expect(savedUVCDevice.currentAirVolume).toBeUndefined();
   });
 
   it('insert device successfully, but the field not defined in schema should be undefined', async () => {

@@ -6,6 +6,6 @@ const airVolume = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 });
 
-const airVolumeModel = mongoose.model('AirVolume', airVolume, 'airVolume');
+const airVolumeModel = mongoose.model('AirVolume', airVolume);
 
 module.exports = airVolumeModel;

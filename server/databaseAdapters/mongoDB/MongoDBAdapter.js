@@ -92,7 +92,10 @@ module.exports = class MongoDBAdapter {
     const device = await UVCDeviceModel.findOne({
       _id: deviceID,
     }).populate('currentAlarm', 'date lamp state')
-      .populate('currentLampValue', 'date lamp value').exec();
+      .populate('currentAirVolume', 'date volume')
+      .populate('tacho', 'date tacho')
+      .populate('currentLampValue', 'date lamp value')
+      .exec();
 
     if (device === null || device === undefined) throw new Error('Device does not exists');
 
@@ -115,7 +118,13 @@ module.exports = class MongoDBAdapter {
    * Gets all devices.
    */
   async getDevices() {
-    const db = await UVCDeviceModel.find().exec();
+    const db = await UVCDeviceModel.find()
+      .populate('currentAlarm', 'date lamp state')
+      .populate('currentAirVolume', 'date volume')
+      .populate('tacho', 'date tacho')
+      .populate('currentLampValue', 'date lamp value')
+      .exec();
+
     // eslint-disable-next-line prefer-const
     let devices = [];
     db.map((device) => {
@@ -202,12 +211,20 @@ module.exports = class MongoDBAdapter {
     const err = docAirVolume.validateSync();
     if (err !== undefined) throw err;
 
-    await docAirVolume.save();
-
-    await this.updateDevice({
-      serialnumber: airVolume.device,
-      currentAirVolume: airVolume.volume,
+    await docAirVolume.save().catch((e) => {
+      if (e) { console.error(e); }
     });
+
+    UVCDeviceModel.updateOne({
+      _id: airVolume.device,
+    }, {
+      $set: {
+        currentAirVolume: docAirVolume._id,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    });
+
     return docAirVolume;
   }
 
@@ -310,12 +327,20 @@ module.exports = class MongoDBAdapter {
     const err = docTacho.validateSync();
     if (err !== undefined) throw err;
 
-    await docTacho.save();
-
-    await this.updateDevice({
-      serialnumber: tacho.device,
-      tacho: tacho.tacho,
+    await docTacho.save().catch((e) => {
+      if (e) { console.error(e); }
     });
+
+    UVCDeviceModel.updateOne({
+      _id: tacho.device,
+    }, {
+      $set: {
+        tacho: docTacho._id,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    });
+
     return docTacho;
   }
 

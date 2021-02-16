@@ -66,10 +66,19 @@ function database(eventemitter, db) {
         });
         break;
       case 'lamp':
-
+        db.addLampValue({
+          device: newState.serialnumber,
+          lamp: newState.lamp,
+          value: newState.newValue,
+        });
         break;
-
-      case 'airVolume':
+      case 'tacho':
+        db.addTacho({
+          device: newState.serialnumber,
+          tacho: newState.newValue,
+        });
+        break;
+      case 'currentAirVolume':
         db.addAirVolume({
           device: newState.serialnumber,
           volume: newState.newValue,

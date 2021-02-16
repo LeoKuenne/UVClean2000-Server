@@ -8,7 +8,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --watch",
     "lint": "vue-cli-service lint",
-    "test": "jest --verbose --silent"
+    "test": "jest --verbose --silent --runInBand"
   },
   "main": "index.js",
   "dependencies": {

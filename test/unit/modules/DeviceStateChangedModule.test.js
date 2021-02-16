@@ -211,7 +211,7 @@ describe('Database Section', () => {
     });
   });
 
-  it('Database Module updates database according to the event - airVolume', () => {
+  it('Database Module updates database according to the event - currentAirVolume', () => {
     const eventemitter = new EventEmitter();
     const db = {
       addAirVolume: jest.fn(),
@@ -221,7 +221,7 @@ describe('Database Section', () => {
 
     eventemitter.emit('deviceStateChanged', {
       serialnumber: '1',
-      prop: 'airVolume',
+      prop: 'currentAirVolume',
       newValue: 123,
     });
 

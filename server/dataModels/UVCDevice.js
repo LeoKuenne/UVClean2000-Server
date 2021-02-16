@@ -11,10 +11,10 @@ const uvcDeviceSchema = new mongoose.Schema({
   currentLampValue: [{ type: Schema.Types.ObjectId, ref: 'LampValue' }],
   identifyMode: { type: Boolean, default: false },
   eventMode: { type: Boolean, default: false },
-  tacho: { type: Number, default: 0 },
-  currentAirVolume: { type: Number, default: 0 },
+  tacho: { type: Schema.Types.ObjectId, ref: 'Tacho' },
+  currentAirVolume: { type: Schema.Types.ObjectId, ref: 'AirVolume' },
 });
-const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema, 'devices');
+const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema);
 
 function parseStates(propertie, subpropertie, value) {
   switch (propertie) {

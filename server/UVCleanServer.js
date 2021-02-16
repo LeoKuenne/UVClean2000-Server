@@ -8,8 +8,6 @@ const MongooseError = require('mongoose').Error;
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
 const controlModules = require('./controlModules/ControlModules').modules;
 
-console.log.bind('| UVCleanServer:');
-
 class UVCleanServer extends EventEmitter {
   constructor(config) {
     super();

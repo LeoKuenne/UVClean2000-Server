@@ -7,6 +7,6 @@ const lampValue = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 });
 
-const LampValueModel = mongoose.model('LampValue', lampValue, 'lampValues');
+const LampValueModel = mongoose.model('LampValue', lampValue);
 
 module.exports = LampValueModel;

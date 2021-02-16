@@ -37,7 +37,7 @@ describe('MongoDBAdapter Functions', () => {
 
   describe('Device functions', () => {
     beforeEach(async () => {
-      await database.clearCollection('devices');
+      await database.clearCollection('uvcdevices');
     });
 
     it('addDevice adds a device correct and returns the object', async () => {
@@ -120,8 +120,8 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].currentLampValue).toBeDefined();
         expect(dbData[i].identifyMode).toBe(false);
         expect(dbData[i].eventMode).toBe(false);
-        expect(dbData[i].tacho).toBe(0);
-        expect(dbData[i].currentAirVolume).toBe(0);
+        expect(dbData[i].tacho).toBeUndefined();
+        expect(dbData[i].currentAirVolume).toBeUndefined();
       }
     });
 
@@ -189,8 +189,8 @@ describe('MongoDBAdapter Functions', () => {
 
   describe('AirVolume functions', () => {
     beforeEach(async () => {
-      await database.clearCollection('devices');
-      await database.clearCollection('airVolume');
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('airvolumes');
     });
 
     it('addAirVolume adds a AirVolume Document correct and returns the object', async () => {
@@ -211,7 +211,8 @@ describe('MongoDBAdapter Functions', () => {
       expect(addedAirVolume.volume).toBe(airVolume.volume);
 
       const d = await database.getDevice(device.serialnumber);
-      expect(d.currentAirVolume).toBe(airVolume.volume);
+      expect(d.currentAirVolume._id).toStrictEqual(addedAirVolume._id);
+      expect(d.currentAirVolume.volume).toStrictEqual(addedAirVolume.volume);
     });
 
     it('addAirVolume throws an error if validation fails', async () => {
@@ -270,8 +271,8 @@ describe('MongoDBAdapter Functions', () => {
 
   describe('AlarmState functions', () => {
     beforeEach(async () => {
-      await database.clearCollection('devices');
-      await database.clearCollection('alarms');
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('alarmstates');
     });
 
     it('setAlarmState adds a AlarmState Document correct and returns the object', async () => {
@@ -389,8 +390,8 @@ describe('MongoDBAdapter Functions', () => {
 
   describe('LampValue functions', () => {
     beforeEach(async () => {
-      await database.clearCollection('devices');
-      await database.clearCollection('lampValues');
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('lampvalues');
     });
 
     it('addLampValue adds a LampValue Document correct and returns the object', async () => {
@@ -550,8 +551,8 @@ describe('MongoDBAdapter Functions', () => {
 
   describe('Tacho functions', () => {
     beforeEach(async () => {
-      await database.clearCollection('devices');
-      await database.clearCollection('tacho');
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('tachos');
     });
 
     it('addTacho adds a Tacho Document correct and returns the object', async () => {
@@ -572,7 +573,8 @@ describe('MongoDBAdapter Functions', () => {
       expect(addedTacho.tacho).toBe(tacho.tacho);
 
       const d = await database.getDevice(tacho.device);
-      expect(d.tacho).toStrictEqual(tacho.tacho);
+      expect(d.tacho._id).toStrictEqual(addedTacho._id);
+      expect(d.tacho.tacho).toStrictEqual(addedTacho.tacho);
     });
 
     it('addTacho throws an error if the validation fails', async () => {
