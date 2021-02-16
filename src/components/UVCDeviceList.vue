@@ -5,7 +5,7 @@
           <UVCDevice
             @edit="editDevice($event)"
             v-on="$listeners"
-            v-for="device in devices"
+            v-for="device in $dataStore.devices"
             :key="device.serialnumber"
             :device="device">
           </UVCDevice>
@@ -36,7 +36,6 @@ export default {
     UVCDevice,
     FormAddUVCDevice,
   },
-  props: ['devices'],
   methods: {
     editDevice(device) {
       this.prop_editDevice = device;

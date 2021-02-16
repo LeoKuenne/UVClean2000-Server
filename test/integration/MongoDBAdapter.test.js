@@ -120,8 +120,8 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].currentLampValue).toBeDefined();
         expect(dbData[i].identifyMode).toBe(false);
         expect(dbData[i].eventMode).toBe(false);
-        expect(dbData[i].tacho).toBeUndefined();
-        expect(dbData[i].currentAirVolume).toBeUndefined();
+        expect(dbData[i].tacho).toBe(0);
+        expect(dbData[i].currentAirVolume).toBe(0);
       }
     });
 

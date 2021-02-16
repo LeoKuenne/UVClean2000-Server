@@ -137,8 +137,8 @@ module.exports = class MongoDBAdapter {
         currentLampValue: device.currentLampValue,
         identifyMode: device.identifyMode,
         eventMode: device.eventMode,
-        tacho: device.tacho,
-        currentAirVolume: device.currentAirVolume,
+        tacho: (device.tacho) ? device.tacho : 0,
+        currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : 0,
       };
       devices.push(d);
       return device;

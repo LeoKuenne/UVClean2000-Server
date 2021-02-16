@@ -26,6 +26,12 @@ function mqtt(eventemitter, mqttClient) {
       case 'airVolume':
         newState.prop = 'currentAirVolume';
         break;
+      case 'lamp':
+        newState.prop = 'currentLampValue';
+        break;
+      case 'alarm':
+        newState.prop = 'currentAlarm';
+        break;
       default:
         break;
     }
@@ -58,14 +64,14 @@ function database(eventemitter, db) {
     let device = {};
 
     switch (newState.prop) {
-      case 'alarm':
+      case 'currentAlarm':
         db.setAlarmState({
           device: newState.serialnumber,
           lamp: newState.lamp,
           state: newState.newValue,
         });
         break;
-      case 'lamp':
+      case 'currentLampValue':
         db.addLampValue({
           device: newState.serialnumber,
           lamp: newState.lamp,

@@ -37,22 +37,22 @@ describe('parseStates function', () => {
     expect(UVCDevice.parseStates('engineLevel', undefined, 'Test')).toBe(NaN);
   });
 
-  it('Parses alarm correctly', () => {
-    const d = UVCDevice.parseStates('alarm', '1', 'Ok');
+  it('Parses currentAlarm correctly', () => {
+    const d = UVCDevice.parseStates('currentAlarm', '1', 'Ok');
     expect(d.lamp).toBe(1);
     expect(d.value).toBe('Ok');
 
-    const d1 = UVCDevice.parseStates('alarm', 'True', false);
+    const d1 = UVCDevice.parseStates('currentAlarm', 'True', false);
     expect(d1.lamp).toBe(NaN);
     expect(d1.value).toBe('false');
   });
 
-  it('Parses lamp correctly', () => {
-    const d = UVCDevice.parseStates('lamp', '1', 'Ok');
+  it('Parses currentLampValue correctly', () => {
+    const d = UVCDevice.parseStates('currentLampValue', '1', 'Ok');
     expect(d.lamp).toBe(1);
     expect(d.value).toBe('Ok');
 
-    const d1 = UVCDevice.parseStates('lamp', 'True', false);
+    const d1 = UVCDevice.parseStates('currentLampValue', 'True', false);
     expect(d1.lamp).toBe(NaN);
     expect(d1.value).toBe('false');
   });

@@ -60,15 +60,53 @@
         <option value="5">5</option>
       </select>
 
-      <h4 class="pt-5 font-bold col-span-2">Statistics:</h4>
-      <span>Error state</span>
-      <span class="text-right">{{device.lastError}}</span>
-
       <span>Current Volume</span>
-      <span class="text-right">{{device.airVolume}} L/M^3</span>
+      <span class="text-right">{{device.currentAirVolume.volume}} L/M^3</span>
 
       <span>Rotation speed</span>
-      <span class="text-right">{{device.tacho}} R/min</span>
+      <span class="text-right">{{device.tacho.tacho}} R/min</span>
+
+      <h4 class="text-lg pt-5 font-bold col-span-2">Statistics:</h4>
+      <div class="col-span-2 flex flex-col space-y-5 pb-5">
+        <div class="">
+          <div class="flex justify-between">
+            <span class="font-semibold">Alarm states</span>
+            <button
+              class="bg-transparent text-color hover:bg-transparent
+              font-normal border border-gray-500 rounded p-0 m-0 w-20 items-end"
+              @click="showAlarmStates = !showAlarmStates"
+              v-text="(showAlarmStates) ? 'Collapse' : 'Show'">
+              Collapse
+            </button>
+          </div>
+          <div v-if="showAlarmStates" class="col-span-2 grid grid-cols-4">
+            <div class="w-20" v-for="(alarm, lamp) in device.currentAlarm" :key="lamp">
+              {{alarm.lamp}}: {{alarm.state}}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-2">
+          <div class="flex justify-between">
+            <span class="font-semibold">Lamp values</span>
+            <button
+              class="bg-transparent text-color hover:bg-transparent
+              font-normal border border-gray-500 rounded p-0 m-0 w-20 items-end"
+              @click="showLampValues = !showLampValues"
+              v-text="(showLampValues) ? 'Collapse' : 'Show'">
+              Collapse
+            </button>
+          </div>
+          <div v-if="showLampValues" class="col-span-2  grid grid-cols-4">
+            <div class="w-16" v-for="(lampValue, lamp) in device.currentLampValue" :key="lamp">
+              {{lampValue.lamp}}: {{lampValue.value}} V,
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <span>Reset Device</span>
+      <button>Reset</button>
     </div>
   </div>
 </template>
@@ -77,6 +115,12 @@ export default {
   name: 'UVCDevice',
   props: ['device'],
   methods: {
+  },
+  data() {
+    return {
+      showAlarmStates: true,
+      showLampValues: true,
+    };
   },
   computed: {
     state: {

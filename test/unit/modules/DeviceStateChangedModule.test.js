@@ -98,7 +98,7 @@ describe('MQTT Section', () => {
 
     eventemitter.on('deviceStateChanged', (device) => {
       expect(device.serialnumber).toBe('1');
-      expect(device.prop).toBe('alarm');
+      expect(device.prop).toBe('currentAlarm');
       expect(device.lamp).toBe(1);
       expect(device.newValue).toBe('Alarm');
       done();

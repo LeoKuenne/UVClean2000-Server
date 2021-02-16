@@ -26,8 +26,8 @@ function parseStates(propertie, subpropertie, value) {
     case 'currentAirVolume':
     case 'engineLevel':
       return parseInt(value, 10);
-    case 'alarm':
-    case 'lamp':
+    case 'currentAlarm':
+    case 'currentLampValue':
       return {
         value: `${value}`,
         lamp: parseInt(subpropertie, 10),
