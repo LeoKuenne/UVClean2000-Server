@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const AirVolumeModel = require('./models/airVolume');
 const AlarmStateModel = require('./models/alarmState');
 const LampValueModel = require('./models/lampValue');
-const RotationSpeedModel = require('./models/rotationSpeed');
+const TachoModel = require('./models/tacho');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 
 module.exports = class MongoDBAdapter {
@@ -105,7 +105,7 @@ module.exports = class MongoDBAdapter {
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
-      rotationSpeed: device.rotationSpeed,
+      tacho: device.tacho,
       currentAirVolume: device.currentAirVolume,
     };
     return d;
@@ -128,7 +128,7 @@ module.exports = class MongoDBAdapter {
         currentLampValue: device.currentLampValue,
         identifyMode: device.identifyMode,
         eventMode: device.eventMode,
-        rotationSpeed: device.rotationSpeed,
+        tacho: device.tacho,
         currentAirVolume: device.currentAirVolume,
       };
       devices.push(d);
@@ -184,7 +184,7 @@ module.exports = class MongoDBAdapter {
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
-      rotationSpeed: device.rotationSpeed,
+      tacho: device.tacho,
       currentAirVolume: device.currentAirVolume,
     };
     return d;
@@ -300,30 +300,30 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a Rotation Speed document to the database.
-   * @param {Object} rotationSpeed The RotationSpeed object with the device id
+   * @param {Object} tacho The Tacho object with the device id
    * respectively serialnumber of that
-   * device and the rotationSpeed
-   * @returns {Document<any>} Returns the RotationSpeed Document
+   * device and the tacho
+   * @returns {Document<any>} Returns the Tacho Document
    */
-  async addRotationSpeed(rotationSpeed) {
-    const docRotationSpeed = new RotationSpeedModel(rotationSpeed);
-    const err = docRotationSpeed.validateSync();
+  async addTacho(tacho) {
+    const docTacho = new TachoModel(tacho);
+    const err = docTacho.validateSync();
     if (err !== undefined) throw err;
 
-    await docRotationSpeed.save();
+    await docTacho.save();
 
     await this.updateDevice({
-      serialnumber: rotationSpeed.device,
-      rotationSpeed: rotationSpeed.rotationSpeed,
+      serialnumber: tacho.device,
+      tacho: tacho.tacho,
     });
-    return docRotationSpeed;
+    return docTacho;
   }
 
   /**
-   * Gets all RotationSpeed documents of that device
+   * Gets all Tacho documents of that device
    * @param {String} deviceID The device ID respectively serialnumber of that device
    */
-  async getRotationSpeeds(deviceID) {
-    return RotationSpeedModel.find({ device: deviceID }, '-_id device rotationSpeed date').exec();
+  async getTachos(deviceID) {
+    return TachoModel.find({ device: deviceID }, '-_id device tacho date').exec();
   }
 };

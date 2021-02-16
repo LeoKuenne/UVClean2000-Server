@@ -108,16 +108,61 @@ describe('MQTT Section', () => {
     mqttClient.emit('message', 'UVClean/1/changeState/alarm/1', 'Alarm');
   });
 
+  it('MQTT Module sends deviceStateChanged to eventemitter - airVolume', (done) => {
+    const eventemitter = new EventEmitter();
+
+    class MQTTClient extends EventEmitter {
+      subscribe(topic, cb) {
+        cb();
+      }
+    }
+
+    const mqttClient = new MQTTClient();
+
+    eventemitter.on('deviceStateChanged', (newState) => {
+      expect(newState.serialnumber).toBe('1');
+      expect(newState.prop).toBe('currentAirVolume');
+      expect(newState.newValue).toBe(100);
+      done();
+    });
+
+    deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
+    mqttClient.emit('message', 'UVClean/1/changeState/airVolume', 100);
+  });
+
+  it('MQTT Module sends deviceStateChanged to eventemitter - tacho', (done) => {
+    const eventemitter = new EventEmitter();
+
+    class MQTTClient extends EventEmitter {
+      subscribe(topic, cb) {
+        cb();
+      }
+    }
+
+    const mqttClient = new MQTTClient();
+
+    eventemitter.on('deviceStateChanged', (newState) => {
+      expect(newState.serialnumber).toBe('1');
+      expect(newState.prop).toBe('tacho');
+      expect(newState.newValue).toBe(100);
+      done();
+    });
+
+    deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
+    mqttClient.emit('message', 'UVClean/1/changeState/tacho', 100);
+  });
+
   it('MQTT Module gets removed with removeMQTTClientModule', () => {
     const eventemitter = new EventEmitter();
 
     const mqttClient = {
       subscribe: jest.fn(),
+      on: jest.fn(),
       unsubscribe: jest.fn(),
     };
 
     deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    expect(mqttClient.subscribe).toHaveBeenCalledTimes(1);
+    expect(mqttClient.on).toHaveBeenCalledTimes(1);
     deviceStateChanged.removeMQTTClientModule(eventemitter, mqttClient);
     expect(mqttClient.unsubscribe).toHaveBeenCalledTimes(1);
   });
@@ -160,8 +205,8 @@ describe('Database Section', () => {
     });
 
     expect(db.setAlarmState).toHaveBeenCalledWith({
-      serialnumber: '1',
-      alarm: 'Alarm',
+      device: '1',
+      state: 'Alarm',
       lamp: 1,
     });
   });
@@ -181,7 +226,7 @@ describe('Database Section', () => {
     });
 
     expect(db.addAirVolume).toHaveBeenCalledWith({
-      serialnumber: '1',
+      device: '1',
       volume: 123,
     });
   });

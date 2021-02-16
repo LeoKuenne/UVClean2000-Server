@@ -120,7 +120,7 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].currentLampValue).toBeDefined();
         expect(dbData[i].identifyMode).toBe(false);
         expect(dbData[i].eventMode).toBe(false);
-        expect(dbData[i].rotationSpeed).toBe(0);
+        expect(dbData[i].tacho).toBe(0);
         expect(dbData[i].currentAirVolume).toBe(0);
       }
     });
@@ -548,16 +548,16 @@ describe('MongoDBAdapter Functions', () => {
     });
   });
 
-  describe('RotationSpeed functions', () => {
+  describe('Tacho functions', () => {
     beforeEach(async () => {
       await database.clearCollection('devices');
-      await database.clearCollection('rotationSpeed');
+      await database.clearCollection('tacho');
     });
 
-    it('addRotationSpeed adds a RotationSpeed Document correct and returns the object', async () => {
-      const rotationSpeed = {
+    it('addTacho adds a Tacho Document correct and returns the object', async () => {
+      const tacho = {
         device: 'TestDevice',
-        rotationSpeed: 1,
+        tacho: 1,
       };
 
       const device = {
@@ -567,36 +567,36 @@ describe('MongoDBAdapter Functions', () => {
 
       await database.addDevice(device);
 
-      const addedRotationSpeed = await database.addRotationSpeed(rotationSpeed);
-      expect(addedRotationSpeed.device).toBe(rotationSpeed.device);
-      expect(addedRotationSpeed.rotationSpeed).toBe(rotationSpeed.rotationSpeed);
+      const addedTacho = await database.addTacho(tacho);
+      expect(addedTacho.device).toBe(tacho.device);
+      expect(addedTacho.tacho).toBe(tacho.tacho);
 
-      const d = await database.getDevice(rotationSpeed.device);
-      expect(d.rotationSpeed).toStrictEqual(rotationSpeed.rotationSpeed);
+      const d = await database.getDevice(tacho.device);
+      expect(d.tacho).toStrictEqual(tacho.tacho);
     });
 
-    it('addRotationSpeed throws an error if the validation fails', async () => {
-      const rotationSpeed = {
-        rotationSpeed: 1,
+    it('addTacho throws an error if the validation fails', async () => {
+      const tacho = {
+        tacho: 1,
       };
 
-      await database.addRotationSpeed(rotationSpeed).catch((e) => {
+      await database.addTacho(tacho).catch((e) => {
         expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
       });
     });
 
     it('setAlarmState throws an error if the device does not exists', async () => {
-      const rotationSpeed = {
+      const tacho = {
         device: 'TestDevice',
-        rotationSpeed: 1,
+        tacho: 1,
       };
 
-      await database.addRotationSpeed(rotationSpeed).catch((e) => {
+      await database.addTacho(tacho).catch((e) => {
         expect(e.toString()).toBe('Error: Device does not exists');
       });
     });
 
-    it('getRotationSpeeds gets all RotationSpeed of one device', async () => {
+    it('getTachos gets all Tacho of one device', async () => {
       const device = {
         serialnumber: 'TestDevice',
         name: 'Test Device 1',
@@ -604,27 +604,27 @@ describe('MongoDBAdapter Functions', () => {
 
       await database.addDevice(device);
 
-      const rotationSpeeds = [];
+      const tachos = [];
       for (let i = 1; i <= 10; i += 1) {
-        rotationSpeeds.push({
+        tachos.push({
           device: 'TestDevice',
-          rotationSpeed: i * 10,
+          tacho: i * 10,
         });
       }
 
       await Promise.all(
-        rotationSpeeds.map(async (a) => {
-          await database.addRotationSpeed(a);
+        tachos.map(async (a) => {
+          await database.addTacho(a);
         }),
       );
 
-      const docRotationSpeeds = await database.getRotationSpeeds('TestDevice');
+      const docTachos = await database.getTachos('TestDevice');
 
-      expect(docRotationSpeeds.length).toBe(rotationSpeeds.length);
+      expect(docTachos.length).toBe(tachos.length);
 
-      for (let i = 0; i < docRotationSpeeds.length; i += 1) {
-        expect(docRotationSpeeds[i].device).toBe('TestDevice');
-        expect(docRotationSpeeds[i].rotationSpeed).toBe(rotationSpeeds[i].rotationSpeed);
+      for (let i = 0; i < docTachos.length; i += 1) {
+        expect(docTachos[i].device).toBe('TestDevice');
+        expect(docTachos[i].tacho).toBe(tachos[i].tacho);
       }
     });
   });

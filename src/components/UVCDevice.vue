@@ -68,7 +68,7 @@
       <span class="text-right">{{device.airVolume}} L/M^3</span>
 
       <span>Rotation speed</span>
-      <span class="text-right">{{device.rotationSpeed}} R/min</span>
+      <span class="text-right">{{device.tacho}} R/min</span>
     </div>
   </div>
 </template>

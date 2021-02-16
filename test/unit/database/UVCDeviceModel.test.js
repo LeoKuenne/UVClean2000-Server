@@ -9,7 +9,7 @@ const deviceData = {
   currentAlarm: [],
   identifyMode: false,
   eventMode: false,
-  rotationSpeed: 100,
+  tacho: 100,
   airVolume: 200,
 };
 
@@ -44,7 +44,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.currentAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(deviceData.identifyMode);
     expect(savedUVCDevice.eventMode).toBe(deviceData.eventMode);
-    expect(savedUVCDevice.rotationSpeed).toBe(deviceData.rotationSpeed);
+    expect(savedUVCDevice.tacho).toBe(deviceData.tacho);
     expect(savedUVCDevice.airVolume).toBeUndefined();
   });
 
@@ -65,7 +65,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.currentAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(false);
     expect(savedUVCDevice.eventMode).toBe(false);
-    expect(savedUVCDevice.rotationSpeed).toBe(0);
+    expect(savedUVCDevice.tacho).toBe(0);
     expect(savedUVCDevice.currentAirVolume).toBeDefined();
   });
 

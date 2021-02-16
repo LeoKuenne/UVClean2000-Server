@@ -22,6 +22,14 @@ function mqtt(eventemitter, mqttClient) {
       prop: `${topicArray[3]}`,
     };
 
+    switch (newState.prop) {
+      case 'airVolume':
+        newState.prop = 'currentAirVolume';
+        break;
+      default:
+        break;
+    }
+
     const parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
 
     if (typeof parsed === 'object') {
@@ -52,9 +60,9 @@ function database(eventemitter, db) {
     switch (newState.prop) {
       case 'alarm':
         db.setAlarmState({
-          serialnumber: newState.serialnumber,
+          device: newState.serialnumber,
           lamp: newState.lamp,
-          alarm: newState.newValue,
+          state: newState.newValue,
         });
         break;
       case 'lamp':
@@ -63,7 +71,7 @@ function database(eventemitter, db) {
 
       case 'airVolume':
         db.addAirVolume({
-          serialnumber: newState.serialnumber,
+          device: newState.serialnumber,
           volume: newState.newValue,
         });
         break;

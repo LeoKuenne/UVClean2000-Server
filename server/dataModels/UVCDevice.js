@@ -11,7 +11,7 @@ const uvcDeviceSchema = new mongoose.Schema({
   currentLampValue: [{ type: Schema.Types.ObjectId, ref: 'LampValue' }],
   identifyMode: { type: Boolean, default: false },
   eventMode: { type: Boolean, default: false },
-  rotationSpeed: { type: Number, default: 0 },
+  tacho: { type: Number, default: 0 },
   currentAirVolume: { type: Number, default: 0 },
 });
 const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema, 'devices');
