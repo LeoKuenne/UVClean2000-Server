@@ -188,6 +188,33 @@ describe('MongoDBAdapter Functions', () => {
     });
   });
 
+  describe('Serialnumber functions', () => {
+    beforeEach(async () => {
+      await database.clearCollection('uvcdevices');
+    });
+
+    it('getSerialnumbers returns all Serialnumbers', async () => {
+      for (let i = 0; i < 100; i += 1) {
+        await database.addDevice({
+          name: `${i}`,
+          serialnumber: `${i}`,
+        });
+      }
+
+      const serialnumbers = await database.getSerialnumbers();
+      expect(serialnumbers.length).toBe(100);
+      for (let i = 0; i < 100; i += 1) {
+        expect(serialnumbers[i]).toBe(`${i}`);
+      }
+    });
+
+    it('getSerialnumbers returns empty array if no devices exists', async () => {
+      const serialnumbers = await database.getSerialnumbers();
+      expect(serialnumbers.length).toBe(0);
+      expect(serialnumbers).toStrictEqual([]);
+    });
+  });
+
   describe('AirVolume functions', () => {
     beforeEach(async () => {
       await database.clearCollection('uvcdevices');
@@ -264,6 +291,105 @@ describe('MongoDBAdapter Functions', () => {
       expect(volumes.length).toBe(airVolumes.length);
 
       for (let i = 0; i < volumes.length; i += 1) {
+        expect(airVolumes[i].device).toBe('TestDevice');
+        expect(airVolumes[i].volume).toBe(volumes[i].volume);
+      }
+    });
+
+    it('getAirVolumes gets all AirVolumes of one device after a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const volumes = [];
+      for (let i = 0; i < 10; i += 1) {
+        volumes.push({
+          device: 'TestDevice',
+          volume: 10 * i,
+          date: new Date((i + 1) * 100000),
+        });
+      }
+
+      await Promise.all(
+        volumes.map(async (v) => {
+          await database.addAirVolume(v);
+        }),
+      );
+
+      const airVolumes = await database.getAirVolume('TestDevice', new Date((3) * 100000));
+
+      expect(volumes.length - 2).toBe(airVolumes.length);
+
+      for (let i = 2; i < volumes.length; i += 1) {
+        expect(airVolumes[i - 2].device).toBe('TestDevice');
+        expect(airVolumes[i - 2].volume).toBe(volumes[i].volume);
+      }
+    });
+
+    it('getAirVolumes gets all AirVolumes of one device before a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const volumes = [];
+      for (let i = 0; i < 10; i += 1) {
+        volumes.push({
+          device: 'TestDevice',
+          volume: 10 * i,
+          date: new Date((i + 1) * 100000),
+        });
+      }
+
+      await Promise.all(
+        volumes.map(async (v) => {
+          await database.addAirVolume(v);
+        }),
+      );
+
+      const airVolumes = await database.getAirVolume('TestDevice', new Date((3) * 100000), new Date((8) * 100000));
+
+      expect(volumes.length - 4).toBe(airVolumes.length);
+
+      for (let i = 2; i < airVolumes.length; i += 1) {
+        expect(airVolumes[i - 2].device).toBe('TestDevice');
+        expect(airVolumes[i - 2].volume).toBe(volumes[i].volume);
+      }
+    });
+
+    it('getAirVolumes gets all AirVolumes of one device before a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const volumes = [];
+      for (let i = 0; i < 10; i += 1) {
+        volumes.push({
+          device: 'TestDevice',
+          volume: 10 * i,
+          date: new Date((i + 1) * 100000),
+        });
+      }
+
+      await Promise.all(
+        volumes.map(async (v) => {
+          await database.addAirVolume(v);
+        }),
+      );
+
+      const airVolumes = await database.getAirVolume('TestDevice', undefined, new Date((8) * 100000));
+
+      expect(volumes.length - 2).toBe(airVolumes.length);
+
+      for (let i = 0; i < airVolumes.length; i += 1) {
         expect(airVolumes[i].device).toBe('TestDevice');
         expect(airVolumes[i].volume).toBe(volumes[i].volume);
       }
@@ -632,7 +758,7 @@ describe('MongoDBAdapter Functions', () => {
     });
   });
 
-  describe.only('getDurationOfAvailableData', () => {
+  describe('getDurationOfAvailableData', () => {
     beforeEach(async () => {
       await database.clearCollection('uvcdevices');
       await database.clearCollection('airvolumes');

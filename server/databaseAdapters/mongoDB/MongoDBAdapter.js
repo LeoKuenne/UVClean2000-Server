@@ -148,6 +148,22 @@ module.exports = class MongoDBAdapter {
   }
 
   /**
+   * Gets all devices.
+   */
+  async getSerialnumbers() {
+    const db = await UVCDeviceModel.find().select('_id').exec();
+
+    // eslint-disable-next-line prefer-const
+    let devices = [];
+    db.map((device) => {
+      devices.push(device._id);
+      return device;
+    });
+
+    return devices;
+  }
+
+  /**
    * Updates the given device. Throws an error if the validation fails and if
    * the document not exists
    * @param {Object} device Deviceobject with the device ID respectively
@@ -233,8 +249,15 @@ module.exports = class MongoDBAdapter {
    * @param {String} deviceID The device ID respectively serialnumber of that device
    * @returns {Array} Returns an array of AirVolumes that match the deviceID
    */
-  async getAirVolume(deviceID) {
-    return AirVolumeModel.find({ device: deviceID }, '-_id device volume date').exec();
+  async getAirVolume(deviceID, fromDate, toDate) {
+    const query = AirVolumeModel.find({ device: deviceID }, '-_id device volume date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    return query.exec();
   }
 
   /**
