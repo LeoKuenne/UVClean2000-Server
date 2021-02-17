@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 const mongoose = require('mongoose');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
@@ -628,6 +629,42 @@ describe('MongoDBAdapter Functions', () => {
         expect(docTachos[i].device).toBe('TestDevice');
         expect(docTachos[i].tacho).toBe(tachos[i].tacho);
       }
+    });
+  });
+
+  describe.only('getDurationOfAvailableData', () => {
+    beforeEach(async () => {
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('airvolumes');
+    });
+
+    it('Returns the latest currentAirVolume Date', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '1',
+      });
+
+      for (let i = 0; i < 10; i += 1) {
+        await database.addAirVolume({
+          volume: i,
+          device: '1',
+          date: new Date((i + 1) * 100),
+        });
+      }
+      const duration = await database.getDurationOfAvailableData('1', 'currentAirVolume');
+      expect(duration).toStrictEqual({
+        to: new Date(10 * 100),
+        from: new Date(100),
+      });
+    });
+
+    it('Returns undefined if no currentAirVolume Document for that device exists', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '1',
+      });
+      const latestDuration = await database.getDurationOfAvailableData('1', 'currentAirVolume');
+      expect(latestDuration).toBeUndefined();
     });
   });
 });

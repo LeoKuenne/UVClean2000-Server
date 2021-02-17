@@ -351,4 +351,25 @@ module.exports = class MongoDBAdapter {
   async getTachos(deviceID) {
     return TachoModel.find({ device: deviceID }, '-_id device tacho date').exec();
   }
+
+  async getDurationOfAvailableData(deviceID, propertie) {
+    let dataLatest = '';
+    let dataOldest = '';
+
+    switch (propertie) {
+      case 'currentAirVolume':
+        dataLatest = await AirVolumeModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
+        dataOldest = await AirVolumeModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
+        if (dataLatest.length === 1 && dataOldest.length === 1) {
+          return {
+            from: dataOldest[0].date,
+            to: dataLatest[0].date,
+          };
+        }
+        return undefined;
+
+      default:
+        return undefined;
+    }
+  }
 };
