@@ -7,7 +7,8 @@
             v-on="$listeners"
             v-for="device in $dataStore.devices"
             :key="device.serialnumber"
-            :device="device">
+            :device="device"
+            class="shadow-lg">
           </UVCDevice>
       </div>
       <div

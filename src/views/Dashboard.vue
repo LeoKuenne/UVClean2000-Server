@@ -1,16 +1,31 @@
 <template>
-  <div id="app" class="flex min-h-screen shadow-md text-color">
-    <transition  name="fade" mode="out-in">
-      <router-view></router-view>
-    </transition>
+  <div id="app" class="flex min-h-screen text-color">
+    <Sidebar
+      @showDevices="currentView = 'UVCDeviceList'"
+      @showGroups="currentView = 'UVCGroupList'"
+      @deviceAdd="deviceAdd($event)">
+    </Sidebar>
+    <component v-bind:is="currentViewComponent"
+      class="flex-grow"
+      @changeState="changeState($event)"
+      @deviceUpdate="deviceUpdate($event)"
+      @deviceDelete="deviceDelete($event)"></component>
   </div>
 </template>
 
 <script>
-import './css/styles.css';
+import '../css/styles.css';
+import Sidebar from '../components/dashboard/Sidebar.vue';
+import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
+import UVCGroupList from '../components/dashboard/UVCGroupList.vue';
 
 export default {
-  name: 'App',
+  name: 'Dashboard',
+  components: {
+    Sidebar,
+    UVCDeviceList,
+    UVCGroupList,
+  },
   computed: {
     currentViewComponent() {
       return this.currentView;
@@ -44,12 +59,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-</style>

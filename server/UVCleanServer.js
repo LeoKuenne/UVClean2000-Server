@@ -73,7 +73,12 @@ class UVCleanServer extends EventEmitter {
     this.app.get('/timestamps', async (req, res) => {
       const { propertie, device } = req.query;
 
-      if (device === undefined) { res.sendStatus(404); }
+      console.log(`Got GET request on /timestamps with propertie=${propertie}, device=${device}`);
+
+      if (device === undefined || device === '') {
+        res.sendStatus(404);
+        return;
+      }
 
       let db = '';
 
@@ -83,7 +88,7 @@ class UVCleanServer extends EventEmitter {
           break;
         default:
           res.sendStatus(404);
-          break;
+          return;
       }
 
       res.json(db);
