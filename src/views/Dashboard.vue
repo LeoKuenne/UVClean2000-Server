@@ -6,27 +6,26 @@
       @showGroups="currentView = 'UVCGroupList'"
       @deviceAdd="deviceAdd($event)">
     </Sidebar>
-    <router-view class="w-5/6 h-full"></router-view>
-    <!-- <component v-bind:is="currentViewComponent"
-      class="flex-grow"
+    <router-view
+      class="w-5/6 h-full"
       @changeState="changeState($event)"
       @deviceUpdate="deviceUpdate($event)"
-      @deviceDelete="deviceDelete($event)"></component> -->
+      @deviceDelete="deviceDelete($event)">
+    </router-view>
+    <!-- <component v-bind:is="currentViewComponent"
+      class="flex-grow"
+      ></component> -->
   </div>
 </template>
 
 <script>
 import '../css/styles.css';
 import Sidebar from '../components/dashboard/Sidebar.vue';
-// import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
-// import UVCGroupList from '../components/dashboard/UVCGroupList.vue';
 
 export default {
   name: 'Dashboard',
   components: {
     Sidebar,
-    // UVCDeviceList,
-    // UVCGroupList,
   },
   computed: {
     currentViewComponent() {
@@ -41,8 +40,8 @@ export default {
     showDevices() {
       this.$router.push({ name: 'devices' });
     },
-    changeState(prop) {
-      this.$root.$data.socket.emit('device_changeState', prop);
+    changeState(newState) {
+      this.$root.$data.socket.emit('device_changeState', newState);
     },
     deviceAdd(device) {
       this.$root.$data.socket.emit('device_add', device);

@@ -15,6 +15,7 @@ module.exports = {
       white: colors.white,
       red: colors.red,
       gray: colors.trueGray,
+      green: colors.green,
     },
     backgroundColor: (theme) => ({
       ...theme('colors'),

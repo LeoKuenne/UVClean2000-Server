@@ -26,6 +26,9 @@ A Client has properties and functions:
 mongod.exe --serviceName MongoDB-UVCleanServer --serviceDisplayName MongoDB-UVCleanServer --serviceUser Leo --dbpath dbData/
 
 ## MQTT Helper
+mqtt sub -h 127.0.0.1 -t UVClean/# -v
+mqtt publish -h 127.0.0.1 -t UVClean/0002145702154/changeState/dummyData -m false
+
 mqtt sub -h 192.168.5.60 -t UVClean/# -v
 mqtt publish -h 192.168.5.60 -t UVClean/0002145702154/change_state/engineState -m false
 

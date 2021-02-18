@@ -57,7 +57,11 @@ new Vue({
               dev[props.prop] = (`${props.newValue}` === 'true');
               break;
             case 'tacho':
+              dev[props.prop].tacho = parseInt(props.newValue, 10);
+              break;
             case 'currentAirVolume':
+              dev[props.prop].volume = parseInt(props.newValue, 10);
+              break;
             case 'engineLevel':
               dev[props.prop] = parseInt(props.newValue, 10);
               break;
@@ -70,6 +74,7 @@ new Vue({
               propertie[props.lamp - 1].value = parseInt(props.newValue, 10);
               break;
             default:
+              console.log(`Can not parse stateChanged message with prop ${props.prop}`);
               break;
           }
           return dev;
@@ -79,18 +84,22 @@ new Vue({
       console.log('Device that changed:', d);
     });
 
-    // socket.on('device_updated', (device) => {
-    //   console.log('Event: device_updated', device);
-    //   const dev = this.dataDevices.filter((d) => device.serialnumber === d.serialnumber)[0];
-    //   console.log(dev);
-    //   if (dev !== undefined) { dev.name = device.name; }
-    // });
+    socket.on('device_updated', (device) => {
+      console.log('Event: device_updated', device);
+      const dev = this.dataDevices.filter((d) => device.serialnumber === d.serialnumber)[0];
+      console.log('Updating device', dev);
+      if (dev !== undefined) { dev.name = device.name; }
+    });
 
-    // socket.on('device_deleted', (serialnumber) => {
-    //   console.log('Event: device_deleted', serialnumber);
-    //   const dev = this.dataDevices.filter((d) => serialnumber === d.serialnumber)[0];
-    //   const index = this.dataDevices.indexOf(dev);
-    //   this.dataDevices.splice(index, 1);
-    // });
+    socket.on('device_deleted', (serialnumber) => {
+      console.log('Event: device_deleted', serialnumber);
+      if (serialnumber !== undefined) {
+        for (let i = 0; i < this.$dataStore.devices.length; i += 1) {
+          if (serialnumber === this.$dataStore.devices[i].serialnumber) {
+            this.$dataStore.devices.splice(i, 1);
+          }
+        }
+      }
+    });
   },
 }).$mount('#app');
