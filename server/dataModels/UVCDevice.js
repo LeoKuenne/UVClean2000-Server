@@ -5,6 +5,7 @@ const { Schema } = mongoose;
 const uvcDeviceSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   name: { type: String, default: 'UVCClean Gerät' },
+  group: { type: Schema.Types.ObjectId, ref: 'UVCGroup' },
   engineState: { type: Boolean, default: false },
   engineLevel: { type: Number, default: 0 },
   currentAlarm: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
@@ -18,6 +19,8 @@ const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema);
 
 function parseStates(propertie, subpropertie, value) {
   switch (propertie) {
+    case 'name':
+      return `${value}`;
     case 'engineState':
     case 'eventMode':
     case 'identifyMode':
@@ -33,8 +36,7 @@ function parseStates(propertie, subpropertie, value) {
         lamp: parseInt(subpropertie, 10),
       };
     default:
-      // Throw error
-      return {};
+      throw new Error(`State parsing is not implemented for propertie ${propertie}`);
   }
 }
 

@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
+const { ObjectId } = require('mongoose').Types;
 const AirVolumeModel = require('./models/airVolume');
 const AlarmStateModel = require('./models/alarmState');
 const LampValueModel = require('./models/lampValue');
 const TachoModel = require('./models/tacho');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
+const UVCGroupModel = require('./models/group').uvcGroupModel;
 
 module.exports = class MongoDBAdapter {
   /**
@@ -102,14 +104,15 @@ module.exports = class MongoDBAdapter {
     const d = {
       serialnumber: device._id,
       name: device.name,
+      group: `${device.group}`,
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentAlarm: device.currentAlarm,
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
-      tacho: device.tacho,
-      currentAirVolume: device.currentAirVolume,
+      tacho: (device.tacho) ? device.tacho : 0,
+      currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : 0,
     };
     return d;
   }
@@ -131,6 +134,7 @@ module.exports = class MongoDBAdapter {
       const d = {
         serialnumber: device._id,
         name: device.name,
+        group: `${device.group}`,
         engineState: device.engineState,
         engineLevel: device.engineLevel,
         currentAlarm: device.currentAlarm,
@@ -312,7 +316,7 @@ module.exports = class MongoDBAdapter {
 
     await docLampValue.save();
 
-    UVCDeviceModel.updateOne({
+    await UVCDeviceModel.updateOne({
       _id: lampValue.device,
     }, {
       $set: {
@@ -397,6 +401,11 @@ module.exports = class MongoDBAdapter {
     return query.exec();
   }
 
+  /**
+   * Gets the first and last date where a document of the provided propertie can be found
+   * @param {string} deviceID The device ID respectively serialnumber of that device
+   * @param {string} propertie The propertie to get the duration of
+   */
   async getDurationOfAvailableData(deviceID, propertie) {
     let dataLatest = '';
     let dataOldest = '';
@@ -436,5 +445,166 @@ module.exports = class MongoDBAdapter {
       default:
         return undefined;
     }
+  }
+
+  /**
+   * Adds an group with the provided name and returns the document
+   * @param {Object} group An object that represents the group
+   * @param {string} group.name The name of the group to be created
+   */
+  async addGroup(group) {
+    if (group.name === undefined) throw new Error('Name must be defined.');
+
+    const docGroup = new UVCGroupModel(group);
+    const err = docGroup.validateSync();
+    if (err !== undefined) throw err;
+    return docGroup.save();
+  }
+
+  /**
+   * Gets the group by the given _id
+   * @param {string} groupID The group _id
+   */
+  async getGroup(groupID) {
+    if (typeof groupID !== 'string') {
+      throw new Error('GroupID has to be a string');
+    }
+
+    const groupData = await UVCGroupModel.findOne({ _id: groupID }).exec();
+
+    if (groupData === null) {
+      throw new Error('Group does not exists');
+    }
+
+    const group = {
+      id: groupData._id,
+      name: groupData.name,
+      devices: groupData.devices,
+    };
+
+    return group;
+  }
+
+  /**
+   * Gets all groups
+   */
+  async getGroups() {
+    const groupData = await UVCGroupModel.find().exec();
+
+    const groups = [];
+    groupData.map((group) => {
+      const d = {
+        id: group._id,
+        name: group.name,
+        devices: group.devices,
+      };
+      groups.push(d);
+      return group;
+    });
+
+    return groups;
+  }
+
+  /**
+   *
+   * @param {Object} group The object representing the group
+   * @param {string} group._id The object representing the group
+   * @param {string} [group.name] The new name of the group
+   */
+  async updateGroup(group) {
+    if (group._id === undefined || typeof group._id !== 'string') throw new Error('_id must be defined.');
+
+    const docGroup = await UVCGroupModel.findOneAndUpdate(
+      { _id: new ObjectId(group._id) },
+      group,
+      { new: true },
+    ).exec();
+
+    if (docGroup === null) {
+      throw new Error('Group does not exists');
+    }
+
+    return docGroup;
+  }
+
+  /**
+   *
+   * @param {Object} group The object representing the group
+   * @param {string} group.id The object representing the group
+   */
+  async deleteGroup(group) {
+    if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined and typeof string.');
+
+    const docGroup = await UVCGroupModel.findOneAndDelete(
+      { _id: new ObjectId(group.id) },
+    ).exec();
+
+    if (docGroup === null) {
+      throw new Error('Group does not exists');
+    }
+
+    return docGroup;
+  }
+
+  /**
+   * Adds the given serialnumber of the device to the group if it is not already in that group.
+   * Before that it checks, wether the device exists.
+   * @param {string} deviceSerialnumber The Serialnumber of the device that should be added
+   * @param {string} groupID The group ID of the group the device should be added to
+   */
+  async addDeviceToGroup(deviceSerialnumber, groupID) {
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+
+    const docDevice = await UVCDeviceModel.updateOne(
+      {
+        _id: deviceSerialnumber,
+      },
+      { group: new ObjectId(groupID) },
+      (e) => {
+        if (e !== null) { console.error(e); throw e; }
+      },
+    ).exec();
+
+    const docGroup = await UVCGroupModel.updateOne({
+      _id: new ObjectId(groupID),
+    }, {
+      $addToSet: {
+        devices: deviceSerialnumber,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    }).exec().catch((e) => {
+      console.error(e);
+      throw e;
+    });
+
+    return docGroup;
+  }
+
+  /**
+   * Delete the device with the given serialnumber from the group.
+   * Before that it checks, wether the device exists.
+   * @param {string} deviceSerialnumber The Serialnumber of the device that should be deleted
+   * @param {string} groupID The group ID of the group the device should be deleted from
+   *
+   */
+  async deleteDeviceFromGroup(deviceSerialnumber, groupID) {
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+
+    await this.getDevice(deviceSerialnumber);
+
+    const docGroup = await UVCGroupModel.updateOne({
+      _id: new ObjectId(groupID),
+    }, {
+      $pull: {
+        devices: deviceSerialnumber,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    }).exec();
+
+    return docGroup;
   }
 };

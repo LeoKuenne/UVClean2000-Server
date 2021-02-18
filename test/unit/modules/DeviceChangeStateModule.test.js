@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 const { EventEmitter } = require('events');
-const deviceChangeState = require('../../../server/controlModules/Command/DeviceChangeStateModul');
+const deviceChangeState = require('../../../server/controlModules/Command/DeviceChangeStateModule');
 
 it('Test wether the deviceChangeState has alle required methods', () => {
   expect(Object.keys(deviceChangeState).length).toBe(8);

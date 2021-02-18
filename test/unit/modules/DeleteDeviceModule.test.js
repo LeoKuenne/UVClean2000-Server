@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 const { EventEmitter } = require('events');
-const deleteDeviceModule = require('../../../server/controlModules/Command/DeleteDeviceModul');
+const deleteDeviceModule = require('../../../server/controlModules/Command/DeleteDeviceModule');
 
 it('Test wether the deleteDeviceModule has alle required methods', () => {
   expect(Object.keys(deleteDeviceModule).length).toBe(8);

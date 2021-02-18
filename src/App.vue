@@ -63,18 +63,6 @@ export default {
     },
   },
   methods: {
-    changeState(prop) {
-      this.$root.$data.socket.emit('device_changeState', prop);
-    },
-    deviceAdd(device) {
-      this.$root.$data.socket.emit('device_add', device);
-    },
-    deviceUpdate(device) {
-      this.$root.$data.socket.emit('device_update', device);
-    },
-    deviceDelete(serialnumber) {
-      this.$root.$data.socket.emit('device_delete', { serialnumber });
-    },
   },
   created() {
 

@@ -1,5 +1,5 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-await-in-loop */
-const mongoose = require('mongoose');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
 let database;
@@ -16,7 +16,7 @@ it.skip('MongoDBAdapter connects to wrong database and throws error', async () =
   // after the test suite completed.
   database = new MongoDBAdapter('mongodb://testdomain:64017', 'test');
   try {
-    const r = await database.connect();
+    await database.connect();
   } catch (e) {
     expect(e).toBe('MongooseServerSelectionError: getaddrinfo ENOTFOUND testdomain');
   }
@@ -72,6 +72,15 @@ describe('MongoDBAdapter Functions', () => {
       const returnedDevice = await database.getDevice(device.serialnumber);
       expect(returnedDevice.serialnumber).toBe(device.serialnumber);
       expect(returnedDevice.name).toBe(device.name);
+      expect(returnedDevice.group).toBeDefined();
+      expect(returnedDevice.engineState).toBe(false);
+      expect(returnedDevice.engineLevel).toBe(0);
+      expect(returnedDevice.currentAlarm).toBeDefined();
+      expect(returnedDevice.currentLampValue).toBeDefined();
+      expect(returnedDevice.identifyMode).toBe(false);
+      expect(returnedDevice.eventMode).toBe(false);
+      expect(returnedDevice.tacho).toBe(0);
+      expect(returnedDevice.currentAirVolume).toBe(0);
     });
 
     it('getDevice throws error if deviceID is not string', async () => {
@@ -470,7 +479,7 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const databaseAlarmStates = await database.getAlarmState(device.serialnumber);
+      await database.getAlarmState(device.serialnumber);
       const databaseDevice = await database.getDevice(device.serialnumber);
 
       for (let i = 1; i <= databaseDevice.currentAlarm.length; i += 1) {
@@ -1056,6 +1065,255 @@ describe('MongoDBAdapter Functions', () => {
       });
       const latestDuration = await database.getDurationOfAvailableData('1', 'tacho');
       expect(latestDuration).toBeUndefined();
+    });
+  });
+
+  describe('Group functions', () => {
+    beforeEach(async () => {
+      await database.clearCollection('uvcgroups');
+      await database.clearCollection('uvcdevices');
+    });
+
+    it('addGroup adds a group correct and returns the object', async () => {
+      const group = {
+        name: 'Test Group 1',
+      };
+
+      const addedGroup = await database.addGroup(group);
+      expect(addedGroup._id).toBeDefined();
+      expect(addedGroup.name).toBe(group.name);
+    });
+
+    it('addGroup throws an error if validation fails', async () => {
+      const device = {
+      };
+
+      await database.addGroup(device).catch((e) => {
+        expect(e.toString()).toBe('Error: Name must be defined.');
+      });
+    });
+
+    it('getGroup gets a group correct and returns the object', async () => {
+      const group = {
+        name: 'Test Group 1',
+      };
+
+      const docGroup = await database.addGroup(group);
+      const returnedGroup = await database.getGroup(`${docGroup._id}`);
+      expect(returnedGroup.name).toBe(group.name);
+      expect(returnedGroup.devices.length).toBe(0);
+    });
+
+    it('getGroup throws error if name is not string', async () => {
+      await database.getGroup(null).catch((err) => {
+        expect(err.toString()).toBe('Error: GroupID has to be a string');
+      });
+    });
+
+    it('getGroup throws error if group is not avalible', async () => {
+      await database.getGroup('602e5dde6a51ff41b0625057').catch((err) => {
+        expect(err.toString()).toBe('Error: Group does not exists');
+      });
+    });
+
+    it('getGroups gets all groups', async () => {
+      for (let i = 0; i < 10; i += 1) {
+        await database.addGroup(
+          {
+            name: `Test Group ${i + 1}`,
+          },
+        );
+      }
+
+      const dbData = await database.getGroups().catch((err) => {
+        console.error(err);
+      });
+
+      for (let i = 0; i < dbData.length; i += 1) {
+        expect(dbData[i].name).toBe(`Test Group ${i + 1}`);
+        expect(dbData[i].devices.length).toBe(0);
+      }
+    });
+
+    it('updateGroup updates a group correct and returns the object', async () => {
+      const docGroup = await database.addGroup({
+        name: 'Test Group 1',
+      });
+
+      const group = {
+        _id: `${docGroup._id}`,
+        name: 'Test Group 2',
+      };
+      const updatedGroup = await database.updateGroup(group);
+      expect(updatedGroup.name).toBe(group.name);
+    });
+
+    it('updateGroup throws error if group is not available', async () => {
+      const group = {
+        _id: '602e5dde6a51ff41b0625057',
+        name: 'Test Group 2',
+      };
+
+      await database.updateGroup(group).catch((err) => {
+        expect(err.toString()).toBe('Error: Group does not exists');
+      });
+    });
+
+    it('updateGroup throws an error if validation fails', async () => {
+      const group = {};
+
+      await database.updateGroup(group).catch((e) => {
+        expect(e.toString()).toBe('Error: _id must be defined.');
+      });
+    });
+
+    it('deleteGroup deletes a group', async () => {
+      const group = {
+        name: 'Test Group 1',
+      };
+
+      const docGroup = await database.addGroup(group);
+      group.id = `${docGroup._id}`;
+
+      await database.deleteGroup(group);
+      await database.getGroup(group.id).catch((err) => {
+        expect(err.toString()).toBe('Error: Group does not exists');
+      });
+    });
+
+    it('deleteGroup throws error if Group is not available', async () => {
+      await database.deleteGroup({ id: '602e5dde6a51ff41b0625057' }).catch((err) => {
+        expect(err.toString()).toBe('Error: Group does not exists');
+      });
+    });
+
+    it('addDeviceToGroup throws an error if devices does not exists', async () => {
+      await database.addDeviceToGroup('602e5dde6a51ff41b0625057', '602e5dde6a51ff41b0625057').catch((err) => {
+        expect(err.toString()).toBe('Error: Device does not exists');
+      });
+    });
+
+    it('addDeviceToGroup throws an error if group does not exists', async () => {
+      const device = await database.addDevice({
+        serialnumber: 'TestDevice1',
+        name: 'TestDevice',
+      });
+
+      await database.addDeviceToGroup(device._id, '000000000000000000000000').catch((err) => {
+        console.log(err);
+        expect(err.toString()).toBe('Error: Group does not exists');
+      });
+    });
+
+    it('addDeviceToGroup adds an device to the group', async () => {
+      const device = await database.addDevice({
+        serialnumber: 'TestDevice',
+        name: 'TestDevice',
+      });
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+      await database.addDeviceToGroup(device._id, `${group._id}`);
+      const docGroup = await database.getGroup(`${group._id}`);
+      expect(docGroup.devices.length).toBe(1);
+      expect(docGroup.devices[0]).toBe(device._id);
+    });
+
+    it('addDeviceToGroup adds an multiple devices to the group', async () => {
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      const devices = [];
+      for (let i = 0; i < 10; i += 1) {
+        devices.push({
+          serialnumber: `TestDevice${i}`,
+          name: `TestDevice ${i}`,
+        });
+        const docDevice = await database.addDevice(devices[i]);
+        await database.addDeviceToGroup(docDevice._id, `${group._id}`);
+      }
+
+      const docGroup = await database.getGroup(`${group._id}`);
+      expect(docGroup.devices.length).toBe(10);
+      for (let i = 0; i < 10; i += 1) {
+        expect(docGroup.devices[i]).toBe(devices[i].serialnumber);
+      }
+    });
+
+    it('addDeviceToGroup sets the group of that device', async () => {
+      const device = await database.addDevice({
+        serialnumber: 'TestDevice',
+        name: 'TestDevice',
+      });
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+      await database.addDeviceToGroup(device._id, `${group._id}`);
+      const docDevice = await database.getDevice(device._id);
+      expect(docDevice.group).toBe(`${group._id}`);
+    });
+
+    it('addDeviceToGroup sets the group of multiple devices', async () => {
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      const devices = [];
+      for (let i = 0; i < 10; i += 1) {
+        devices.push({
+          serialnumber: `TestDevice${i}`,
+          name: `TestDevice ${i}`,
+        });
+        const docDevice = await database.addDevice(devices[i]);
+        await database.addDeviceToGroup(docDevice._id, `${group._id}`);
+      }
+
+      const docDevices = await database.getDevices();
+      expect(docDevices.length).toBe(10);
+      for (let i = 0; i < 10; i += 1) {
+        expect(docDevices[i].group).toBe(`${group._id}`);
+      }
+    });
+
+    it('deleteDeviceFromGroup deletes an device from the group', async () => {
+      const device = await database.addDevice({
+        serialnumber: 'TestDevice',
+        name: 'TestDevice',
+      });
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+      await database.addDeviceToGroup(device._id, `${group._id}`);
+      await database.deleteDeviceFromGroup(device._id, `${group._id}`);
+      const docGroup = await database.getGroup(`${group._id}`);
+      expect(docGroup.devices.length).toBe(0);
+    });
+
+    it('deleteDeviceFromGroup deletes an multiple devices from the group', async () => {
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      const devices = [];
+      for (let i = 0; i < 10; i += 1) {
+        devices.push({
+          serialnumber: `TestDevice${i}`,
+          name: `TestDevice ${i}`,
+        });
+        const docDevice = await database.addDevice(devices[i]);
+        await database.addDeviceToGroup(docDevice._id, `${group._id}`);
+      }
+
+      await database.deleteDeviceFromGroup('TestDevice5', `${group._id}`);
+      await database.deleteDeviceFromGroup('TestDevice6', `${group._id}`);
+
+      const docGroup = await database.getGroup(`${group._id}`);
+      expect(docGroup.devices.length).toBe(8);
+      for (let i = 0; i < 10; i += 1) {
+        if (i === 5 || i === 6) return;
+        expect(docGroup.devices[i]).toBe(devices[i].serialnumber);
+      }
     });
   });
 });

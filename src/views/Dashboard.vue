@@ -3,14 +3,17 @@
     <Sidebar
       class="w-1/6"
       @showDevices="showDevices"
-      @showGroups="currentView = 'UVCGroupList'"
-      @deviceAdd="deviceAdd($event)">
+      @showGroups="showGroups">
     </Sidebar>
     <router-view
       class="w-5/6 h-full"
+      @deviceAdd="deviceAdd($event)"
       @changeState="changeState($event)"
-      @deviceUpdate="deviceUpdate($event)"
-      @deviceDelete="deviceDelete($event)">
+      @deviceUpdate="changeState($event)"
+      @deviceDelete="deviceDelete($event)"
+      @groupAdd="groupAdd($event)"
+      @groupUpdate="groupChangeState($event)"
+      @groupDelete="groupDelete($event)">
     </router-view>
     <!-- <component v-bind:is="currentViewComponent"
       class="flex-grow"
@@ -40,17 +43,26 @@ export default {
     showDevices() {
       this.$router.push({ name: 'devices' });
     },
+    showGroups() {
+      this.$router.push({ name: 'groups' });
+    },
     changeState(newState) {
       this.$root.$data.socket.emit('device_changeState', newState);
     },
     deviceAdd(device) {
       this.$root.$data.socket.emit('device_add', device);
     },
-    deviceUpdate(device) {
-      this.$root.$data.socket.emit('device_update', device);
-    },
     deviceDelete(serialnumber) {
       this.$root.$data.socket.emit('device_delete', { serialnumber });
+    },
+    groupAdd(name) {
+      this.$root.$data.socket.emit('group_add', name);
+    },
+    groupDelete(id) {
+      this.$root.$data.socket.emit('group_delete', { id });
+    },
+    groupChangeState(newState) {
+      this.$root.$data.socket.emit('group_changeState', newState);
     },
   },
   created() {
@@ -58,7 +70,7 @@ export default {
   },
   data() {
     return {
-      currentView: 'UVCDeviceList',
+      prop_showAddForm: false,
     };
   },
 };

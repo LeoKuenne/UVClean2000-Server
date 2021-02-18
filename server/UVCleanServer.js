@@ -41,6 +41,12 @@ class UVCleanServer extends EventEmitter {
       res.json(db);
     });
 
+    this.app.get('/groups', async (req, res) => {
+      const db = await this.database.getGroups();
+
+      res.json(db);
+    });
+
     this.app.get('/serialnumbers', async (req, res) => {
       const db = await this.database.getSerialnumbers();
 

@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable max-classes-per-file */
 const { EventEmitter } = require('events');
-const deviceStateChanged = require('../../../server/controlModules/Event/DeviceStateChangedModul');
+const deviceStateChanged = require('../../../server/controlModules/Event/DeviceStateChangedModule');
 
 it('Test wether the deviceChangeState has alle required methods', () => {
   expect(Object.keys(deviceStateChanged).length).toBe(8);
@@ -82,7 +82,7 @@ describe('MQTT Section', () => {
     });
 
     deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/changeState/engineState', false);
+    mqttClient.emit('message', 'UVClean/1/stateChanged/engineState', false);
   });
 
   it('MQTT Module sends deviceStateChanged to eventemitter - alarm', (done) => {
@@ -105,7 +105,7 @@ describe('MQTT Section', () => {
     });
 
     deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/changeState/alarm/1', 'Alarm');
+    mqttClient.emit('message', 'UVClean/1/stateChanged/alarm/1', 'Alarm');
   });
 
   it('MQTT Module sends deviceStateChanged to eventemitter - airVolume', (done) => {
@@ -127,7 +127,7 @@ describe('MQTT Section', () => {
     });
 
     deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/changeState/airVolume', 100);
+    mqttClient.emit('message', 'UVClean/1/stateChanged/airVolume', 100);
   });
 
   it('MQTT Module sends deviceStateChanged to eventemitter - tacho', (done) => {
@@ -149,7 +149,7 @@ describe('MQTT Section', () => {
     });
 
     deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/changeState/tacho', 100);
+    mqttClient.emit('message', 'UVClean/1/stateChanged/tacho', 100);
   });
 
   it('MQTT Module gets removed with removeMQTTClientModule', () => {

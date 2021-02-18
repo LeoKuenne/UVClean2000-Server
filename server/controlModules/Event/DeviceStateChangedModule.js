@@ -17,37 +17,53 @@ function mqtt(eventemitter, mqttClient) {
   mqttClient.on('message', (topic, message) => {
     console.log(`Got MQTT message at topic ${topic} with message ${message}`);
     const topicArray = topic.split('/');
-    const newState = {
-      serialnumber: `${topicArray[1]}`,
-      prop: `${topicArray[3]}`,
-    };
+    const event = topicArray[2];
 
-    switch (newState.prop) {
-      case 'airVolume':
-        newState.prop = 'currentAirVolume';
+    let newState = {};
+    let parsed = null;
+
+    switch (event) {
+      case 'stateChanged':
+
+        newState = {
+          serialnumber: `${topicArray[1]}`,
+          prop: `${topicArray[3]}`,
+        };
+
+        switch (newState.prop) {
+          case 'name':
+            newState.prop = 'name';
+            break;
+          case 'airVolume':
+            newState.prop = 'currentAirVolume';
+            break;
+          case 'lamp':
+            newState.prop = 'currentLampValue';
+            break;
+          case 'alarm':
+            newState.prop = 'currentAlarm';
+            break;
+          default:
+            break;
+        }
+
+        parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
+
+        if (typeof parsed === 'object') {
+          if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
+            newState.lamp = parsed.lamp;
+            newState.newValue = parsed.value;
+          }
+        } else {
+          newState.newValue = parsed;
+        }
+
+        eventemitter.emit('deviceStateChanged', newState);
         break;
-      case 'lamp':
-        newState.prop = 'currentLampValue';
-        break;
-      case 'alarm':
-        newState.prop = 'currentAlarm';
-        break;
+
       default:
         break;
     }
-
-    const parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
-
-    if (typeof parsed === 'object') {
-      if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
-        newState.lamp = parsed.lamp;
-        newState.newValue = parsed.value;
-      }
-    } else {
-      newState.newValue = parsed;
-    }
-
-    eventemitter.emit('deviceStateChanged', newState);
   });
 }
 
@@ -64,7 +80,7 @@ function database(eventemitter, db) {
     let device = {};
 
     switch (newState.prop) {
-      case 'currentAlarm':
+      case 'alarm':
         db.setAlarmState({
           device: newState.serialnumber,
           lamp: newState.lamp,

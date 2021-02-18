@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 const { EventEmitter } = require('events');
-const deviceAddedModule = require('../../../server/controlModules/Event/DeviceAddedModul');
+const deviceAddedModule = require('../../../server/controlModules/Event/DeviceAddedModule');
 
 it('Test wether the deviceAddedModule has alle required methods', () => {
   expect(Object.keys(deviceAddedModule).length).toBe(8);

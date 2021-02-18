@@ -10,6 +10,7 @@ const deviceData = {
   identifyMode: false,
   eventMode: false,
   airVolume: 200,
+  group: null,
 };
 
 describe('UVCDevice Model Test', () => {
@@ -38,6 +39,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice._id).toBeDefined();
     expect(savedUVCDevice._id).toBe(deviceData._id);
     expect(savedUVCDevice.name).toBe(deviceData.name);
+    expect(savedUVCDevice.group).toBe(null);
     expect(savedUVCDevice.engineState).toBe(deviceData.engineState);
     expect(savedUVCDevice.engineLevel).toBe(deviceData.engineLevel);
     expect(savedUVCDevice.currentAlarm).toBeDefined();

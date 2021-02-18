@@ -33,14 +33,26 @@ new Vue({
         console.log(this.$dataStore);
       });
 
+    fetch('http://localhost:3000/groups').then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        this.$dataStore.groups = data;
+        console.log(this.$dataStore);
+      });
+
+    // Debug any messages that are coming from the backend
+    socket.onAny((event, ...args) => {
+      console.debug(`Debug: Event - ${event}`, args);
+    });
+
     socket.on('device_added', (device) => {
       console.log('Event: device_added', device);
       this.$dataStore.devices.push(device);
     });
 
-    // Debug any messages that are coming from the backend
-    socket.onAny((event, ...args) => {
-      console.debug(`Debug: Event - ${event}`, args);
+    socket.on('group_added', (group) => {
+      console.log('Event: group_added', group);
+      this.$dataStore.groups.push(group);
     });
 
     socket.on('device_stateChanged', (props) => {
@@ -51,6 +63,9 @@ new Vue({
           const dev = device;
           let propertie = '';
           switch (props.prop) {
+            case 'name':
+              dev.name = `${props.newValue}`;
+              break;
             case 'engineState':
             case 'eventMode':
             case 'identifyMode':
@@ -84,6 +99,27 @@ new Vue({
       console.log('Device that changed:', d);
     });
 
+    socket.on('group_stateChanged', (props) => {
+      console.log('Event: group_stateChanged', props);
+
+      const g = this.$dataStore.groups.filter((group) => {
+        if (group.id === props.id) {
+          const dev = group;
+          switch (props.prop) {
+            case 'name':
+              dev.name = `${props.newValue}`;
+              break;
+            default:
+              console.log(`Can not parse stateChanged message with prop ${props.prop}`);
+              break;
+          }
+          return dev;
+        }
+        return false;
+      });
+      console.log('Group that changed:', g);
+    });
+
     socket.on('device_updated', (device) => {
       console.log('Event: device_updated', device);
       const dev = this.dataDevices.filter((d) => device.serialnumber === d.serialnumber)[0];
@@ -97,6 +133,17 @@ new Vue({
         for (let i = 0; i < this.$dataStore.devices.length; i += 1) {
           if (serialnumber === this.$dataStore.devices[i].serialnumber) {
             this.$dataStore.devices.splice(i, 1);
+          }
+        }
+      }
+    });
+
+    socket.on('group_deleted', (group) => {
+      console.log('Event: group_deleted', group);
+      if (group.id !== undefined) {
+        for (let i = 0; i < this.$dataStore.groups.length; i += 1) {
+          if (group.id === this.$dataStore.groups[i].id) {
+            this.$dataStore.groups.splice(i, 1);
           }
         }
       }

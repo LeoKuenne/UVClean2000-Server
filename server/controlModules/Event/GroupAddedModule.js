@@ -1,45 +1,46 @@
 function socketIO(eventemitter, ioSocket, ioServer) {
   console.log(`${module.exports.name} registering socketIO module`);
-  ioSocket.on('device_update', async (device) => {
-    console.log('Event: device_update:', device);
-    const newDevice = {
-      serialnumber: device.serialnumber,
-      propertie: 'name',
-      newValue: device.name,
-    };
 
-    eventemitter.emit('deviceUpdate', newDevice);
+  eventemitter.on('groupAdded', (group) => {
+    console.log(`Sending group_added to socket ${ioSocket.id}`, group);
+    ioSocket.emit('group_added', group);
   });
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
   console.log(`${module.exports.name} removing socketIO module`);
+  eventemitter.removeAllListeners('groupAdded');
 }
 
 function mqtt(eventemitter, mqttClient) {
   console.log(`${module.exports.name} registering mqtt module`);
-  eventemitter.on('deviceUpdate', (device) => {
-    mqttClient.publish(`UVClean/${device.serialnumber}/change_state/${device.propertie}`, `${device.newValue}`, (err) => {
-      if (err) console.error(err);
-    });
-  });
 }
 
-function database(eventemitter, database) {
+function removeMQTT(eventemitter, ioSocket, ioServer) {
+  console.log(`${module.exports.name} removing mqtt module`);
+}
+
+function database(eventemitter, db) {
   console.log(`${module.exports.name} registering database module`);
+}
+
+function removeDatabase(eventemitter, db) {
+  console.log(`${module.exports.name} removing database module`);
 }
 
 function registerModules(eventemitter, ioSocket, ioServer, mqttClient, databaseAdapter) {
   socketIO(eventemitter, ioSocket, ioServer);
-  mqtt(eventemitter, mqttClient);
-  database(eventemitter, databaseAdapter);
+  mqttClient(eventemitter, mqttClient);
+  databaseAdapter(eventemitter, databaseAdapter);
 }
 
 module.exports = {
-  name: 'Command - UpdateDevice',
+  name: 'Event - groupAdded',
   registerModules,
   socketIOModule: socketIO,
   mqttClientModule: mqtt,
   databaseModule: database,
   removeSocketIOModule: removeSocketIO,
+  removeMQTTClientModule: removeMQTT,
+  removeDatabaseModule: removeDatabase,
 };

@@ -1,6 +1,20 @@
 <template>
   <div class="p-5 overflow-auto" id="devices">
-    <h2 class="p-5 text-lg font-bold">Devices</h2>
+    <div class="absolute p-2 items-center">
+      <h2 class="text-lg font-bold">Devices</h2>
+      <button
+        @click="showAddForm"
+        class="w-full text-left text-primary hover:text-gray-600 hover:transform hover:scale-105
+          hover:font-semibold transition-all inline-flex items-center bg-white shadow p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 mx-2" viewBox="0 0 16 16">
+          <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2
+            0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1
+            0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        Add UVClean Device
+      </button>
+    </div>
     <div class="flex flex-row flex-wrap content-center justify-center">
         <UVCDevice
           @edit="editDevice($event)"
@@ -12,49 +26,64 @@
         </UVCDevice>
     </div>
     <div
-      v-show="prop_showEditForm"
+      v-show="showEditForm"
       class="fixed top-0 left-0 h-full w-full
       bg-black bg-opacity-50 flex justify-center items-center"
       >
-      <FormAddUVCDevice
-        @close="prop_showEditForm = false"
+      <FormUVCDevice
+        @close="showEditForm = false"
         @update="updateDevice($event)"
         @delete="deleteDevice($event)"
-        :editDevice="prop_editDevice"
-        :isEdit="true"
+        @add="addDevice($event)"
+        :editDevice="formDevice"
+        :isEdit="isFormEdit"
         class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
-        </FormAddUVCDevice>
+        </FormUVCDevice>
     </div>
   </div>
 </template>
 <script>
 import UVCDevice from './UVCDevice.vue';
-import FormAddUVCDevice from './FormAddUVCDevice.vue';
+import FormUVCDevice from './FormUVCDevice.vue';
 
 export default {
   name: 'UVCDeviceList',
   components: {
     UVCDevice,
-    FormAddUVCDevice,
+    FormUVCDevice,
   },
   methods: {
+    showAddForm() {
+      this.formDevice = {
+        name: '',
+        serialnumber: '',
+      };
+      this.isFormEdit = false;
+      this.showEditForm = true;
+    },
+    addDevice(device) {
+      this.$emit('deviceAdd', device);
+      this.showEditForm = false;
+    },
     editDevice(device) {
-      this.prop_editDevice = device;
-      this.prop_showEditForm = true;
+      this.formDevice = device;
+      this.isFormEdit = true;
+      this.showEditForm = true;
     },
     updateDevice(device) {
-      this.$emit('deviceUpdate', device);
-      this.prop_showEditForm = false;
+      this.$emit('deviceUpdate', { serialnumber: device.serialnumber, prop: 'name', newValue: device.name });
+      this.showEditForm = false;
     },
     deleteDevice(serialnumber) {
       this.$emit('deviceDelete', serialnumber);
-      this.prop_showEditForm = false;
+      this.showEditForm = false;
     },
   },
   data() {
     return {
-      prop_showEditForm: false,
-      prop_editDevice: {
+      showEditForm: false,
+      isFormEdit: false,
+      formDevice: {
         name: '',
         serialnumber: '',
       },

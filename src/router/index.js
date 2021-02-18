@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import DashboardComponent from '../views/Dashboard.vue';
 import ChartComponent from '../views/ChartWrapper.vue';
 import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
+import UVCGroupList from '../components/dashboard/UVCGroupList.vue';
 
 Vue.use(VueRouter);
 
@@ -16,6 +17,11 @@ const routes = [
         name: 'devices',
         path: 'devices',
         component: UVCDeviceList,
+      },
+      {
+        name: 'groups',
+        path: 'groups',
+        component: UVCGroupList,
       },
     ],
     // meta: {
