@@ -34,7 +34,8 @@
           <select name="device"
             id="device"
             class="text-black w-full p-2 rounded border border-primary"
-            v-model="selectedDevice">
+            v-model="selectedDevice"
+            @change="showPropertie = true">
             <option v-for="device in devices"
               :key="device"
               v-bind:value="device">
@@ -42,7 +43,7 @@
             </option>
           </select>
         </div>
-        <div>
+        <div :class="[showPropertie ? 'visible' : 'invisible' ] ">
           <label for="propertie">Choose the propertie:</label>
           <select name="propertie"
             id="propertie"
@@ -54,7 +55,7 @@
             <option value="tacho">Tachos</option>
           </select>
         </div>
-        <div v-show="showDatepicker">
+        <div :class="[showDatepicker ? 'visible' : 'invisible' ] ">
           <label for="dateFrom">Choose the start date:</label>
           <div class="text-black w-full pb-5">
             <datetime id="dateFrom"
@@ -76,7 +77,7 @@
             </datetime>
           </div>
           <button
-            v-if="canRefresh"
+            :class="[canRefresh ? 'visible' : 'invisible' ] "
             class="text-primary w-full text-center font-bold pt-5 hover:transform hover:scale-105
               transition-all"
             @click="refreshChart">
@@ -109,7 +110,8 @@ export default {
   data() {
     return {
       loaded: true,
-      showDatepicker: true,
+      showPropertie: false,
+      showDatepicker: false,
       showSettingPanel: true,
       selectedDevice: this.device,
       selectedPropertie: '',
@@ -312,6 +314,7 @@ export default {
 
           this.selectedDateFrom = data.from;
           this.selectedDateTo = data.to;
+          this.showDatepicker = true;
         });
     },
   },
