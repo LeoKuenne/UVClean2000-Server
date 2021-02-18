@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import DashboardComponent from '../views/Dashboard.vue';
 import ChartComponent from '../views/ChartWrapper.vue';
-// import UVCDevice from '../components/dashboard/UVCDevice.vue';
+import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
 
 Vue.use(VueRouter);
 
@@ -11,12 +11,13 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: DashboardComponent,
-    // children: [
-    //   {
-    //     path: 'device',
-    //     component: UVCDevice,
-    //   },
-    // ],
+    children: [
+      {
+        name: 'devices',
+        path: 'devices',
+        component: UVCDeviceList,
+      },
+    ],
     // meta: {
     //   requiresAuth: true,
     // },

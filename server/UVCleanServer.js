@@ -4,7 +4,6 @@ const cors = require('cors');
 const socketio = require('socket.io');
 const mqtt = require('mqtt');
 const EventEmitter = require('events');
-const history = require('connect-history-api-fallback');
 const MongooseError = require('mongoose').Error;
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
 const controlModules = require('./controlModules/ControlModules').modules;

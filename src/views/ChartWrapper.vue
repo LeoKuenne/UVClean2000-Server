@@ -1,58 +1,94 @@
 <template>
-  <div class="flex flex-row w-screen h-screen">
-    <div class="flex flex-col p-5 primary-color text-white space-y-5">
-      <h1 class="font-bold text-lg">Datavisualization</h1>
-      <div class="w-full">
-        <span>Choose the device:</span>
-        <select name="device"
-          id="device"
-          class="text-black w-full p-2 rounded"
-          v-model="selectedDevice">
-          <option v-for="device in devices"
-            :key="device"
-            v-bind:value="device">
-            {{ device }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <span>Choose the propertie:</span>
-        <select name="propertie"
-          id="propertie"
-          class="text-black w-full p-2 rounded"
-          v-model="selectedPropertie"
-          @change="getDateDuration">
-          <option value="airVolume">Air Volume</option>
-        </select>
-      </div>
-      <div v-show="showDatepicker">
-        <span>Choose the start date:</span>
-        <datetime v-model="selectedDateFrom"
-          :min-datetime="disabledDates.from"
-          :max-datetime="selectedDateTo"
-          :type="'datetime'"
-          class="text-black w-full">
-        </datetime>
-        <span>Choose the end date:</span>
-        <datetime v-model="selectedDateTo"
-          :min-datetime="selectedDateFrom"
-          :max-datetime="disabledDates.to"
-          :type="'datetime'"
-          class="text-black w-full">
-        </datetime>
-        <button
-          class="w-full mx-0 rounded border text-center border-white font-normal bg-transparent"
-          v-if="canRefresh"
-          @click="refreshChart">
-          Refresh
-        </button>
+  <div class="relativ">
+    <div class="absolute right-0">
+      <button
+        class="bg-primary p-2 text-white m-2"
+        @click="showSettingPanel = true">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-5 w-5" viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+          d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5
+          2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1
+          4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0
+          0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
+        </svg>
+      </button>
+    </div>
+    <div v-if="showSettingPanel"
+      class="fixed top-0 left-0 h-screen w-screen
+      bg-black bg-opacity-50 flex justify-center items-center">
+      <div class="absolute flex flex-col p-5 bg-secondary space-y-5">
+        <div class="flex justify-between items-center">
+          <h1 class="font-bold text-xl">Datavisualization</h1>
+          <button class="bg-transparent hover:bg-transparent p-0 m-0"
+            @click="showSettingPanel = false">
+            <svg
+              xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6 text-black" viewBox="0 0 16 16">
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1
+                .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646
+                2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="w-full">
+          <label for="device">Choose the device:</label>
+          <select name="device"
+            id="device"
+            class="text-black w-full p-2 rounded border border-primary"
+            v-model="selectedDevice">
+            <option v-for="device in devices"
+              :key="device"
+              v-bind:value="device">
+              {{ device }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label for="propertie">Choose the propertie:</label>
+          <select name="propertie"
+            id="propertie"
+            class="text-black w-full p-2 rounded border border-primary"
+            v-model="selectedPropertie"
+            @change="getDateDuration">
+            <option value="airVolume">Air Volume</option>
+          </select>
+        </div>
+        <div v-show="showDatepicker">
+          <label for="dateFrom">Choose the start date:</label>
+          <div class="text-black w-full pb-5">
+            <datetime id="dateFrom"
+              v-model="selectedDateFrom"
+              :min-datetime="disabledDates.from"
+              :max-datetime="selectedDateTo"
+              :type="'datetime'"
+              class="border border-primary">
+            </datetime>
+          </div>
+          <label for="dateTo">Choose the end date:</label>
+          <div class="text-black w-full">
+            <datetime id="dateTo"
+              v-model="selectedDateTo"
+              :min-datetime="selectedDateFrom"
+              :max-datetime="disabledDates.to"
+              :type="'datetime'"
+              class="border border-primary">
+            </datetime>
+          </div>
+          <button
+            v-if="canRefresh"
+            class="text-primary w-full text-center font-bold pt-5 hover:transform hover:scale-105
+              transition-all"
+            @click="refreshChart">
+            Refresh
+          </button>
+        </div>
       </div>
     </div>
-    <div class="flex flex-grow w-full">
+    <div class="h-full w-full">
       <chart v-if="loaded"
       :chart-data="datacollection"
       :options="options"
-      class="w-full p-10"></chart>
+      :style="chartStyles"
+      class="p-16"></chart>
     </div>
   </div>
 </template>
@@ -72,6 +108,7 @@ export default {
     return {
       loaded: true,
       showDatepicker: true,
+      showSettingPanel: true,
       selectedDevice: this.device,
       selectedPropertie: '',
       selectedDateFrom: '',
@@ -112,6 +149,15 @@ export default {
       },
     };
   },
+  computed: {
+    chartStyles() {
+      return {
+        height: '100%',
+        width: '100%',
+        position: 'relativ',
+      };
+    },
+  },
   async created() {
     await this.fetchData();
   },
@@ -129,6 +175,9 @@ export default {
     },
   },
   methods: {
+    outsideSettingPanelClicked() {
+      this.showSettingPanel = false;
+    },
     async fetchData() {
       await this.getDevices();
 
@@ -138,6 +187,7 @@ export default {
       if (this.to === undefined) return;
 
       this.loaded = false;
+      this.showSettingPanel = false;
 
       let data = null;
       this.selectedDevice = this.device;

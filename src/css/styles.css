@@ -1,34 +1,49 @@
 @tailwind base;
 
-button {
-  background-color: #00666F;
-  transition: 0.2s;
-  @apply font-bold p-2 m-2 text-white;
+@layer base {
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    font-display: auto;
+    src: url("../assets/font/Inter\ Web/Inter-Regular.woff2?v=3.15") format("woff2"),
+         url("../assets/font/Inter\ Web/Inter-Regular.woff?v=3.15") format("woff");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 400;
+    font-display: auto;
+    src: url("../assets/font/Inter\ Web/Inter-Italic.woff2?v=3.15") format("woff2"),
+         url("../assets/font/Inter\ Web/Inter-Italic.woff?v=3.15") format("woff");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 700;
+    font-display: auto;
+    src: url("../assets/font/Inter\ Web/Inter-Bold.woff2?v=3.15") format("woff2"),
+         url("../assets/font/Inter\ Web/Inter-Bold.woff?v=3.15") format("woff");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 700;
+    font-display: auto;
+    src: url("../assets/font/Inter\ Web/Inter-BoldItalic.woff2?v=3.15") format("woff2"),
+         url("../assets/font/Inter\ Web/Inter-BoldItalic.woff?v=3.15") format("woff");
+  }
+}
+
+* {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
 button:focus {
   outline: none;
-}
-
-button:hover {
-  transform: scale(1.02);
-  background-color: #00737e;
-}
-
-.border-primary-color {
-  border-color: #00666F;
-}
-
-.primary-color {
-  background-color: #00666F;
-}
-
-.background-color {
-  background-color: #f1f1f1 !important;
-}
-
-.text-color {
-  color: #666B6E !important;
 }
 
 @tailwind components;

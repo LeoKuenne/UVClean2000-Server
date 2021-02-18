@@ -3,7 +3,7 @@
       @click="dropdownMenuClicked"
       v-click-outside="dropdownOutsideClicked">
     <button
-      class="w-6 h-6 bg-transparent p-0 m-0 hover:bg-transparent">
+      class="w-6 h-6 hover:transform hover:scale-105 transition-all">
       <svg v-show="!showDropdown"
         xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6 text-white" viewBox="0 0 16 16">
         <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3
@@ -19,7 +19,7 @@
     <div class="relative">
       <div
         v-if="showDropdown"
-        class="absolute right-0 bg-white rounded overflow-hidden text-black shadow
+        class="absolute right-0 bg-white rounded overflow-hidden shadow
           whitespace-nowrap text-right">
         <div v-for="item in menuItems"
           :key="item"

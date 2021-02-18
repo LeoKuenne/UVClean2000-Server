@@ -1,12 +1,13 @@
 <template>
-  <div class="rounded-lg overflow-hidden m-5 w-80 border-primary-color border">
-    <div class="primary-color p-2 items-center text-white">
+  <div class="m-5 w-80 border-primary border">
+    <div class="bg-primary p-2 items-center text-white">
       <div class="flex flex-row justify-between items-center">
         <div>
           <h3 class="text-md font-bold">{{device.name}}</h3>
           <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
         </div>
         <dropdownMenu
+          class="text-primary"
           :menuItems="[ 'Edit', 'View chart' ]"
           @itemClicked="menuItemClicked($event)">
         </dropdownMenu>
@@ -15,6 +16,7 @@
     <div class="p-2 grid grid-cols-2 space-y-2 items-center">
       <label for="b_device_state">Devie State</label>
       <button id="b_device_state"
+        class="p-2 text-white hover:transform hover:scale-105 transition-all"
         v-bind:class="{ 'bg-green-500': device.engineState, 'bg-red-500': !device.engineState }"
         @click="$emit('changeState', {
           serialnumber: device.serialnumber,
@@ -23,9 +25,9 @@
         })">
         {{state}}
       </button>
-
       <label for="b_eventmode">Eventmode</label>
       <button id="b_eventmode"
+        class="p-2 text-white hover:transform hover:scale-105 transition-all"
         v-bind:class="{ 'bg-green-500': device.eventMode, 'bg-red-500': !device.eventMode }"
         @click="$emit('changeState', {
           serialnumber: device.serialnumber,
@@ -37,6 +39,7 @@
 
       <label for="b_identify">Identify</label>
       <button id="b_identify"
+        class="p-2 text-white hover:transform hover:scale-105 transition-all"
         v-bind:class="{ 'bg-green-500': device.identifyMode, 'bg-red-500': !device.identifyMode }"
         @click="$emit('changeState', {
           serialnumber: device.serialnumber,
@@ -75,7 +78,8 @@
           <div class="flex justify-between">
             <span class="font-semibold">Alarm states</span>
             <button
-              class="bg-transparent text-color hover:bg-transparent py-0 m-0"
+              class="bg-transparent text-color hover:bg-transparent py-0 m-0 hover:transform
+                hover:scale-105 transition-all"
               @click="showAlarmStates = !showAlarmStates">
               <svg v-if="!showAlarmStates"
                 xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
@@ -104,18 +108,21 @@
               </svg>
             </button>
           </div>
-          <div v-if="showAlarmStates" class="col-span-2 grid grid-cols-4">
-            <div class="w-20" v-for="(alarm, lamp) in device.currentAlarm" :key="lamp">
-              {{alarm.lamp}}: {{alarm.state}}
+          <transition name="slide">
+            <div v-if="showAlarmStates" class="col-span-2 grid grid-cols-4">
+              <div class="w-20" v-for="(alarm, lamp) in device.currentAlarm" :key="lamp">
+                {{alarm.lamp}}: {{alarm.state}}
+              </div>
             </div>
-          </div>
+          </transition>
         </div>
 
         <div class="col-span-2">
           <div class="flex justify-between">
             <span class="font-semibold">Lamp values</span>
             <button
-              class="bg-transparent text-color hover:bg-transparent py-0 m-0"
+              class="bg-transparent text-color hover:bg-transparent py-0 m-0 hover:transform
+                hover:scale-105 transition-all"
               @click="showLampValues = !showLampValues">
               <svg v-if="!showLampValues"
                 xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
@@ -144,16 +151,21 @@
               </svg>
             </button>
           </div>
-          <div v-if="showLampValues" class="col-span-2  grid grid-cols-4">
-            <div class="w-16" v-for="(lampValue, lamp) in device.currentLampValue" :key="lamp">
-              {{lampValue.lamp}}: {{lampValue.value}} V,
+          <transition name="slide">
+            <div v-if="showLampValues" class="col-span-2  grid grid-cols-4">
+              <div class="w-16" v-for="(lampValue, lamp) in device.currentLampValue" :key="lamp">
+                {{lampValue.lamp}}: {{lampValue.value}} V,
+              </div>
             </div>
-          </div>
+          </transition>
         </div>
       </div>
 
       <span>Reset Device</span>
-      <button>Reset</button>
+      <button class="bg-red-500 p-2 font-semibold text-white hover:transform hover:scale-105
+        transition-all">
+        Reset
+      </button>
     </div>
   </div>
 </template>
@@ -214,3 +226,21 @@ export default {
   },
 };
 </script>
+
+<style>
+.slide-enter-active,
+.slide-leave-active {
+  @apply duration-200;
+  @apply ease-in-out;
+}
+
+.slide-enter-to, .slide-leave {
+   max-height: 100px;
+   overflow: hidden;
+}
+
+.slide-enter, .slide-leave-to {
+   overflow: hidden;
+   max-height: 0;
+}
+</style>

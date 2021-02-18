@@ -1,30 +1,30 @@
 <template>
-  <div class="p-5" id="devices">
-      <h2 class="p-5 text-lg font-bold">Devices</h2>
-      <div class="flex flex-row flex-wrap content-center justify-center">
-          <UVCDevice
-            @edit="editDevice($event)"
-            v-on="$listeners"
-            v-for="device in $dataStore.devices"
-            :key="device.serialnumber"
-            :device="device"
-            class="shadow-lg">
-          </UVCDevice>
-      </div>
-      <div
-        v-show="prop_showEditForm"
-        class="fixed top-0 left-0 h-full w-full
-        bg-black bg-opacity-50 flex justify-center items-center"
-        >
-        <FormAddUVCDevice
-          @close="prop_showEditForm = false"
-          @update="updateDevice($event)"
-          @delete="deleteDevice($event)"
-          :editDevice="prop_editDevice"
-          :isEdit="true"
-          class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
-          </FormAddUVCDevice>
-      </div>
+  <div class="p-5 overflow-auto" id="devices">
+    <h2 class="p-5 text-lg font-bold">Devices</h2>
+    <div class="flex flex-row flex-wrap content-center justify-center">
+        <UVCDevice
+          @edit="editDevice($event)"
+          v-on="$listeners"
+          v-for="device in $dataStore.devices"
+          :key="device.serialnumber"
+          :device="device"
+          class="shadow-lg">
+        </UVCDevice>
+    </div>
+    <div
+      v-show="prop_showEditForm"
+      class="fixed top-0 left-0 h-full w-full
+      bg-black bg-opacity-50 flex justify-center items-center"
+      >
+      <FormAddUVCDevice
+        @close="prop_showEditForm = false"
+        @update="updateDevice($event)"
+        @delete="deleteDevice($event)"
+        :editDevice="prop_editDevice"
+        :isEdit="true"
+        class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
+        </FormAddUVCDevice>
+    </div>
   </div>
 </template>
 <script>

@@ -17,13 +17,13 @@
       placeholder="123456789"
       class="rounded p-2 border-2 border-gray-500 mb-4">
     <div class="">
-        <button class="m-0 float-left"
+        <button class="float-left font-semibold hover:transform hover:scale-105 transition-all"
           v-show="isEdit"
           v-on:click="$emit('delete', editDevice.serialnumber)">
           Delete
         </button>
-        <div class="float-right">
-            <button class="m-0 mr-2"
+        <div class="float-right space-x-2">
+            <button class="font-semibold hover:transform hover:scale-105 transition-all"
               v-on:click="$emit(isEdit ? 'update' : 'add', {
                 serialnumber: (device.serialnumber === '') ?
                   editDevice.serialnumber : device.serialnumber,
@@ -31,7 +31,10 @@
               })">
               {{okProp}}
             </button>
-            <button class="m-0" v-on:click="$emit('close')">Close</button>
+            <button class="font-semibold hover:transform hover:scale-105 transition-all"
+              v-on:click="$emit('close')">
+              Close
+            </button>
         </div>
     </div>
   </div>
