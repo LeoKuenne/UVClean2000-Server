@@ -247,6 +247,8 @@ module.exports = class MongoDBAdapter {
   /**
    * Gets all AirVolume documents that match the deviceID
    * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {Date} fromDate The Date after the documents should be selected
+   * @param {Date} toDate The Date before the documents should be selected
    * @returns {Array} Returns an array of AirVolumes that match the deviceID
    */
   async getAirVolume(deviceID, fromDate, toDate) {
@@ -329,13 +331,23 @@ module.exports = class MongoDBAdapter {
    * Gets all LampValues documents that match the deviceID
    * @param {String} deviceID The device ID respectively serialnumber of that device
    * @param {Number} [lampID] The Lamp of which values should be get
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
    * @returns {Array} Returns an array of LampValues that match the deviceID
    */
-  async getLampValues(deviceID, lampID) {
-    if (lampID !== undefined) {
-      return LampValueModel.find({ device: deviceID, lamp: lampID }, 'device lamp value date').exec();
+  async getLampValues(deviceID, lampID, fromDate, toDate) {
+    const query = LampValueModel.find({ device: deviceID }, 'device lamp value date');
+    if (lampID !== undefined && typeof lampID === 'string') {
+      query.where('lamp', lampID);
     }
-    return LampValueModel.find({ device: deviceID }, 'device lamp value date').exec();
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
   }
 
   /**
@@ -370,9 +382,19 @@ module.exports = class MongoDBAdapter {
   /**
    * Gets all Tacho documents of that device
    * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
    */
-  async getTachos(deviceID) {
-    return TachoModel.find({ device: deviceID }, '-_id device tacho date').exec();
+  async getTachos(deviceID, fromDate, toDate) {
+    const query = TachoModel.find({ device: deviceID }, '-_id device tacho date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
   }
 
   async getDurationOfAvailableData(deviceID, propertie) {
@@ -383,6 +405,26 @@ module.exports = class MongoDBAdapter {
       case 'currentAirVolume':
         dataLatest = await AirVolumeModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
         dataOldest = await AirVolumeModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
+        if (dataLatest.length === 1 && dataOldest.length === 1) {
+          return {
+            from: dataOldest[0].date,
+            to: dataLatest[0].date,
+          };
+        }
+        return undefined;
+      case 'lampValues':
+        dataLatest = await LampValueModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
+        dataOldest = await LampValueModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
+        if (dataLatest.length === 1 && dataOldest.length === 1) {
+          return {
+            from: dataOldest[0].date,
+            to: dataLatest[0].date,
+          };
+        }
+        return undefined;
+      case 'tacho':
+        dataLatest = await TachoModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
+        dataOldest = await TachoModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {
             from: dataOldest[0].date,

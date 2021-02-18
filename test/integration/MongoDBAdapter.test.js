@@ -329,7 +329,7 @@ describe('MongoDBAdapter Functions', () => {
       }
     });
 
-    it('getAirVolumes gets all AirVolumes of one device before a specific date', async () => {
+    it('getAirVolumes gets all AirVolumes of one device in a specific time range', async () => {
       const device = {
         serialnumber: 'TestDevice',
         name: 'Test Device 1',
@@ -658,7 +658,7 @@ describe('MongoDBAdapter Functions', () => {
       const lampValues = [];
 
       for (let i = 0; i < 5; i += 1) {
-        lampValues[i] = await database.getLampValues('TestDevice', (i + 1) * 2);
+        lampValues[i] = await database.getLampValues('TestDevice', `${(i + 1) * 2}`);
       }
 
       expect(lampValues.length).toBe(5);
@@ -672,6 +672,111 @@ describe('MongoDBAdapter Functions', () => {
           expect(element.lamp).toBe((i + 1) * 2);
           expect(element.value).toBe((i * 2 + j + 1) * 10);
         }
+      }
+    });
+
+    it('getLampValues gets all LampValues of one device after a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const values = [];
+      for (let i = 1; i <= 10; i += 1) {
+        values.push({
+          device: 'TestDevice',
+          lamp: i,
+          value: i * 10,
+          date: new Date((i) * 10000),
+        });
+      }
+
+      await Promise.all(
+        values.map(async (a) => {
+          await database.addLampValue(a);
+        }),
+      );
+
+      const lampValues = await database.getLampValues('TestDevice', undefined, new Date(3 * 10000));
+
+      expect(lampValues.length).toBe(values.length - 2);
+
+      for (let i = 0; i < lampValues.length; i += 1) {
+        expect(lampValues[i].device).toBe('TestDevice');
+        expect(lampValues[i].lamp).toBe(values[i + 2].lamp);
+        expect(lampValues[i].value).toBe(values[i + 2].value);
+      }
+    });
+
+    it('getLampValues gets all LampValues of one device before a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const values = [];
+      for (let i = 1; i <= 10; i += 1) {
+        values.push({
+          device: 'TestDevice',
+          lamp: i,
+          value: i * 10,
+          date: new Date((i) * 10000),
+        });
+      }
+
+      await Promise.all(
+        values.map(async (a) => {
+          await database.addLampValue(a);
+        }),
+      );
+
+      const lampValues = await database.getLampValues('TestDevice', undefined, undefined, new Date(7 * 10000));
+
+      expect(lampValues.length).toBe(values.length - 3);
+
+      for (let i = 0; i < lampValues.length; i += 1) {
+        expect(lampValues[i].device).toBe('TestDevice');
+        expect(lampValues[i].lamp).toBe(values[i].lamp);
+        expect(lampValues[i].value).toBe(values[i].value);
+      }
+    });
+
+    it('getLampValues gets all LampValues of one device in a specific time range', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const values = [];
+      for (let i = 1; i <= 10; i += 1) {
+        values.push({
+          device: 'TestDevice',
+          lamp: i,
+          value: i * 10,
+          date: new Date((i) * 10000),
+        });
+      }
+
+      await Promise.all(
+        values.map(async (a) => {
+          await database.addLampValue(a);
+        }),
+      );
+
+      const lampValues = await database.getLampValues('TestDevice', undefined, new Date(3 * 10000), new Date(7 * 10000));
+
+      expect(lampValues.length).toBe(values.length - 5);
+
+      for (let i = 0; i < lampValues.length; i += 1) {
+        expect(lampValues[i].device).toBe('TestDevice');
+        expect(lampValues[i].lamp).toBe(values[i + 2].lamp);
+        expect(lampValues[i].value).toBe(values[i + 2].value);
       }
     });
   });
@@ -756,12 +861,113 @@ describe('MongoDBAdapter Functions', () => {
         expect(docTachos[i].tacho).toBe(tachos[i].tacho);
       }
     });
+
+    it('getTachos gets all Tacho of one device before a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const tachos = [];
+      for (let i = 1; i <= 10; i += 1) {
+        tachos.push({
+          device: 'TestDevice',
+          tacho: i * 10,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        tachos.map(async (a) => {
+          await database.addTacho(a);
+        }),
+      );
+
+      const docTachos = await database.getTachos('TestDevice', new Date(3 * 10000));
+
+      expect(docTachos.length).toBe(tachos.length - 2);
+
+      for (let i = 0; i < docTachos.length; i += 1) {
+        expect(docTachos[i].device).toBe('TestDevice');
+        expect(docTachos[i].tacho).toBe(tachos[i + 2].tacho);
+      }
+    });
+
+    it('getTachos gets all Tacho of one device after a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const tachos = [];
+      for (let i = 1; i <= 10; i += 1) {
+        tachos.push({
+          device: 'TestDevice',
+          tacho: i * 10,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        tachos.map(async (a) => {
+          await database.addTacho(a);
+        }),
+      );
+
+      const docTachos = await database.getTachos('TestDevice', undefined, new Date(7 * 10000));
+
+      expect(docTachos.length).toBe(tachos.length - 3);
+
+      for (let i = 0; i < docTachos.length; i += 1) {
+        expect(docTachos[i].device).toBe('TestDevice');
+        expect(docTachos[i].tacho).toBe(tachos[i].tacho);
+      }
+    });
+
+    it('getTachos gets all Tacho of one device in a specific time range', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const tachos = [];
+      for (let i = 1; i <= 10; i += 1) {
+        tachos.push({
+          device: 'TestDevice',
+          tacho: i * 10,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        tachos.map(async (a) => {
+          await database.addTacho(a);
+        }),
+      );
+
+      const docTachos = await database.getTachos('TestDevice', new Date(3 * 10000), new Date(7 * 10000));
+
+      expect(docTachos.length).toBe(tachos.length - 5);
+
+      for (let i = 0; i < docTachos.length; i += 1) {
+        expect(docTachos[i].device).toBe('TestDevice');
+        expect(docTachos[i].tacho).toBe(tachos[i + 2].tacho);
+      }
+    });
   });
 
   describe('getDurationOfAvailableData', () => {
     beforeEach(async () => {
       await database.clearCollection('uvcdevices');
       await database.clearCollection('airvolumes');
+      await database.clearCollection('lampvalues');
+      await database.clearCollection('tachos');
     });
 
     it('Returns the latest currentAirVolume Date', async () => {
@@ -790,6 +996,65 @@ describe('MongoDBAdapter Functions', () => {
         serialnumber: '1',
       });
       const latestDuration = await database.getDurationOfAvailableData('1', 'currentAirVolume');
+      expect(latestDuration).toBeUndefined();
+    });
+
+    it('Returns the latest lampValues Date', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '1',
+      });
+
+      for (let i = 0; i < 10; i += 1) {
+        await database.addLampValue({
+          lamp: (i + 1),
+          value: 10,
+          device: '1',
+          date: new Date((i + 1) * 100),
+        });
+      }
+      const duration = await database.getDurationOfAvailableData('1', 'lampValues');
+      expect(duration).toStrictEqual({
+        to: new Date(10 * 100),
+        from: new Date(100),
+      });
+    });
+
+    it('Returns undefined if no lampValues Document for that device exists', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '1',
+      });
+      const latestDuration = await database.getDurationOfAvailableData('1', 'lampValues');
+      expect(latestDuration).toBeUndefined();
+    });
+
+    it('Returns the latest tacho Date', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '1',
+      });
+
+      for (let i = 0; i < 10; i += 1) {
+        await database.addTacho({
+          tacho: 10,
+          device: '1',
+          date: new Date((i + 1) * 100),
+        });
+      }
+      const duration = await database.getDurationOfAvailableData('1', 'tacho');
+      expect(duration).toStrictEqual({
+        to: new Date(10 * 100),
+        from: new Date(100),
+      });
+    });
+
+    it('Returns undefined if no tacho Document for that device exists', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '1',
+      });
+      const latestDuration = await database.getDurationOfAvailableData('1', 'tacho');
       expect(latestDuration).toBeUndefined();
     });
   });

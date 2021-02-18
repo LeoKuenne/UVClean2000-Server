@@ -61,6 +61,16 @@ class UVCleanServer extends EventEmitter {
             (from === undefined || from === '') ? undefined : new Date(from),
             (to === undefined || to === '') ? undefined : new Date(to));
           break;
+        case 'lampValues':
+          db = await this.database.getLampValues(deviceID, undefined,
+            (from === undefined || from === '') ? undefined : new Date(from),
+            (to === undefined || to === '') ? undefined : new Date(to));
+          break;
+        case 'tacho':
+          db = await this.database.getTachos(deviceID,
+            (from === undefined || from === '') ? undefined : new Date(from),
+            (to === undefined || to === '') ? undefined : new Date(to));
+          break;
         default:
           res.sendStatus(404);
           break;
@@ -84,6 +94,12 @@ class UVCleanServer extends EventEmitter {
       switch (propertie) {
         case 'airVolume':
           db = await this.database.getDurationOfAvailableData(device, 'currentAirVolume');
+          break;
+        case 'lampValues':
+          db = await this.database.getDurationOfAvailableData(device, 'lampValues');
+          break;
+        case 'tacho':
+          db = await this.database.getDurationOfAvailableData(device, 'tacho');
           break;
         default:
           res.sendStatus(404);

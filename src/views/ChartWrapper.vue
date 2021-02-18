@@ -50,6 +50,8 @@
             v-model="selectedPropertie"
             @change="getDateDuration">
             <option value="airVolume">Air Volume</option>
+            <option value="lampValues">Lamp Values</option>
+            <option value="tacho">Tachos</option>
           </select>
         </div>
         <div v-show="showDatepicker">
@@ -141,7 +143,7 @@ export default {
           yAxes: [{
             ticks: {
               callback(value) {
-                return `${value} m^3`;
+                return `${value}`;
               },
             },
           }],
@@ -202,24 +204,85 @@ export default {
           data = response;
         });
 
-      this.datacollection = {
-        labels: [],
-        datasets: [
-          {
-            label: this.device,
-            backgroundColor: '#00666F',
-            data: [],
-            fill: false,
-          },
-        ],
-      };
+      const lamps = [];
 
-      data.forEach((event) => {
-        this.datacollection.datasets[0].data.push({
-          t: new Date(event.date),
-          y: event.volume,
-        });
-      });
+      switch (this.propertie) {
+        case 'airVolume':
+          this.datacollection = {
+            labels: [],
+            datasets: [
+              {
+                label: this.device,
+                backgroundColor: '#00666F',
+                borderColor: '#00666F',
+                borderWidth: 1,
+                data: [],
+                fill: false,
+              },
+            ],
+          };
+
+          data.forEach((event) => {
+            this.datacollection.datasets[0].data.push({
+              t: new Date(event.date),
+              y: event.volume,
+            });
+          });
+          break;
+        case 'lampValues':
+          this.datacollection = {
+            labels: [],
+            datasets: [],
+          };
+
+          for (let i = 0; i < 16; i += 1) {
+            const color = `rgba(0,${50 + (((255 - 50) / 16) * i)},${80 + (((255 - 80) / 16) * i)})`;
+            lamps.push({
+              label: `${this.device} | Lamp ${i + 1}`,
+              backgroundColor: color,
+              borderColor: color,
+              borderWidth: 1,
+              data: [],
+              fill: false,
+            });
+          }
+          data.forEach((event) => {
+            lamps[event.lamp - 1].data.push({
+              t: new Date(event.date),
+              y: event.value,
+            });
+          });
+
+          this.datacollection.datasets = lamps;
+
+          break;
+        case 'tacho':
+          this.datacollection = {
+            labels: [],
+            datasets: [
+              {
+                label: this.device,
+                backgroundColor: '#00666F',
+                borderColor: '#00666F',
+                borderWidth: 1,
+                data: [],
+                fill: false,
+              },
+            ],
+          };
+
+          data.forEach((event) => {
+            this.datacollection.datasets[0].data.push({
+              t: new Date(event.date),
+              y: event.tacho,
+            });
+          });
+          break;
+
+        default:
+          break;
+      }
+
       this.loaded = true;
     },
     async refreshChart() {
