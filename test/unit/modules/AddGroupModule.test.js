@@ -57,7 +57,7 @@ describe('Database Section', () => {
     const database = {
       addGroup: (name) => new Promise((res, rej) => res({ _id: '123', name })),
       getGroup: (id) => new Promise((res, rej) => res({
-        _id: '1',
+        id: '123',
         name: 'Test',
       })),
     };
@@ -69,7 +69,7 @@ describe('Database Section', () => {
 
     eventemitter.on('groupAdded', (dev) => {
       expect(dev).toStrictEqual({
-        id: '1',
+        id: '123',
         name: 'Test',
       });
       expect(spy).toHaveBeenCalledTimes(2);

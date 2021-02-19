@@ -120,13 +120,6 @@ new Vue({
       console.log('Group that changed:', g);
     });
 
-    socket.on('device_updated', (device) => {
-      console.log('Event: device_updated', device);
-      const dev = this.dataDevices.filter((d) => device.serialnumber === d.serialnumber)[0];
-      console.log('Updating device', dev);
-      if (dev !== undefined) { dev.name = device.name; }
-    });
-
     socket.on('device_deleted', (serialnumber) => {
       console.log('Event: device_deleted', serialnumber);
       if (serialnumber !== undefined) {

@@ -30,6 +30,7 @@ function mqtt(eventemitter, mqttClient) {
           prop: `${topicArray[3]}`,
         };
 
+        // MQQT Mapping: Topic naming to database naming and which topic should be interpreted
         switch (newState.prop) {
           case 'name':
             newState.prop = 'name';
@@ -43,8 +44,12 @@ function mqtt(eventemitter, mqttClient) {
           case 'alarm':
             newState.prop = 'currentAlarm';
             break;
-          default:
+          case 'tacho':
+            newState.prop = 'tacho';
             break;
+          default:
+            // Do not parse and interpret these change
+            return;
         }
 
         parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
@@ -80,7 +85,7 @@ function database(eventemitter, db) {
     let device = {};
 
     switch (newState.prop) {
-      case 'alarm':
+      case 'currentAlarm':
         db.setAlarmState({
           device: newState.serialnumber,
           lamp: newState.lamp,
