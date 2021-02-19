@@ -5,7 +5,7 @@
     <!-- eslint-disable-next-line max-len -->
     <header style="background-image: linear-gradient(125deg, #00666F 0%, #00666F 40%, #fff calc(40% + 1px), #fff 100%); height: 10%;"
       class="p-5 w-screen flex-shrink flex flex-row items-center justify-between shadow-md">
-      <router-link :to="{ path: 'dashboard' }" class="h-full">
+      <router-link :to="{ path: '/dashboard' }" class="h-full">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 252.7 118.91" class="text-white h-full">
           <!-- eslint-disable max-len -->
           <g id="Ebene_2" data-name="Ebene 2">

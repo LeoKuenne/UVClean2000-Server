@@ -56,9 +56,9 @@ new Vue({
     });
 
     socket.on('device_stateChanged', (props) => {
-      console.log('Event: device_stateChanged', props);
+      // console.log('Event: device_stateChanged', props);
 
-      const d = this.$dataStore.devices.filter((device) => {
+      this.$dataStore.devices.filter((device) => {
         if (device.serialnumber === props.serialnumber) {
           const dev = device;
           let propertie = '';
@@ -66,27 +66,49 @@ new Vue({
             case 'name':
               dev.name = `${props.newValue}`;
               break;
+            case 'currentFanAlarm':
+              dev.currentFanAlarm = `${props.newValue}`;
+              break;
+            case 'currentBodyAlarm':
+              dev.currentBodyAlarm = `${props.newValue}`;
+              break;
             case 'engineState':
             case 'eventMode':
             case 'identifyMode':
               dev[props.prop] = (`${props.newValue}` === 'true');
               break;
             case 'tacho':
-              dev[props.prop].tacho = parseInt(props.newValue, 10);
+              if (dev[props.prop] === undefined) {
+                dev[props.prop] = { tacho: parseInt(props.newValue, 10) };
+              } else {
+                dev[props.prop].tacho = parseInt(props.newValue, 10);
+              }
               break;
             case 'currentAirVolume':
-              dev[props.prop].volume = parseInt(props.newValue, 10);
+              if (dev[props.prop] === undefined) {
+                dev[props.prop] = { volume: parseInt(props.newValue, 10) };
+              } else {
+                dev[props.prop].volume = parseInt(props.newValue, 10);
+              }
               break;
             case 'engineLevel':
               dev[props.prop] = parseInt(props.newValue, 10);
               break;
-            case 'currentAlarm':
+            case 'currentLampAlarm':
               propertie = dev[props.prop];
-              propertie[props.lamp - 1].state = props.newValue;
+              if (propertie[props.lamp - 1] === undefined) {
+                propertie[props.lamp - 1] = { lamp: props.lamp, state: props.newValue };
+              } else {
+                propertie[props.lamp - 1].state = props.newValue;
+              }
               break;
             case 'currentLampValue':
               propertie = dev[props.prop];
-              propertie[props.lamp - 1].value = parseInt(props.newValue, 10);
+              if (propertie[props.lamp - 1] === undefined) {
+                propertie[props.lamp - 1] = { lamp: props.lamp, value: props.newValue };
+              } else {
+                propertie[props.lamp - 1].value = props.newValue;
+              }
               break;
             default:
               console.log(`Can not parse stateChanged message with prop ${props.prop}`);
@@ -96,7 +118,7 @@ new Vue({
         }
         return false;
       });
-      console.log('Device that changed:', d);
+      // console.log('Device that changed:', d);
     });
 
     socket.on('group_stateChanged', (props) => {

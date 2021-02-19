@@ -75,12 +75,14 @@ describe('MongoDBAdapter Functions', () => {
       expect(returnedDevice.group).toBeDefined();
       expect(returnedDevice.engineState).toBe(false);
       expect(returnedDevice.engineLevel).toBe(0);
-      expect(returnedDevice.currentAlarm).toBeDefined();
+      expect(returnedDevice.currentFanAlarm).toBe('Ok');
+      expect(returnedDevice.currentBodyAlarm).toBe('Ok');
+      expect(returnedDevice.currentLampAlarm).toBeDefined();
       expect(returnedDevice.currentLampValue).toBeDefined();
       expect(returnedDevice.identifyMode).toBe(false);
       expect(returnedDevice.eventMode).toBe(false);
-      expect(returnedDevice.tacho).toBe(0);
-      expect(returnedDevice.currentAirVolume).toBe(0);
+      expect(returnedDevice.tacho).toStrictEqual({ tacho: 0 });
+      expect(returnedDevice.currentAirVolume).toStrictEqual({ volume: 0 });
     });
 
     it('getDevice throws error if deviceID is not string', async () => {
@@ -126,12 +128,14 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].name).toBe(`Test Device ${i + 1}`);
         expect(dbData[i].engineState).toBe(false);
         expect(dbData[i].engineLevel).toBe(0);
-        expect(dbData[i].currentAlarm).toBeDefined();
+        expect(dbData[i].currentFanAlarm).toBe('Ok');
+        expect(dbData[i].currentBodyAlarm).toBe('Ok');
+        expect(dbData[i].currentLampAlarm).toBeDefined();
         expect(dbData[i].currentLampValue).toBeDefined();
         expect(dbData[i].identifyMode).toBe(false);
         expect(dbData[i].eventMode).toBe(false);
-        expect(dbData[i].tacho).toBe(0);
-        expect(dbData[i].currentAirVolume).toBe(0);
+        expect(dbData[i].tacho).toStrictEqual(0);
+        expect(dbData[i].currentAirVolume).toStrictEqual(0);
       }
     });
 
@@ -431,7 +435,7 @@ describe('MongoDBAdapter Functions', () => {
       expect(addedAlarmState.state).toBe(alarmState.state);
 
       const d = await database.getDevice(device.serialnumber);
-      expect(d.currentAlarm[alarmState.lamp - 1]._id).toStrictEqual(addedAlarmState._id);
+      expect(d.currentLampAlarm[alarmState.lamp - 1]._id).toStrictEqual(addedAlarmState._id);
     });
 
     it('setAlarmState throws an error if the validation fails', async () => {
@@ -482,8 +486,8 @@ describe('MongoDBAdapter Functions', () => {
       await database.getAlarmState(device.serialnumber);
       const databaseDevice = await database.getDevice(device.serialnumber);
 
-      for (let i = 1; i <= databaseDevice.currentAlarm.length; i += 1) {
-        const alarmState = databaseDevice.currentAlarm[i - 1];
+      for (let i = 1; i <= databaseDevice.currentLampAlarm.length; i += 1) {
+        const alarmState = databaseDevice.currentLampAlarm[i - 1];
         expect(alarmState.lamp).toBe(i);
         expect(alarmState.state).toBe(alarms[i - 1].state);
       }

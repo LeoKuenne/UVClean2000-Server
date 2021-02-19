@@ -36,6 +36,22 @@
         })">
         {{eventMode}}
       </button>
+      <label for="s_engine_level">Engine Level</label>
+      <select name="engine_level"
+        class="p-2"
+        id="s_engine_level"
+        @change="$emit('changeState', {
+          id: group.id,
+          prop: 'eventMode',
+          newValue: !group.eventMode
+        })">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
 
       <h4 class="text-lg pt-5 font-bold col-span-2">Statistics:</h4>
       <div class="col-span-2 flex flex-col space-y-5 pb-5">

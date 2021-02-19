@@ -6,6 +6,9 @@ const LampValueModel = require('./models/lampValue');
 const TachoModel = require('./models/tacho');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroupModel = require('./models/group').uvcGroupModel;
+const MainLogger = require('../../logger.js').logger;
+
+const logger = MainLogger.child({ service: 'MongoDBAdapter' });
 
 module.exports = class MongoDBAdapter {
   /**
@@ -22,7 +25,7 @@ module.exports = class MongoDBAdapter {
   }
 
   async connect() {
-    console.log(`Trying to connect to: mongodb://${this.uri}${(this.databaseName !== '') ? `/${this.databaseName}` : ''}`);
+    logger.info(`Trying to connect to: mongodb://${this.uri}${(this.databaseName !== '') ? `/${this.databaseName}` : ''}`);
     await mongoose.connect(`mongodb://${this.uri}${(this.databaseName !== '') ? `/${this.databaseName}` : ''}`, {
       useNewUrlParser: true,
       useCreateIndex: true,
@@ -30,16 +33,16 @@ module.exports = class MongoDBAdapter {
       useFindAndModify: true,
     });
 
-    console.log(`Connected to: mongodb://${this.uri}${(this.databaseName !== '') ? `/${this.databaseName}` : ''}`);
+    logger.info(`Connected to: mongodb://${this.uri}${(this.databaseName !== '') ? `/${this.databaseName}` : ''}`);
 
     this.db = mongoose.connection;
     this.db.on('error', console.error.bind(console, 'connection error:'));
 
     this.db.once('open', () => {
-      console.log(`Database ${this.uri}/${this.databaseName} connected.`);
+      logger.info(`Database ${this.uri}/${this.databaseName} connected.`);
     });
     this.db.once('error', (err) => {
-      console.log(`Database ${this.uri}/${this.databaseName}: Error occured: ${err}`);
+      logger.info(`Database ${this.uri}/${this.databaseName}: Error occured: ${err}`);
     });
   }
 
@@ -93,7 +96,7 @@ module.exports = class MongoDBAdapter {
 
     const device = await UVCDeviceModel.findOne({
       _id: deviceID,
-    }).populate('currentAlarm', 'date lamp state')
+    }).populate('currentLampAlarm', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
       .populate('currentLampValue', 'date lamp value')
@@ -107,12 +110,14 @@ module.exports = class MongoDBAdapter {
       group: `${device.group}`,
       engineState: device.engineState,
       engineLevel: device.engineLevel,
-      currentAlarm: device.currentAlarm,
+      currentBodyAlarm: device.currentBodyAlarm,
+      currentFanAlarm: device.currentFanAlarm,
+      currentLampAlarm: device.currentLampAlarm,
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
-      tacho: (device.tacho) ? device.tacho : 0,
-      currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : 0,
+      tacho: (device.tacho) ? device.tacho : { tacho: 0 },
+      currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : { volume: 0 },
     };
     return d;
   }
@@ -122,7 +127,7 @@ module.exports = class MongoDBAdapter {
    */
   async getDevices() {
     const db = await UVCDeviceModel.find()
-      .populate('currentAlarm', 'date lamp state')
+      .populate('currentLampAlarm', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
       .populate('currentLampValue', 'date lamp value')
@@ -137,7 +142,9 @@ module.exports = class MongoDBAdapter {
         group: `${device.group}`,
         engineState: device.engineState,
         engineLevel: device.engineLevel,
-        currentAlarm: device.currentAlarm,
+        currentBodyAlarm: device.currentBodyAlarm,
+        currentFanAlarm: device.currentFanAlarm,
+        currentLampAlarm: device.currentLampAlarm,
         currentLampValue: device.currentLampValue,
         identifyMode: device.identifyMode,
         eventMode: device.eventMode,
@@ -209,7 +216,9 @@ module.exports = class MongoDBAdapter {
       name: device.name,
       engineState: device.engineState,
       engineLevel: device.engineLevel,
-      currentAlarm: device.currentAlarm,
+      currentBodyAlarm: device.currentBodyAlarm,
+      currentFanAlarm: device.currentFanAlarm,
+      currentLampAlarm: device.currentLampAlarm,
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
@@ -283,7 +292,7 @@ module.exports = class MongoDBAdapter {
       _id: alarmState.device,
     }, {
       $set: {
-        [`currentAlarm.${alarmState.lamp - 1}`]: docAlarmState._id,
+        [`currentLampAlarm.${alarmState.lamp - 1}`]: docAlarmState._id,
       },
     }, (e) => {
       if (e !== null) { console.error(e); throw e; }

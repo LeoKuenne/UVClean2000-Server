@@ -19,6 +19,18 @@ describe('parseStates function', () => {
     expect(UVCDevice.parseStates('identifyMode', undefined, 'Test')).toBe(false);
   });
 
+  it('Parses currentBodyAlarm correctly', () => {
+    expect(UVCDevice.parseStates('currentBodyAlarm', undefined, '1')).toBe('1');
+    expect(UVCDevice.parseStates('currentBodyAlarm', undefined, 10)).toBe('10');
+    expect(UVCDevice.parseStates('currentBodyAlarm', undefined, false)).toBe('false');
+  });
+
+  it('Parses currentFanAlarm correctly', () => {
+    expect(UVCDevice.parseStates('currentFanAlarm', undefined, '1')).toBe('1');
+    expect(UVCDevice.parseStates('currentFanAlarm', undefined, 10)).toBe('10');
+    expect(UVCDevice.parseStates('currentFanAlarm', undefined, false)).toBe('false');
+  });
+
   it('Parses tacho correctly', () => {
     expect(UVCDevice.parseStates('tacho', undefined, 1)).toBe(1);
     expect(UVCDevice.parseStates('tacho', undefined, 10)).toBe(10);
@@ -37,12 +49,12 @@ describe('parseStates function', () => {
     expect(UVCDevice.parseStates('engineLevel', undefined, 'Test')).toBe(NaN);
   });
 
-  it('Parses currentAlarm correctly', () => {
-    const d = UVCDevice.parseStates('currentAlarm', '1', 'Ok');
+  it('Parses currentLampAlarm correctly', () => {
+    const d = UVCDevice.parseStates('currentLampAlarm', '1', 'Ok');
     expect(d.lamp).toBe(1);
     expect(d.value).toBe('Ok');
 
-    const d1 = UVCDevice.parseStates('currentAlarm', 'True', false);
+    const d1 = UVCDevice.parseStates('currentLampAlarm', 'True', false);
     expect(d1.lamp).toBe(NaN);
     expect(d1.value).toBe('false');
   });

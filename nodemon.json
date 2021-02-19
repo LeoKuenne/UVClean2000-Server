@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "ignore": ["*.vue", "src/", "dbData/", "*.md"]
+  "ignore": ["*.vue", "src/", "dbData/", "*.md", "logs/", "*.log"]
 }

@@ -1,7 +1,11 @@
+const MainLogger = require('../../logger.js').logger;
+
+const logger = MainLogger.child({ service: 'DeleteDeviceModule' });
+
 function socketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} registering socketIO module`);
+  logger.info('Registering socketIO module');
   ioSocket.on('device_delete', (props) => {
-    console.log('Event: device_delete ', props);
+    logger.info('Event: device_delete ', props);
 
     const device = {
       serialnumber: props.serialnumber,
@@ -12,20 +16,20 @@ function socketIO(eventemitter, ioSocket, ioServer) {
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing socketIO module`);
+  logger.info('Removing socketIO module');
   ioSocket.removeAllListeners('device_delete');
 }
 
 function mqtt(eventemitter, mqttClient) {
-  console.log(`${module.exports.name} registering mqtt module`);
+  logger.info('Registering mqtt module');
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing mqtt module`);
+  logger.info('Removing mqtt module');
 }
 
 function database(eventemitter, db) {
-  console.log(`${module.exports.name} registering database module`);
+  logger.info('Registering database module');
   eventemitter.on('deleteDevice', async (device) => {
     const d = await db.deleteDevice(device.serialnumber);
     eventemitter.emit('deviceDeleted', d.serialnumber);
@@ -33,7 +37,7 @@ function database(eventemitter, db) {
 }
 
 function removeDatabase(eventemitter, db) {
-  console.log(`${module.exports.name} removing database module`);
+  logger.info('Removing database module');
   eventemitter.removeAllListeners('deleteDevice');
 }
 

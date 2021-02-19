@@ -15,12 +15,12 @@ const routes = [
     children: [
       {
         name: 'devices',
-        path: 'devices',
+        path: '/dashboard/devices',
         component: UVCDeviceList,
       },
       {
         name: 'groups',
-        path: 'groups',
+        path: '/dashboard/groups',
         component: UVCGroupList,
       },
     ],

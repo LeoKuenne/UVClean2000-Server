@@ -63,7 +63,22 @@ describe('SocketIO Section', () => {
 });
 
 describe('MQTT Section', () => {
-  it('MQTT Module sends deviceStateChanged to eventemitter with correct props - engineState', (done) => {
+  test.each([
+    ['UVClean/1/stateChanged/engineState', false, { serialnumber: '1', prop: 'engineState', newValue: false }],
+    ['UVClean/1/stateChanged/engineLevel', 1, { serialnumber: '1', prop: 'engineLevel', newValue: 1 }],
+    ['UVClean/1/stateChanged/alarm/tempBody', 'Ok', { serialnumber: '1', prop: 'currentBodyAlarm', newValue: 'Ok' }],
+    ['UVClean/1/stateChanged/alarm/tempFan', 'Ok', { serialnumber: '1', prop: 'currentFanAlarm', newValue: 'Ok' }],
+    ['UVClean/1/stateChanged/alarm/1', 'Ok', {
+      serialnumber: '1', prop: 'currentLampAlarm', lamp: 1, newValue: 'Ok',
+    }],
+    ['UVClean/1/stateChanged/lamp/1', 'Ok', {
+      serialnumber: '1', prop: 'currentLampValue', lamp: 1, newValue: 'Ok',
+    }],
+    ['UVClean/1/stateChanged/identify', false, { serialnumber: '1', prop: 'identifyMode', newValue: false }],
+    ['UVClean/1/stateChanged/eventMode', false, { serialnumber: '1', prop: 'eventMode', newValue: false }],
+    ['UVClean/1/stateChanged/tacho', 10, { serialnumber: '1', prop: 'tacho', newValue: 10 }],
+    ['UVClean/1/stateChanged/airVolume', 10, { serialnumber: '1', prop: 'currentAirVolume', newValue: 10 }],
+  ])('MQTT Module gets %s, %s and sends deviceStateChanged to eventemitter with %o', (topic, message, result, done) => {
     const eventemitter = new EventEmitter();
 
     class MQTTClient extends EventEmitter {
@@ -75,81 +90,12 @@ describe('MQTT Section', () => {
     const mqttClient = new MQTTClient();
 
     eventemitter.on('deviceStateChanged', (device) => {
-      expect(device.serialnumber).toBe('1');
-      expect(device.prop).toBe('engineState');
-      expect(device.newValue).toBe(false);
+      expect(device).toStrictEqual(result);
       done();
     });
 
     deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/stateChanged/engineState', false);
-  });
-
-  it('MQTT Module sends deviceStateChanged to eventemitter - alarm', (done) => {
-    const eventemitter = new EventEmitter();
-
-    class MQTTClient extends EventEmitter {
-      subscribe(topic, cb) {
-        cb();
-      }
-    }
-
-    const mqttClient = new MQTTClient();
-
-    eventemitter.on('deviceStateChanged', (device) => {
-      expect(device.serialnumber).toBe('1');
-      expect(device.prop).toBe('currentAlarm');
-      expect(device.lamp).toBe(1);
-      expect(device.newValue).toBe('Alarm');
-      done();
-    });
-
-    deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/stateChanged/alarm/1', 'Alarm');
-  });
-
-  it('MQTT Module sends deviceStateChanged to eventemitter - airVolume', (done) => {
-    const eventemitter = new EventEmitter();
-
-    class MQTTClient extends EventEmitter {
-      subscribe(topic, cb) {
-        cb();
-      }
-    }
-
-    const mqttClient = new MQTTClient();
-
-    eventemitter.on('deviceStateChanged', (newState) => {
-      expect(newState.serialnumber).toBe('1');
-      expect(newState.prop).toBe('currentAirVolume');
-      expect(newState.newValue).toBe(100);
-      done();
-    });
-
-    deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/stateChanged/airVolume', 100);
-  });
-
-  it('MQTT Module sends deviceStateChanged to eventemitter - tacho', (done) => {
-    const eventemitter = new EventEmitter();
-
-    class MQTTClient extends EventEmitter {
-      subscribe(topic, cb) {
-        cb();
-      }
-    }
-
-    const mqttClient = new MQTTClient();
-
-    eventemitter.on('deviceStateChanged', (newState) => {
-      expect(newState.serialnumber).toBe('1');
-      expect(newState.prop).toBe('tacho');
-      expect(newState.newValue).toBe(100);
-      done();
-    });
-
-    deviceStateChanged.mqttClientModule(eventemitter, mqttClient);
-    mqttClient.emit('message', 'UVClean/1/stateChanged/tacho', 100);
+    mqttClient.emit('message', topic, message);
   });
 
   it('MQTT Module gets removed with removeMQTTClientModule', () => {

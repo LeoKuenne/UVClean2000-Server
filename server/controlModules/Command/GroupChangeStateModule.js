@@ -1,5 +1,9 @@
+const MainLogger = require('../../logger.js').logger;
+
+const logger = MainLogger.child({ service: 'GroupChangeStateModule' });
+
 function socketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} registering socketIO module`);
+  logger.info('Registering socketIO module');
   ioSocket.on('group_changeState', (newState) => {
     const groupNewState = {
       id: newState.id,
@@ -12,22 +16,22 @@ function socketIO(eventemitter, ioSocket, ioServer) {
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing socketIO module`);
+  logger.info('Removing socketIO module');
   ioSocket.removeAllListeners('group_changeState');
 }
 
 function mqtt(eventemitter, mqttClient) {
-  console.log(`${module.exports.name} registering mqtt module`);
+  logger.info('Registering mqtt module');
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing mqtt module`);
+  logger.info('Removing mqtt module');
 }
 
 function database(eventemitter, db) {
-  console.log(`${module.exports.name} registering database module`);
+  logger.info('Registering database module');
   eventemitter.on('groupChangeState', async (newState) => {
-    console.log(`Updating device ${newState.id} in database with new State`, newState);
+    logger.info(`Updating device ${newState.id} in database with new State`, newState);
     const device = {};
     let docGroup = null;
 
@@ -51,7 +55,7 @@ function database(eventemitter, db) {
 }
 
 function removeDatabase(eventemitter, db) {
-  console.log(`${module.exports.name} removing database module`);
+  logger.info('Removing database module');
   eventemitter.removeAllListeners('groupChangeState');
 }
 

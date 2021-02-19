@@ -1,5 +1,5 @@
 <template>
-  <div class="m-5 w-80 border-primary border">
+  <div class="m-5 w-96 border-primary border">
     <div class="bg-primary p-2 items-center text-white">
       <div class="flex flex-row justify-between items-center">
         <div>
@@ -73,6 +73,14 @@
       <span class="text-right" v-if="device.tacho">{{device.tacho.tacho}} R/min</span>
 
       <h4 class="text-lg pt-5 font-bold col-span-2">Statistics:</h4>
+      <div class="col-span-2 flex justify-between">
+        <span class="font-semibold">Body Temperature Alarm</span>
+        <span class="text-right" v-if="device.tacho">{{device.currentBodyAlarm}}</span>
+      </div>
+      <div class="col-span-2 flex justify-between">
+        <span class="font-semibold">Fan Temperature Alarm</span>
+        <span class="text-right" v-if="device.tacho">{{device.currentFanAlarm}}</span>
+      </div>
       <div class="col-span-2 flex flex-col space-y-5 pb-5">
         <div class="">
           <div class="flex justify-between">
@@ -110,7 +118,7 @@
           </div>
           <transition name="slide">
             <div v-if="showAlarmStates" class="col-span-2 grid grid-cols-4">
-              <div class="w-20" v-for="(alarm, lamp) in device.currentAlarm" :key="lamp">
+              <div class="w-20" v-for="(alarm, lamp) in device.currentLampAlarm" :key="lamp">
                 {{alarm.lamp}}: {{alarm.state}}
               </div>
             </div>
@@ -185,7 +193,7 @@ export default {
           this.$emit('edit', this.device);
           break;
         case 'View chart':
-          this.$router.push({ path: 'chart', query: { device: this.device.serialnumber } });
+          this.$router.push({ path: '/chart', query: { device: this.device.serialnumber } });
           break;
         default:
           break;

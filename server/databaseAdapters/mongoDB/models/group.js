@@ -7,7 +7,7 @@ const uvcGroupSchema = new mongoose.Schema({
   devices: [{ type: String }],
   // engineState: { type: Boolean, default: false },
   // engineLevel: { type: Number, default: 0 },
-  // currentAlarm: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
+  // currentLampAlarm: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
   // currentLampValue: [{ type: Schema.Types.ObjectId, ref: 'LampValue' }],
   // currentAirVolume: { type: Schema.Types.ObjectId, ref: 'AirVolume' },
 });

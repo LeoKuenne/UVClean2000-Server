@@ -1,8 +1,15 @@
 <template>
   <div class="relativ">
-    <div class="absolute right-0">
+    <div class="absolute right-0 space-x-2 flex m-2">
+      <div>
+        <button
+          class="p-2 bg-white shadow"
+          v-show="showToggleAllCharts"
+          @click="toggleAllCharts">{{toggleCharts}}
+        </button>
+      </div>
       <button
-        class="bg-primary p-2 text-white m-2"
+        class="bg-primary p-2 text-white shadow"
         @click="showSettingPanel = true">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-5 w-5" viewBox="0 0 16 16">
           <path fill-rule="evenodd"
@@ -43,7 +50,7 @@
             </option>
           </select>
         </div>
-        <div :class="[showPropertie ? 'visible' : 'invisible' ] ">
+        <div :class="[showPropertie || (selectedDevice !== undefined) ? 'visible' : 'invisible' ] ">
           <label for="propertie">Choose the propertie:</label>
           <select name="propertie"
             id="propertie"
@@ -99,6 +106,7 @@
 <script>
 import { Datetime } from 'vue-datetime';
 import '../css/datetime.css';
+import Vue from 'vue';
 import Chart from './Chart.vue';
 
 export default {
@@ -112,7 +120,9 @@ export default {
       loaded: true,
       showPropertie: false,
       showDatepicker: false,
+      showToggleAllCharts: false,
       showSettingPanel: true,
+      showAllCharts: true,
       selectedDevice: this.device,
       selectedPropertie: '',
       selectedDateFrom: '',
@@ -154,6 +164,9 @@ export default {
     };
   },
   computed: {
+    toggleCharts() {
+      return (this.showAllCharts) ? 'Show all charts' : 'Hide all charts';
+    },
     chartStyles() {
       return {
         height: '100%',
@@ -179,6 +192,12 @@ export default {
     },
   },
   methods: {
+    toggleAllCharts() {
+      for (let i = 0; i < this.datacollection.datasets.length; i += 1) {
+        Vue.set(this.datacollection.datasets[i], 'hidden', this.showAllCharts);
+      }
+      this.showAllCharts = !this.showAllCharts;
+    },
     outsideSettingPanelClicked() {
       this.showSettingPanel = false;
     },
@@ -210,19 +229,16 @@ export default {
 
       switch (this.propertie) {
         case 'airVolume':
-          this.datacollection = {
-            labels: [],
-            datasets: [
-              {
-                label: this.device,
-                backgroundColor: '#00666F',
-                borderColor: '#00666F',
-                borderWidth: 1,
-                data: [],
-                fill: false,
-              },
-            ],
-          };
+          this.datacollection.datasets = [
+            {
+              label: this.device,
+              backgroundColor: '#00666F',
+              borderColor: '#00666F',
+              borderWidth: 1,
+              data: [],
+              fill: false,
+            },
+          ];
 
           data.forEach((event) => {
             this.datacollection.datasets[0].data.push({
@@ -232,10 +248,6 @@ export default {
           });
           break;
         case 'lampValues':
-          this.datacollection = {
-            labels: [],
-            datasets: [],
-          };
 
           for (let i = 0; i < 16; i += 1) {
             const color = `rgba(0,${50 + (((255 - 50) / 16) * i)},${80 + (((255 - 80) / 16) * i)})`;
@@ -246,6 +258,7 @@ export default {
               borderWidth: 1,
               data: [],
               fill: false,
+              hidden: true,
             });
           }
           data.forEach((event) => {
@@ -259,19 +272,16 @@ export default {
 
           break;
         case 'tacho':
-          this.datacollection = {
-            labels: [],
-            datasets: [
-              {
-                label: this.device,
-                backgroundColor: '#00666F',
-                borderColor: '#00666F',
-                borderWidth: 1,
-                data: [],
-                fill: false,
-              },
-            ],
-          };
+          this.datacollection.datasets = [
+            {
+              label: this.device,
+              backgroundColor: '#00666F',
+              borderColor: '#00666F',
+              borderWidth: 1,
+              data: [],
+              fill: false,
+            },
+          ];
 
           data.forEach((event) => {
             this.datacollection.datasets[0].data.push({
@@ -285,6 +295,7 @@ export default {
           break;
       }
 
+      this.showToggleAllCharts = true;
       this.loaded = true;
     },
     async refreshChart() {

@@ -6,7 +6,7 @@ const deviceData = {
   name: 'Device 1',
   engineState: true,
   engineLevel: 1,
-  currentAlarm: [],
+  currentLampAlarm: [],
   identifyMode: false,
   eventMode: false,
   airVolume: 200,
@@ -42,7 +42,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.group).toBe(null);
     expect(savedUVCDevice.engineState).toBe(deviceData.engineState);
     expect(savedUVCDevice.engineLevel).toBe(deviceData.engineLevel);
-    expect(savedUVCDevice.currentAlarm).toBeDefined();
+    expect(savedUVCDevice.currentLampAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(deviceData.identifyMode);
     expect(savedUVCDevice.eventMode).toBe(deviceData.eventMode);
     expect(savedUVCDevice.tacho).toBeUndefined();
@@ -63,7 +63,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.name).toBe(device.name);
     expect(savedUVCDevice.engineState).toBe(false);
     expect(savedUVCDevice.engineLevel).toBe(0);
-    expect(savedUVCDevice.currentAlarm).toBeDefined();
+    expect(savedUVCDevice.currentLampAlarm).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(false);
     expect(savedUVCDevice.eventMode).toBe(false);
     expect(savedUVCDevice.tacho).toBeUndefined();

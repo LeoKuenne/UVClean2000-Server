@@ -1,26 +1,30 @@
+const MainLogger = require('../logger.js').logger;
+
+const logger = MainLogger.child({ service: 'Module' });
+
 function socketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} registering socketIO module`);
+  logger.info(`${module.exports.name} registering socketIO module`);
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing socketIO module`);
+  logger.info(`${module.exports.name} removing socketIO module`);
 }
 
 function mqtt(eventemitter, mqttClient) {
-  console.log(`${module.exports.name} registering mqtt module`);
+  logger.info(`${module.exports.name} registering mqtt module`);
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing mqtt module`);
+  logger.info(`${module.exports.name} removing mqtt module`);
 }
 
 function database(eventemitter, db) {
-  console.log(`${module.exports.name} registering database module`);
+  logger.info(`${module.exports.name} registering database module`);
   });
 }
 
 function removeDatabase(eventemitter, db) {
-  console.log(`${module.exports.name} removing database module`);
+  logger.info(`${module.exports.name} removing database module`);
 }
 
 function registerModules(eventemitter, ioSocket, ioServer, mqttClient, databaseAdapter) {

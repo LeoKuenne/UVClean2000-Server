@@ -1,34 +1,39 @@
-function socketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} registering socketIO module`);
+const MainLogger = require('../../logger.js').logger;
 
-  eventemitter.on('deviceDeleted', (device) => {
-    console.log(`Sending device_deleted to socket ${ioSocket.id}`, device);
-    ioSocket.emit('device_deleted', device);
+const logger = MainLogger.child({ service: 'DeviceDeletedModule' });
+
+function socketIO(eventemitter, ioSocket, ioServer) {
+  logger.info('Registering socketIO module');
+
+  eventemitter.on('deviceDeleted', (serialnumber) => {
+    logger.info(`Sending device_deleted to socket ${ioSocket.id}`, serialnumber);
+    ioSocket.emit('device_deleted', serialnumber);
   });
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing socketIO module`);
+  logger.info('Removing socketIO module');
   eventemitter.removeAllListeners('deviceDeleted');
 }
 
 function mqtt(eventemitter, mqttClient) {
-  console.log(`${module.exports.name} registering mqtt module`);
-  eventemitter.on('deviceDeleted', (device) => {
-    mqttClient.unsubscribe(`UVClean/${device.serialnumber}/#`);
+  logger.info('Registering mqtt module');
+  eventemitter.on('deviceDeleted', (serialnumber) => {
+    logger.info(`unsubscribing from UVClean/${serialnumber}/#`);
+    mqttClient.unsubscribe(`UVClean/${serialnumber}/#`);
   });
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing mqtt module`);
+  logger.info('Removing mqtt module');
 }
 
 function database(eventemitter, db) {
-  console.log(`${module.exports.name} registering database module`);
+  logger.info('Registering database module');
 }
 
 function removeDatabase(eventemitter, db) {
-  console.log(`${module.exports.name} removing database module`);
+  logger.info('Removing database module');
 }
 
 function registerModules(eventemitter, ioSocket, ioServer, mqttClient, databaseAdapter) {

@@ -7,6 +7,9 @@ const EventEmitter = require('events');
 const MongooseError = require('mongoose').Error;
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
 const controlModules = require('./controlModules/ControlModules').modules;
+const MainLogger = require('./logger.js').logger;
+
+const logger = MainLogger.child({ service: 'UVCleanServer' });
 
 class UVCleanServer extends EventEmitter {
   constructor(config) {
@@ -14,7 +17,7 @@ class UVCleanServer extends EventEmitter {
 
     this.config = config;
 
-    this.database = new MongoDBAdapter(this.config.database.mongoDB.uri,
+    this.database = new MongoDBAdapter(`${this.config.database.mongoDB.uri}:${this.config.database.mongoDB.port}`,
       this.config.database.mongoDB.database);
 
     this.app = express();
@@ -57,7 +60,7 @@ class UVCleanServer extends EventEmitter {
       const deviceID = req.query.device;
       const { propertie, from, to } = req.query;
 
-      console.log(`Got GET request on /device with propertie=${propertie}, from=${from}, to=${to}`);
+      logger.info(`Got GET request on /device with propertie=${propertie}, from=${from}, to=${to}`);
 
       let db = '';
 
@@ -88,7 +91,7 @@ class UVCleanServer extends EventEmitter {
     this.app.get('/timestamps', async (req, res) => {
       const { propertie, device } = req.query;
 
-      console.log(`Got GET request on /timestamps with propertie=${propertie}, device=${device}`);
+      logger.info(`Got GET request on /timestamps with propertie=${propertie}, device=${device}`);
 
       if (device === undefined || device === '') {
         res.sendStatus(404);
@@ -117,7 +120,7 @@ class UVCleanServer extends EventEmitter {
   }
 
   async stopServer() {
-    console.log('Shutting down...');
+    logger.info('Shutting down...');
 
     await this.database.close();
 
@@ -133,14 +136,15 @@ class UVCleanServer extends EventEmitter {
   }
 
   async startServer() {
+    logger.info({ level: 'info', message: 'Starting server' });
     try {
       await this.database.connect();
 
       this.httpServer.listen(this.config.http.port, () => {
-        console.log(`HTTP listening on ${this.config.http.port}`);
+        logger.info(`HTTP listening on ${this.config.http.port}`);
       });
 
-      console.log(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+      logger.info(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
       this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
       // Register all Database Modules
@@ -149,7 +153,7 @@ class UVCleanServer extends EventEmitter {
       });
 
       this.client.on('connect', async () => {
-        console.log(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+        logger.info(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
         // Register all MQTT Modules
         controlModules.forEach((module) => {
@@ -159,15 +163,15 @@ class UVCleanServer extends EventEmitter {
         // Subscribe to all devices that already exists
         const db = await this.database.getDevices();
         db.forEach((device) => {
-          console.log(`Subscribing to UVClean/${device.serialnumber}/#`);
+          logger.info(`Subscribing to UVClean/${device.serialnumber}/#`);
           this.client.subscribe(`UVClean/${device.serialnumber}/#`);
         });
       });
 
       // New Webbrowser connected to server
       this.io.on('connection', (socket) => {
-        console.log('A dashboard connected');
-        console.log(`Registering SocketIO Modules for socket ${socket.request.connection.remoteAddress}`);
+        logger.info('A dashboard connected');
+        logger.info(`Registering SocketIO Modules for socket ${socket.request.connection.remoteAddress}`);
         // Register all SocketIO Modules
         controlModules.forEach((module) => {
           module.socketIOModule(this, socket, this.io);
@@ -175,11 +179,11 @@ class UVCleanServer extends EventEmitter {
 
         // Debug any messages that are coming from the frontend
         socket.onAny((event, ...args) => {
-          console.debug(`Debug: Socket.io Message: ${event}`, args);
+          logger.debug(`Debug: Socket.io Message: ${event}`, args);
         });
 
         socket.on('disconnect', () => {
-          console.log('A dashboard disconnected');
+          logger.info('A dashboard disconnected');
           // Remove all SocketIO Modules
           controlModules.forEach((module) => {
             // module.removeSocketIOModule(this, socket, this.io);
@@ -188,9 +192,9 @@ class UVCleanServer extends EventEmitter {
       });
     } catch (e) {
       if (e instanceof MongooseError) {
-        console.error('The MongoDB server is not reachable.', e.message);
+        logger.error('The MongoDB server is not reachable.', e.message);
       } else {
-        console.error(e);
+        logger.error(e);
       }
       this.stopServer();
     }

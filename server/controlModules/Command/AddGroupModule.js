@@ -1,25 +1,29 @@
+const MainLogger = require('../../logger.js').logger;
+
+const logger = MainLogger.child({ service: 'AddGroupModule' });
+
 function socketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} registering socketIO module`);
+  logger.info('Registering socketIO module');
   ioSocket.on('group_add', (name) => {
     eventemitter.emit('addGroup', name);
   });
 }
 
 function removeSocketIO(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing socketIO module`);
+  logger.info('Removing socketIO module');
   ioSocket.removeAllListeners('group_add');
 }
 
 function mqtt(eventemitter, mqttClient) {
-  console.log(`${module.exports.name} registering mqtt module`);
+  logger.info('Registering mqtt module');
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {
-  console.log(`${module.exports.name} removing mqtt module`);
+  logger.info('Removing mqtt module');
 }
 
 function database(eventemitter, db) {
-  console.log(`${module.exports.name} registering database module`);
+  logger.info('Registering database module');
   eventemitter.on('addGroup', async (name) => {
     const group = await db.addGroup({ name });
     const docGroup = await db.getGroup(`${group._id}`).then((group) => {
@@ -34,7 +38,7 @@ function database(eventemitter, db) {
 }
 
 function removeDatabase(eventemitter, db) {
-  console.log(`${module.exports.name} removing database module`);
+  logger.info('Removing database module');
   eventemitter.removeAllListeners('addGroup');
 }
 
