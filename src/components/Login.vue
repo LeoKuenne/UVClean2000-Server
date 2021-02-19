@@ -32,7 +32,7 @@ export default {
     handleSubmit(e) {
       e.preventDefault();
       if (this.password.length > 0) {
-        this.$http.post('http://localhost:3000/login', {
+        this.$http.post('http://192.168.4.10:3000/login', {
           email: this.email,
           password: this.password,
         })

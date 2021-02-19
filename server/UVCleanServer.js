@@ -24,7 +24,7 @@ class UVCleanServer extends EventEmitter {
     this.httpServer = http.createServer(this.app);
     this.io = socketio(this.httpServer, {
       cors: {
-        origin: 'http://localhost:8080',
+        origin: 'http://192.168.4.10:3000',
         methods: ['GET', 'POST'],
       },
     });

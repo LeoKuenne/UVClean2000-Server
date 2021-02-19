@@ -220,7 +220,7 @@ export default {
 
       this.selectedDateFrom = this.from;
       this.selectedDateTo = this.to;
-      await fetch(`http://localhost:3000/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`).then((response) => response.json())
+      await fetch(`http://192.168.4.10:3000/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`).then((response) => response.json())
         .then((response) => {
           data = response;
         });
@@ -310,13 +310,13 @@ export default {
       });
     },
     async getDevices() {
-      await fetch('http://localhost:3000/serialnumbers').then((response) => response.json())
+      await fetch('http://192.168.4.10:3000/serialnumbers').then((response) => response.json())
         .then((data) => {
           this.devices = data;
         });
     },
     async getDateDuration() {
-      await fetch(`http://localhost:3000/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`).then((response) => response.json())
+      await fetch(`http://192.168.4.10:3000/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`).then((response) => response.json())
         .then((data) => {
           this.disabledDates = {
             from: data.from,

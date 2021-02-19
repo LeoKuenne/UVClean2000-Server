@@ -5,7 +5,7 @@ import router from './router/index';
 Vue.config.productionTip = false;
 
 // eslint-disable-next-line no-undef
-const socket = io('http://localhost:3000');
+const socket = io('http://192.168.4.10:3000');
 
 const store = Vue.observable({
   devices: [],
@@ -26,14 +26,14 @@ new Vue({
       socket.emit('leave', this.username);
     };
 
-    fetch('http://localhost:3000/devices').then((response) => response.json())
+    fetch('http://192.168.4.10:3000/devices').then((response) => response.json())
       .then((data) => {
         console.log(data);
         this.$dataStore.devices = data;
         console.log(this.$dataStore);
       });
 
-    fetch('http://localhost:3000/groups').then((response) => response.json())
+    fetch('http://192.168.4.10:3000/groups').then((response) => response.json())
       .then((data) => {
         console.log(data);
         this.$dataStore.groups = data;
