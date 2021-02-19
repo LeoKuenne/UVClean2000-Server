@@ -32,11 +32,11 @@ class UVCleanServer extends EventEmitter {
     // this.app.use(history());
     this.app.use(cors());
 
-    this.app.use(express.static(`${__dirname}/dashboard/`));
+    this.app.use(express.static(`${__dirname}/dashboard/static`));
 
-    this.app.get('/', (req, res) => {
-      res.sendFile(`${__dirname}/dashboard/dist/index.html`);
-    });
+    // this.app.get('/', (req, res) => {
+    //   res.sendFile(`${__dirname}/dashboard/dist/index.html`);
+    // });
 
     this.app.get('/devices', async (req, res) => {
       const db = await this.database.getDevices();
