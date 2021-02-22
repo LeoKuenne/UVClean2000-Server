@@ -5,7 +5,7 @@
   "description": "",
   "author": "",
   "scripts": {
-    "serve": "vue-cli-service serve --mode production",
+    "serve": "vue-cli-service serve",
     "build-dev": "vue-cli-service build --mode development",
     "build-prod": "vue-cli-service build --mode production",
     "build-report": "vue-cli-service build --report",
