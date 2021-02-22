@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const UVCDeviceModel = require('../../../server/dataModels/UVCDevice').uvcDeviceModel;
 
 const deviceData = {
-  _id: '1',
+  serialnumber: '1',
   name: 'Device 1',
   engineState: true,
   engineLevel: 1,
@@ -36,8 +36,8 @@ describe('UVCDevice Model Test', () => {
     const validUVCDevice = new UVCDeviceModel(deviceData);
     const savedUVCDevice = await validUVCDevice.save();
 
-    expect(savedUVCDevice._id).toBeDefined();
-    expect(savedUVCDevice._id).toBe(deviceData._id);
+    expect(savedUVCDevice.serialnumber).toBeDefined();
+    expect(savedUVCDevice.serialnumber).toBe(deviceData.serialnumber);
     expect(savedUVCDevice.name).toBe(deviceData.name);
     expect(savedUVCDevice.group).toBe(null);
     expect(savedUVCDevice.engineState).toBe(deviceData.engineState);
@@ -53,15 +53,15 @@ describe('UVCDevice Model Test', () => {
 
   it('create & save device successfully without all paramters', async () => {
     const device = {
-      _id: '2',
+      serialnumber: '2',
       name: 'Device 1',
     };
 
     const validUVCDevice = new UVCDeviceModel(device);
     const savedUVCDevice = await validUVCDevice.save();
 
-    expect(savedUVCDevice._id).toBeDefined();
-    expect(savedUVCDevice._id).toBe(device._id);
+    expect(savedUVCDevice.serialnumber).toBeDefined();
+    expect(savedUVCDevice.serialnumber).toBe(device.serialnumber);
     expect(savedUVCDevice.name).toBe(device.name);
     expect(savedUVCDevice.engineState).toBe(false);
     expect(savedUVCDevice.engineLevel).toBe(0);
@@ -75,12 +75,12 @@ describe('UVCDevice Model Test', () => {
   });
 
   it('insert device successfully, but the field not defined in schema should be undefined', async () => {
-    deviceData._id = '3';
+    deviceData.serialnumber = '3';
     deviceData.undefinedField = '';
     const deviceWithInvalidField = new UVCDeviceModel(deviceData);
     const savedDeviceWithInvalidField = await deviceWithInvalidField.save();
-    expect(savedDeviceWithInvalidField._id).toBeDefined();
-    expect(savedDeviceWithInvalidField._id).toBe(deviceData._id);
+    expect(savedDeviceWithInvalidField.serialnumber).toBeDefined();
+    expect(savedDeviceWithInvalidField.serialnumber).toBe(deviceData.serialnumber);
     expect(savedDeviceWithInvalidField.undefinedField).toBeUndefined();
   });
 
@@ -94,6 +94,6 @@ describe('UVCDevice Model Test', () => {
       err = error;
     }
     expect(err).toBeInstanceOf(mongoose.Error.ValidationError);
-    expect(err.errors._id).toBeDefined();
+    expect(err.errors.serialnumber).toBeDefined();
   });
 });

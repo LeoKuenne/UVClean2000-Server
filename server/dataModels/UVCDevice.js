@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const uvcDeviceSchema = new mongoose.Schema({
-  _id: {
+  serialnumber: {
     type: String,
     required: true,
     validate: {

@@ -23,7 +23,7 @@ describe('SocketIO Section', () => {
     const ioServer = {};
 
     const testDevice = {
-      serialnumber: 1,
+      serialnumber: '1',
       name: 'Test',
     };
 
@@ -36,7 +36,7 @@ describe('SocketIO Section', () => {
     expect(eventemitter.emit).toHaveBeenCalledTimes(1);
     expect(eventemitter.emit).toHaveBeenCalledWith('addDevice', {
       name: 'Test',
-      serialnumber: 1,
+      serialnumber: '1',
     });
   });
 
@@ -49,7 +49,7 @@ describe('SocketIO Section', () => {
     const ioServer = {};
 
     const testDevice = {
-      serialnumber: 1,
+      serialnumber: '1',
       name: 'Test',
     };
 
@@ -70,7 +70,7 @@ describe('Database Section', () => {
     const database = {
       addDevice: (dev) => new Promise((res, rej) => res()),
       getDevice: (id) => new Promise((res, rej) => res({
-        serialnumber: 1,
+        serialnumber: '1',
         name: 'Test',
       })),
     };
@@ -82,7 +82,7 @@ describe('Database Section', () => {
 
     eventemitter.on('deviceAdded', (dev) => {
       expect(dev).toStrictEqual({
-        serialnumber: 1,
+        serialnumber: '1',
         name: 'Test',
       });
       expect(spy).toHaveBeenCalledTimes(2);
@@ -91,7 +91,7 @@ describe('Database Section', () => {
 
     addDeviceModule.databaseModule(eventemitter, database);
     eventemitter.emit('addDevice', {
-      serialnumber: 1,
+      serialnumber: '1',
       name: 'Test',
     });
   });
@@ -110,7 +110,7 @@ describe('Database Section', () => {
     addDeviceModule.removeDatabaseModule(eventemitter, database);
     expect(spy1).toHaveBeenCalledTimes(1);
     eventemitter.emit('addDevice', {
-      serialnumber: 1,
+      serialnumber: '1',
       name: 'Test',
     });
     expect(spy2).toHaveBeenCalledTimes(1);

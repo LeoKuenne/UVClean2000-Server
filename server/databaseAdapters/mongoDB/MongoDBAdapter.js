@@ -68,19 +68,11 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a Device to the MongoDB 'devices' database. Throws an error if the validation fails.
-   * @param {Object} device Deviceobject that must have the properties _id and name
+   * @param {Object} device Deviceobject that must have the properties serialnumber and name
    * @returns {mongoose.Document<any>} The saved mongoose document
    */
-  async addDevice(deviceData) {
-    if (deviceData.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
-
-    const device = {
-      _id: deviceData.serialnumber,
-    };
-
-    Object.keys(deviceData).forEach((key) => {
-      device[key] = deviceData[key];
-    });
+  async addDevice(device) {
+    if (device.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
 
     const docDevice = new UVCDeviceModel(device);
     const err = docDevice.validateSync();
@@ -90,14 +82,14 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets an device with the given deviceID.
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @returns {Object} The device object
    */
-  async getDevice(deviceID) {
-    if (typeof deviceID !== 'string') { throw new Error('DeviceID has to be a string'); }
+  async getDevice(serialnumber) {
+    if (typeof serialnumber !== 'string') { throw new Error('Serialnumber has to be a string'); }
 
     const device = await UVCDeviceModel.findOne({
-      _id: deviceID,
+      serialnumber,
     }).populate('currentLampState', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
@@ -109,7 +101,7 @@ module.exports = class MongoDBAdapter {
     if (device === null || device === undefined) throw new Error('Device does not exists');
 
     const d = {
-      serialnumber: device._id,
+      serialnumber: device.serialnumber,
       name: device.name,
       group: `${device.group}`,
       engineState: device.engineState,
@@ -143,7 +135,7 @@ module.exports = class MongoDBAdapter {
     let devices = [];
     db.map((device) => {
       const d = {
-        serialnumber: device._id,
+        serialnumber: device.serialnumber,
         name: device.name,
         group: `${device.group}`,
         engineState: device.engineState,
@@ -168,12 +160,12 @@ module.exports = class MongoDBAdapter {
    * Gets all devices.
    */
   async getSerialnumbers() {
-    const db = await UVCDeviceModel.find().select('_id').exec();
+    const db = await UVCDeviceModel.find().select('serialnumber').exec();
 
     // eslint-disable-next-line prefer-const
     let devices = [];
     db.map((device) => {
-      devices.push(device._id);
+      devices.push(device.serialnumber);
       return device;
     });
 
@@ -183,23 +175,15 @@ module.exports = class MongoDBAdapter {
   /**
    * Updates the given device. Throws an error if the validation fails and if
    * the document not exists
-   * @param {Object} device Deviceobject with the device ID respectively
+   * @param {Object} device Deviceobject with the device
    * serialnumber and the propertie to change with the new value
    * @returns Returns updated device
    */
-  async updateDevice(deviceData) {
-    if (deviceData.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
-
-    const device = {
-      _id: deviceData.serialnumber,
-    };
-
-    Object.keys(deviceData).forEach((key) => {
-      device[key] = deviceData[key];
-    });
+  async updateDevice(device) {
+    if (device.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
 
     const d = await UVCDeviceModel.findOneAndUpdate(
-      { _id: device._id },
+      { serialnumber: device.serialnumber },
       device,
       { new: true },
     ).exec();
@@ -209,16 +193,16 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Deletes the given device that has the deviceID. Throws an error if the document not exists
-   * @param {Object} deviceID The device ID respectively serialnumber of that device
+   * @param {Object} serialnumber The device serialnumber of that device
    * @returns Deleted device
    */
-  async deleteDevice(deviceID) {
-    if (typeof deviceID !== 'string') { throw new Error('DeviceID has to be a string'); }
+  async deleteDevice(serialnumber) {
+    if (typeof serialnumber !== 'string') { throw new Error('DeviceID has to be a string'); }
 
-    const device = await UVCDeviceModel.findOneAndRemove({ _id: deviceID }).exec();
+    const device = await UVCDeviceModel.findOneAndDelete({ serialnumber }).exec();
     if (device === null) throw new Error('Device does not exists');
     const d = {
-      serialnumber: device._id,
+      serialnumber: device.serialnumber,
       name: device.name,
       engineState: device.engineState,
       engineLevel: device.engineLevel,
@@ -237,7 +221,7 @@ module.exports = class MongoDBAdapter {
   /**
    * Adds an air volume document to the database and links the devices' currentAirVolume
    * field to that document
-   * @param {Object} airVolume The Object with the device id respectively serialnumber of that
+   * @param {Object} airVolume The Object with the device serialnumber of that
    * device and the current volume
    * @returns Returns the airVolume document
    */
@@ -251,7 +235,7 @@ module.exports = class MongoDBAdapter {
     });
 
     UVCDeviceModel.updateOne({
-      _id: airVolume.device,
+      serialnumber: airVolume.device,
     }, {
       $set: {
         currentAirVolume: docAirVolume._id,
@@ -265,13 +249,13 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets all AirVolume documents that match the deviceID
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @param {Date} fromDate The Date after the documents should be selected
    * @param {Date} toDate The Date before the documents should be selected
    * @returns {Array} Returns an array of AirVolumes that match the deviceID
    */
-  async getAirVolume(deviceID, fromDate, toDate) {
-    const query = AirVolumeModel.find({ device: deviceID }, '-_id device volume date');
+  async getAirVolume(serialnumber, fromDate, toDate) {
+    const query = AirVolumeModel.find({ device: serialnumber }, 'device volume date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }
@@ -283,8 +267,11 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds an alarmState document which holds a current alarm, the device, the lamp and date
-   * @param {Object} alarmState The Object with the device id respectively serialnumber of that
+   * @param {Object} alarmState The Object with the device serialnumber of that
    * device and the current alarm and lamp
+   * @param {String} alarmState.device The serialnumber of that device
+   * @param {String} alarmState.state The state of the alarm
+   * @param {String} alarmState.lamp The lamp of the alarmstate
    * @returns Returns the alarmState document
    */
   async setAlarmState(alarmState) {
@@ -295,7 +282,7 @@ module.exports = class MongoDBAdapter {
     await docAlarmState.save();
 
     UVCDeviceModel.updateOne({
-      _id: alarmState.device,
+      serialnumber: alarmState.device,
     }, {
       $set: {
         [`currentLampState.${alarmState.lamp - 1}`]: docAlarmState._id,
@@ -311,17 +298,20 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets all AlarmState documents that match the deviceID
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @returns {Array} Returns an array of AlarmState that match the deviceID
    */
-  async getAlarmState(deviceID) {
-    return AlarmStateModel.find({ device: deviceID }, 'device lamp state date').exec();
+  async getAlarmState(serialnumber) {
+    return AlarmStateModel.find({ device: serialnumber }, 'device lamp state date').exec();
   }
 
   /**
    * Adds an lampValue document which holds the current value, the device, the lamp and date
-   * @param {Object} lampValue The Object with the device id respectively serialnumber of that
+   * @param {Object} lampValue The Object with the device serialnumber of that
    * device and the current value and lamp
+   * @param {String} alarmState.device The serialnumber of that device
+   * @param {String} alarmState.value The value of the lamp
+   * @param {String} alarmState.lamp The lamp of the value
    * @returns Returns the lampValue document
    */
   async addLampValue(lampValue) {
@@ -332,7 +322,7 @@ module.exports = class MongoDBAdapter {
     await docLampValue.save();
 
     await UVCDeviceModel.updateOne({
-      _id: lampValue.device,
+      serialnumber: lampValue.device,
     }, {
       $set: {
         [`currentLampValue.${lampValue.lamp - 1}`]: docLampValue._id,
@@ -348,14 +338,14 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets all LampValues documents that match the deviceID
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @param {Number} [lampID] The Lamp of which values should be get
    * @param {Date} [fromDate] The Date after the documents should be selected
    * @param {Date} [toDate] The Date before the documents should be selected
    * @returns {Array} Returns an array of LampValues that match the deviceID
    */
-  async getLampValues(deviceID, lampID, fromDate, toDate) {
-    const query = LampValueModel.find({ device: deviceID }, 'device lamp value date');
+  async getLampValues(serialnumber, lampID, fromDate, toDate) {
+    const query = LampValueModel.find({ device: serialnumber }, 'device lamp value date');
     if (lampID !== undefined && typeof lampID === 'string') {
       query.where('lamp', lampID);
     }
@@ -371,9 +361,10 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a Rotation Speed document to the database.
-   * @param {Object} tacho The Tacho object with the device id
-   * respectively serialnumber of that
+   * @param {Object} tacho The Tacho object with the device serialnumber of that
    * device and the tacho
+   * @param {String} tacho.device The serialnumber of that device
+   * @param {String} tacho.tacho The value of the tacho
    * @returns {Document<any>} Returns the Tacho Document
    */
   async addTacho(tacho) {
@@ -386,7 +377,7 @@ module.exports = class MongoDBAdapter {
     });
 
     UVCDeviceModel.updateOne({
-      _id: tacho.device,
+      serialnumber: tacho.device,
     }, {
       $set: {
         tacho: docTacho._id,
@@ -400,12 +391,12 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets all Tacho documents of that device
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @param {Date} [fromDate] The Date after the documents should be selected
    * @param {Date} [toDate] The Date before the documents should be selected
    */
-  async getTachos(deviceID, fromDate, toDate) {
-    const query = TachoModel.find({ device: deviceID }, '-_id device tacho date');
+  async getTachos(serialnumber, fromDate, toDate) {
+    const query = TachoModel.find({ device: serialnumber }, 'device tacho date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }
@@ -418,9 +409,8 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a FanState document to the database.
-   * @param {Object} fanState The FanState object with the device id
-   * respectively serialnumber of that device and the fanState
-   * @param {string} fanState.device the device id respectively serialnumber of that device
+   * @param {Object} fanState The FanState object with the device serialnumber of that device and the fanState
+   * @param {string} fanState.device the device serialnumber of that device
    * @param {string} fanState.state the alarm state
    * @returns {Document<any>} Returns the FanState Document
    */
@@ -434,7 +424,7 @@ module.exports = class MongoDBAdapter {
     });
 
     UVCDeviceModel.updateOne({
-      _id: fanState.device,
+      serialnumber: fanState.device,
     }, {
       $set: {
         currentFanState: docFanState._id,
@@ -448,12 +438,12 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets all FanState documents of that device
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @param {Date} [fromDate] The Date after the documents should be selected
    * @param {Date} [toDate] The Date before the documents should be selected
    */
-  async getFanStates(deviceID, fromDate, toDate) {
-    const query = FanStateModel.find({ device: deviceID }, '-_id device state date');
+  async getFanStates(serialnumber, fromDate, toDate) {
+    const query = FanStateModel.find({ device: serialnumber }, 'device state date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }
@@ -466,9 +456,8 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a BodyState document to the database.
-   * @param {Object} bodyState The BodyState object with the device id
-   * respectively serialnumber of that device and the bodyState
-   * @param {string} bodyAlarm.device the device id respectively serialnumber of that device
+   * @param {Object} bodyState The BodyState object with the device serialnumber of that device and the bodyState
+   * @param {string} bodyAlarm.device the device serialnumber of that device
    * @param {string} bodyAlarm.state the alarm state
    * @returns {Document<any>} Returns the BodyState Document
    */
@@ -482,7 +471,7 @@ module.exports = class MongoDBAdapter {
     });
 
     UVCDeviceModel.updateOne({
-      _id: bodyState.device,
+      serialnumber: bodyState.device,
     }, {
       $set: {
         currentBodyState: docBodyState._id,
@@ -496,12 +485,12 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets all BodyState documents of that device
-   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {String} serialnumber The device serialnumber of that device
    * @param {Date} [fromDate] The Date after the documents should be selected
    * @param {Date} [toDate] The Date before the documents should be selected
    */
-  async getBodyStates(deviceID, fromDate, toDate) {
-    const query = BodyStateModel.find({ device: deviceID }, '-_id device state date');
+  async getBodyStates(serialnumber, fromDate, toDate) {
+    const query = BodyStateModel.find({ device: serialnumber }, 'device state date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }
@@ -514,17 +503,21 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Gets the first and last date where a document of the provided propertie can be found
-   * @param {string} deviceID The device ID respectively serialnumber of that device
+   * @param {string} serialnumber The device serialnumber of that device
    * @param {string} propertie The propertie to get the duration of
    */
-  async getDurationOfAvailableData(deviceID, propertie) {
+  async getDurationOfAvailableData(serialnumber, propertie) {
     let dataLatest = '';
     let dataOldest = '';
 
     switch (propertie) {
       case 'currentAirVolume':
-        dataLatest = await AirVolumeModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
-        dataOldest = await AirVolumeModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
+        dataLatest = await AirVolumeModel.find({ device: serialnumber })
+          .sort({ date: -1 })
+          .limit(1);
+        dataOldest = await AirVolumeModel.find({ device: serialnumber })
+          .sort({ date: 1 })
+          .limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {
             from: dataOldest[0].date,
@@ -533,8 +526,8 @@ module.exports = class MongoDBAdapter {
         }
         return undefined;
       case 'lampValues':
-        dataLatest = await LampValueModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
-        dataOldest = await LampValueModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
+        dataLatest = await LampValueModel.find({ device: serialnumber }).sort({ date: -1 }).limit(1);
+        dataOldest = await LampValueModel.find({ device: serialnumber }).sort({ date: 1 }).limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {
             from: dataOldest[0].date,
@@ -543,8 +536,8 @@ module.exports = class MongoDBAdapter {
         }
         return undefined;
       case 'tacho':
-        dataLatest = await TachoModel.find({ device: deviceID }).sort({ date: -1 }).limit(1);
-        dataOldest = await TachoModel.find({ device: deviceID }).sort({ date: 1 }).limit(1);
+        dataLatest = await TachoModel.find({ device: serialnumber }).sort({ date: -1 }).limit(1);
+        dataOldest = await TachoModel.find({ device: serialnumber }).sort({ date: 1 }).limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {
             from: dataOldest[0].date,
@@ -573,8 +566,8 @@ module.exports = class MongoDBAdapter {
   }
 
   /**
-   * Gets the group by the given _id
-   * @param {string} groupID The group _id
+   * Gets the group by the given id
+   * @param {string} groupID The group id
    */
   async getGroup(groupID) {
     if (typeof groupID !== 'string') {
@@ -588,7 +581,7 @@ module.exports = class MongoDBAdapter {
     }
 
     const group = {
-      id: groupData._id,
+      id: groupData.id,
       name: groupData.name,
       devices: groupData.devices,
     };
@@ -606,7 +599,7 @@ module.exports = class MongoDBAdapter {
     const groups = [];
     groupData.map((group) => {
       const d = {
-        id: group._id,
+        id: group.id,
         name: group.name,
         devices: group.devices,
       };
@@ -620,14 +613,14 @@ module.exports = class MongoDBAdapter {
   /**
    *
    * @param {Object} group The object representing the group
-   * @param {string} group._id The object representing the group
+   * @param {string} group.id The object representing the group
    * @param {string} [group.name] The new name of the group
    */
   async updateGroup(group) {
-    if (group._id === undefined || typeof group._id !== 'string') throw new Error('_id must be defined.');
+    if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined.');
 
     const docGroup = await UVCGroupModel.findOneAndUpdate(
-      { _id: new ObjectId(group._id) },
+      { _id: new ObjectId(group.id) },
       group,
       { new: true },
     ).exec();
@@ -670,7 +663,7 @@ module.exports = class MongoDBAdapter {
 
     const docDevice = await UVCDeviceModel.updateOne(
       {
-        _id: deviceSerialnumber,
+        serialnumber: deviceSerialnumber,
       },
       { group: new ObjectId(groupID) },
       (e) => {
@@ -718,7 +711,7 @@ module.exports = class MongoDBAdapter {
     }).exec();
 
     const docClient = await UVCDeviceModel.updateOne({
-      _id: deviceSerialnumber,
+      serialnumber: deviceSerialnumber,
     }, {
       $set: {
         group: null,
