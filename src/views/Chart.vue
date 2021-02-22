@@ -1,5 +1,6 @@
 <script>
 import { Line, mixins } from 'vue-chartjs';
+import 'chartjs-adapter-luxon';
 
 const { reactiveProp } = mixins;
 

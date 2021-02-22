@@ -94,6 +94,13 @@
       </div>
     </div>
     <div class="h-full w-full">
+      <div v-if="!loaded"
+        class="absolute top-1/2 left-1/2 origin-center lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
       <chart v-if="loaded"
       :chart-data="datacollection"
       :options="options"
@@ -108,6 +115,8 @@ import { Datetime } from 'vue-datetime';
 import '../css/datetime.css';
 import Vue from 'vue';
 import Chart from './Chart.vue';
+
+const { DateTime } = require('luxon');
 
 export default {
   components: {
@@ -141,11 +150,15 @@ export default {
             type: 'time',
             distribution: 'series',
             time: {
-              minUnit: 'second',
+              minUnit: 'minute',
               displayFormats: {
-                second: 'D.M.YY hh:mm:ss',
+                minute: 'dd.MM.yyyy H:mm:ss',
               },
             },
+            // adapters: {
+            //   date: {
+            //   },
+            // },
             ticks: {
               autoSkip: false,
               maxRotation: 90,
@@ -220,7 +233,7 @@ export default {
 
       this.selectedDateFrom = this.from;
       this.selectedDateTo = this.to;
-      await fetch(`http://192.168.4.10:3000/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`).then((response) => response.json())
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`).then((response) => response.json())
         .then((response) => {
           data = response;
         });
@@ -242,7 +255,7 @@ export default {
 
           data.forEach((event) => {
             this.datacollection.datasets[0].data.push({
-              t: new Date(event.date),
+              t: DateTime.fromISO(event.date),
               y: event.volume,
             });
           });
@@ -263,7 +276,7 @@ export default {
           }
           data.forEach((event) => {
             lamps[event.lamp - 1].data.push({
-              t: new Date(event.date),
+              t: DateTime.fromISO(event.date),
               y: event.value,
             });
           });
@@ -285,7 +298,7 @@ export default {
 
           data.forEach((event) => {
             this.datacollection.datasets[0].data.push({
-              t: new Date(event.date),
+              t: DateTime.fromISO(event.date),
               y: event.tacho,
             });
           });
@@ -310,13 +323,13 @@ export default {
       });
     },
     async getDevices() {
-      await fetch('http://192.168.4.10:3000/serialnumbers').then((response) => response.json())
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/serialnumbers`).then((response) => response.json())
         .then((data) => {
           this.devices = data;
         });
     },
     async getDateDuration() {
-      await fetch(`http://192.168.4.10:3000/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`).then((response) => response.json())
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`).then((response) => response.json())
         .then((data) => {
           this.disabledDates = {
             from: data.from,
@@ -332,3 +345,42 @@ export default {
 };
 
 </script>
+
+<style>
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #00666F;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #00666F transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+</style>

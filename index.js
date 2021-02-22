@@ -1,15 +1,38 @@
 const fs = require('fs');
+const MainLogger = require('./server/Logger.js').logger;
 
+const logger = MainLogger.child({ service: 'UVCleanServer' });
+
+logger.info('Reading config file UVCleanServer.config.json');
 const file = fs.readFileSync('./server/UVCleanServer.config.json');
-const config = JSON.parse(file);
+const configFile = JSON.parse(file);
 
-console.log('Read config file UVCleanServer.config.json');
+let config = {};
+switch (configFile.env) {
+  case 'production':
+    config = configFile.production;
+    logger.info('Loading config for production', config);
+    break;
+  case 'development':
+    config = configFile.development;
+    logger.info('Loading config for development', config);
+    break;
+  case 'staging':
+    config = configFile.staging;
+    logger.info('Loading config for staging', config);
+    break;
+
+  default:
+    logger.info(`Could not load enviroment "${process.env.NODE_ENV}" from config file. Exiting`, config);
+    process.exit(1);
+    break;
+}
 
 const { UVCleanServer } = require('./server/UVCleanServer.js');
 
 const server = new UVCleanServer(config);
 
-console.log('Starting server...');
+logger.info('Starting UVCServer...');
 
 server.startServer();
 
