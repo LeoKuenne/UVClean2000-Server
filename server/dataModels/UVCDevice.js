@@ -8,7 +8,7 @@ const uvcDeviceSchema = new mongoose.Schema({
   group: { type: Schema.Types.ObjectId, ref: 'UVCGroup' },
   engineState: { type: Boolean, default: false },
   engineLevel: { type: Number, default: 0 },
-  currentBodyAlarm: { type: String, default: 'Ok' },
+  currentBodyState: { type: Schema.Types.ObjectId, ref: 'BodyState' },
   currentFanState: { type: Schema.Types.ObjectId, ref: 'FanState' },
   currentLampState: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
   currentLampValue: [{ type: Schema.Types.ObjectId, ref: 'LampValue' }],
@@ -22,7 +22,7 @@ const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema);
 function parseStates(propertie, subpropertie, value) {
   switch (propertie) {
     case 'name':
-    case 'currentBodyAlarm':
+    case 'currentBodyState':
     case 'currentFanState':
       return `${value}`;
     case 'engineState':

@@ -66,7 +66,7 @@ describe('MQTT Section', () => {
   test.each([
     ['UVClean/1/stateChanged/engineState', false, { serialnumber: '1', prop: 'engineState', newValue: false }],
     ['UVClean/1/stateChanged/engineLevel', 1, { serialnumber: '1', prop: 'engineLevel', newValue: 1 }],
-    ['UVClean/1/stateChanged/alarm/tempBody', 'Ok', { serialnumber: '1', prop: 'currentBodyAlarm', newValue: 'Ok' }],
+    ['UVClean/1/stateChanged/alarm/tempBody', 'Ok', { serialnumber: '1', prop: 'currentBodyState', newValue: 'Ok' }],
     ['UVClean/1/stateChanged/alarm/tempFan', 'Ok', { serialnumber: '1', prop: 'currentFanState', newValue: 'Ok' }],
     ['UVClean/1/stateChanged/alarm/1', 'Ok', {
       serialnumber: '1', prop: 'currentLampState', lamp: 1, newValue: 'Ok',
@@ -120,8 +120,8 @@ describe('Database Section', () => {
       'updateDevice', { serialnumber: '1', engineState: false }],
     [{ serialnumber: '1', prop: 'engineLevel', newValue: 1 },
       'updateDevice', { serialnumber: '1', engineLevel: 1 }],
-    [{ serialnumber: '1', prop: 'currentBodyAlarm', newValue: 'Ok' },
-      'updateDevice', { serialnumber: '1', currentBodyAlarm: 'Ok' }],
+    [{ serialnumber: '1', prop: 'currentBodyState', newValue: 'Ok' },
+      'addBodyState', { device: '1', state: 'Ok' }],
     [{ serialnumber: '1', prop: 'currentFanState', newValue: 'Ok' },
       'addFanState', { device: '1', state: 'Ok' }],
     [{

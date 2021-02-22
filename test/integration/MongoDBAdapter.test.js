@@ -76,7 +76,7 @@ describe('MongoDBAdapter Functions', () => {
       expect(returnedDevice.engineState).toBe(false);
       expect(returnedDevice.engineLevel).toBe(0);
       expect(returnedDevice.currentFanState).toStrictEqual({ state: '' });
-      expect(returnedDevice.currentBodyAlarm).toBe('Ok');
+      expect(returnedDevice.currentBodyState).toBeDefined();
       expect(returnedDevice.currentLampState).toBeDefined();
       expect(returnedDevice.currentLampValue).toBeDefined();
       expect(returnedDevice.identifyMode).toBe(false);
@@ -129,7 +129,7 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].engineState).toBe(false);
         expect(dbData[i].engineLevel).toBe(0);
         expect(dbData[i].currentFanState).toStrictEqual({ state: '' });
-        expect(dbData[i].currentBodyAlarm).toBe('Ok');
+        expect(dbData[i].currentBodyState).toBeDefined();
         expect(dbData[i].currentLampState).toBeDefined();
         expect(dbData[i].currentLampValue).toBeDefined();
         expect(dbData[i].identifyMode).toBe(false);
@@ -1152,6 +1152,187 @@ describe('MongoDBAdapter Functions', () => {
       for (let i = 0; i < docFanStates.length; i += 1) {
         expect(docFanStates[i].device).toBe('TestDevice');
         expect(docFanStates[i].fanState).toBe(fanStates[i + 2].fanState);
+      }
+    });
+  });
+
+  describe('BodyState functions', () => {
+    beforeEach(async () => {
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('bodystates');
+    });
+
+    it('addBodyState adds a BodyState Document correct and returns the object', async () => {
+      const bodyState = {
+        device: 'TestDevice',
+        state: '1',
+      };
+
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const addedBodyState = await database.addBodyState(bodyState);
+      expect(addedBodyState.device).toBe(bodyState.device);
+      expect(addedBodyState.state).toBe(bodyState.state);
+
+      const d = await database.getDevice(bodyState.device);
+      console.log(d);
+      expect(d.currentBodyState.state).toStrictEqual(addedBodyState.state);
+    });
+
+    it('addBodyState throws an error if the validation fails', async () => {
+      const bodyState = {
+        state: '1',
+      };
+
+      await database.addBodyState(bodyState).catch((e) => {
+        expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
+      });
+    });
+
+    it('addBodyState throws an error if the device does not exists', async () => {
+      const bodyState = {
+        device: 'TestDevice',
+        state: '1',
+      };
+
+      await database.addBodyState(bodyState).catch((e) => {
+        expect(e.toString()).toBe('Error: Device does not exists');
+      });
+    });
+
+    it('getBodyStates gets all BodyState of one device', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const bodyStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        bodyStates.push({
+          device: 'TestDevice',
+          state: `${i * 10}`,
+        });
+      }
+
+      await Promise.all(
+        bodyStates.map(async (a) => {
+          await database.addBodyState(a);
+        }),
+      );
+
+      const docBodyStates = await database.getBodyStates('TestDevice');
+
+      expect(docBodyStates.length).toBe(bodyStates.length);
+
+      for (let i = 0; i < docBodyStates.length; i += 1) {
+        expect(docBodyStates[i].device).toBe('TestDevice');
+        expect(docBodyStates[i].state).toBe(bodyStates[i].state);
+      }
+    });
+
+    it('getBodyStates gets all BodyState of one device before a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const bodyStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        bodyStates.push({
+          device: 'TestDevice',
+          state: `${i * 10}`,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        bodyStates.map(async (a) => {
+          await database.addBodyState(a);
+        }),
+      );
+
+      const docBodyStates = await database.getBodyStates('TestDevice', new Date(3 * 10000));
+
+      expect(docBodyStates.length).toBe(bodyStates.length - 2);
+
+      for (let i = 0; i < docBodyStates.length; i += 1) {
+        expect(docBodyStates[i].device).toBe('TestDevice');
+        expect(docBodyStates[i].state).toBe(bodyStates[i + 2].state);
+      }
+    });
+
+    it('getBodyStates gets all BodyState of one device after a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const bodyStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        bodyStates.push({
+          device: 'TestDevice',
+          state: `${i * 10}`,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        bodyStates.map(async (a) => {
+          await database.addBodyState(a);
+        }),
+      );
+
+      const docBodyStates = await database.getBodyStates('TestDevice', undefined, new Date(7 * 10000));
+
+      expect(docBodyStates.length).toBe(bodyStates.length - 3);
+
+      for (let i = 0; i < docBodyStates.length; i += 1) {
+        expect(docBodyStates[i].device).toBe('TestDevice');
+        expect(docBodyStates[i].state).toBe(bodyStates[i].state);
+      }
+    });
+
+    it('getBodyStates gets all BodyState of one device in a specific time range', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const bodyStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        bodyStates.push({
+          device: 'TestDevice',
+          state: i * 10,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        bodyStates.map(async (a) => {
+          await database.addBodyState(a);
+        }),
+      );
+
+      const docBodyStates = await database.getBodyStates('TestDevice', new Date(3 * 10000), new Date(7 * 10000));
+
+      expect(docBodyStates.length).toBe(bodyStates.length - 5);
+
+      for (let i = 0; i < docBodyStates.length; i += 1) {
+        expect(docBodyStates[i].device).toBe('TestDevice');
+        expect(docBodyStates[i].bodyState).toBe(bodyStates[i + 2].bodyState);
       }
     });
   });

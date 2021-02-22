@@ -75,7 +75,9 @@
       <h4 class="text-lg pt-5 font-bold col-span-2">Statistics:</h4>
       <div class="col-span-2 flex justify-between">
         <span class="font-semibold">Body Temperature Alarm</span>
-        <span class="text-right" v-if="device.tacho">{{device.currentBodyAlarm}}</span>
+        <span class="text-right" v-if="device.currentBodyState">
+          {{device.currentBodyState.state}}
+        </span>
       </div>
       <div class="col-span-2 flex justify-between">
         <span class="font-semibold">Fan Temperature Alarm</span>
@@ -120,8 +122,8 @@
           </div>
           <transition name="slide">
             <div v-if="showAlarmStates" class="col-span-2 grid grid-cols-4">
-              <div class="w-20" v-for="(alarm, lamp) in device.currentLampAlarm" :key="lamp">
-                {{alarm.lamp}}: {{alarm.state}}
+              <div class="w-20" v-for="(state, lamp) in device.currentLampState" :key="lamp">
+                {{state.lamp}}: {{state.state}}
               </div>
             </div>
           </transition>

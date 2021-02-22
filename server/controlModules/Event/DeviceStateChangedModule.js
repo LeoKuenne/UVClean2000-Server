@@ -59,7 +59,7 @@ function mqtt(eventemitter, mqttClient) {
             break;
           case 'alarm':
             if (topicArray[4] === 'tempBody') {
-              newState.prop = 'currentBodyAlarm';
+              newState.prop = 'currentBodyState';
             } else if (topicArray[4] === 'tempFan') {
               newState.prop = 'currentFanState';
             } else {
@@ -136,6 +136,12 @@ function database(eventemitter, db) {
         break;
       case 'currentFanState':
         db.addFanState({
+          device: newState.serialnumber,
+          state: newState.newValue,
+        });
+        break;
+      case 'currentBodyState':
+        db.addBodyState({
           device: newState.serialnumber,
           state: newState.newValue,
         });

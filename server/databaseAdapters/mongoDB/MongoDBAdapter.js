@@ -5,6 +5,7 @@ const AlarmStateModel = require('./models/alarmState');
 const LampValueModel = require('./models/lampValue');
 const TachoModel = require('./models/tacho');
 const FanStateModel = require('./models/fanState');
+const BodyStateModel = require('./models/bodyState');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroupModel = require('./models/group').uvcGroupModel;
 const MainLogger = require('../../Logger.js').logger;
@@ -100,6 +101,7 @@ module.exports = class MongoDBAdapter {
     }).populate('currentLampState', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
+      .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
       .populate('currentLampValue', 'date lamp value')
       .exec();
@@ -112,7 +114,7 @@ module.exports = class MongoDBAdapter {
       group: `${device.group}`,
       engineState: device.engineState,
       engineLevel: device.engineLevel,
-      currentBodyAlarm: device.currentBodyAlarm,
+      currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
       currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
       currentLampState: device.currentLampState,
       currentLampValue: device.currentLampValue,
@@ -132,7 +134,8 @@ module.exports = class MongoDBAdapter {
       .populate('currentLampState', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
-      .populate('currentFanAlarm', 'date state')
+      .populate('currentBodyState', 'date state')
+      .populate('currentFanState', 'date state')
       .populate('currentLampValue', 'date lamp value')
       .exec();
 
@@ -145,7 +148,7 @@ module.exports = class MongoDBAdapter {
         group: `${device.group}`,
         engineState: device.engineState,
         engineLevel: device.engineLevel,
-        currentBodyAlarm: device.currentBodyAlarm,
+        currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
         currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
         currentLampState: device.currentLampState,
         currentLampValue: device.currentLampValue,
@@ -414,11 +417,11 @@ module.exports = class MongoDBAdapter {
   }
 
   /**
-   * Adds a fan Alarm document to the database.
+   * Adds a FanState document to the database.
    * @param {Object} fanState The FanState object with the device id
    * respectively serialnumber of that device and the fanState
-   * @param {string} fanAlarm.device the device id respectively serialnumber of that device
-   * @param {string} fanAlarm.state the alarm state
+   * @param {string} fanState.device the device id respectively serialnumber of that device
+   * @param {string} fanState.state the alarm state
    * @returns {Document<any>} Returns the FanState Document
    */
   async addFanState(fanState) {
@@ -451,6 +454,54 @@ module.exports = class MongoDBAdapter {
    */
   async getFanStates(deviceID, fromDate, toDate) {
     const query = FanStateModel.find({ device: deviceID }, '-_id device state date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
+  }
+
+  /**
+   * Adds a BodyState document to the database.
+   * @param {Object} bodyState The BodyState object with the device id
+   * respectively serialnumber of that device and the bodyState
+   * @param {string} bodyAlarm.device the device id respectively serialnumber of that device
+   * @param {string} bodyAlarm.state the alarm state
+   * @returns {Document<any>} Returns the BodyState Document
+   */
+  async addBodyState(bodyState) {
+    const docBodyState = new BodyStateModel(bodyState);
+    const err = docBodyState.validateSync();
+    if (err !== undefined) throw err;
+
+    await docBodyState.save().catch((e) => {
+      if (e) { console.error(e); }
+    });
+
+    UVCDeviceModel.updateOne({
+      _id: bodyState.device,
+    }, {
+      $set: {
+        currentBodyState: docBodyState._id,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    });
+
+    return docBodyState;
+  }
+
+  /**
+   * Gets all BodyState documents of that device
+   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
+   */
+  async getBodyStates(deviceID, fromDate, toDate) {
+    const query = BodyStateModel.find({ device: deviceID }, '-_id device state date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }

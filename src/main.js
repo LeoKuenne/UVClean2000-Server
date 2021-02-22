@@ -67,14 +67,10 @@ new Vue({
               dev.name = `${props.newValue}`;
               break;
             case 'currentFanState':
-              if (dev[props.prop] === undefined) {
-                dev[props.prop] = { state: `${props.newValue}` };
-              } else {
-                dev[props.prop].state = `${props.newValue}`;
-              }
+              dev[props.prop] = { state: `${props.newValue}` };
               break;
-            case 'currentBodyAlarm':
-              dev.currentBodyAlarm = `${props.newValue}`;
+            case 'currentBodyState':
+              dev[props.prop] = { state: `${props.newValue}` };
               break;
             case 'engineState':
             case 'eventMode':

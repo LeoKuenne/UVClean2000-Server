@@ -7,7 +7,6 @@ const deviceData = {
   engineState: true,
   engineLevel: 1,
   currentLampState: [],
-  currentBodyAlarm: 'Ok',
   identifyMode: false,
   eventMode: false,
   airVolume: 200,
@@ -43,6 +42,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.group).toBe(null);
     expect(savedUVCDevice.engineState).toBe(deviceData.engineState);
     expect(savedUVCDevice.engineLevel).toBe(deviceData.engineLevel);
+    expect(savedUVCDevice.currentBodyState).toBeUndefined();
     expect(savedUVCDevice.currentFanState).toBeUndefined();
     expect(savedUVCDevice.currentLampState).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(deviceData.identifyMode);
@@ -65,6 +65,7 @@ describe('UVCDevice Model Test', () => {
     expect(savedUVCDevice.name).toBe(device.name);
     expect(savedUVCDevice.engineState).toBe(false);
     expect(savedUVCDevice.engineLevel).toBe(0);
+    expect(savedUVCDevice.currentBodyState).toBeUndefined();
     expect(savedUVCDevice.currentFanState).toBeUndefined();
     expect(savedUVCDevice.currentLampState).toBeDefined();
     expect(savedUVCDevice.identifyMode).toBe(false);

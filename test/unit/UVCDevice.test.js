@@ -19,10 +19,10 @@ describe('parseStates function', () => {
     expect(UVCDevice.parseStates('identifyMode', undefined, 'Test')).toBe(false);
   });
 
-  it('Parses currentBodyAlarm correctly', () => {
-    expect(UVCDevice.parseStates('currentBodyAlarm', undefined, '1')).toBe('1');
-    expect(UVCDevice.parseStates('currentBodyAlarm', undefined, 10)).toBe('10');
-    expect(UVCDevice.parseStates('currentBodyAlarm', undefined, false)).toBe('false');
+  it('Parses currentBodyState correctly', () => {
+    expect(UVCDevice.parseStates('currentBodyState', undefined, '1')).toBe('1');
+    expect(UVCDevice.parseStates('currentBodyState', undefined, 10)).toBe('10');
+    expect(UVCDevice.parseStates('currentBodyState', undefined, false)).toBe('false');
   });
 
   it('Parses currentFanState correctly', () => {
