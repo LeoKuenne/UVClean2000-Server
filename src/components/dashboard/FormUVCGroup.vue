@@ -41,7 +41,7 @@
 </template>
 <script>
 export default {
-  name: 'FormUVCGRoup',
+  name: 'FormUVCGroup',
   props: ['editGroup', 'isEdit'],
   computed: {
     okProp() {

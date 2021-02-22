@@ -3,7 +3,14 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const uvcDeviceSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
+  _id: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v) => /[0-9]/.test(v),
+      message: (props) => `${props.value} is not a valid serialnumber!`,
+    },
+  },
   name: { type: String, default: 'UVCClean Gerät' },
   group: { type: Schema.Types.ObjectId, ref: 'UVCGroup' },
   engineState: { type: Boolean, default: false },

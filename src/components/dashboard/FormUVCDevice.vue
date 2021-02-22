@@ -17,25 +17,25 @@
       placeholder="123456789"
       class="rounded p-2 border-2 border-gray-500 mb-4">
     <div class="">
-        <button class="float-left font-semibold hover:transform hover:scale-105 transition-all"
-          v-show="isEdit"
-          v-on:click="$emit('delete', editDevice.serialnumber)">
-          Delete
+      <button class="float-left font-semibold hover:transform hover:scale-105 transition-all"
+        v-show="isEdit"
+        v-on:click="$emit('delete', editDevice.serialnumber)">
+        Delete
+      </button>
+      <div class="float-right space-x-2">
+        <button class="font-semibold hover:transform hover:scale-105 transition-all"
+          v-on:click="$emit(isEdit ? 'update' : 'add', {
+            serialnumber: (device.serialnumber === '') ?
+              editDevice.serialnumber : device.serialnumber,
+            name: (device.name === '') ?  editDevice.name : device.name,
+          })">
+          {{okProp}}
         </button>
-        <div class="float-right space-x-2">
-            <button class="font-semibold hover:transform hover:scale-105 transition-all"
-              v-on:click="$emit(isEdit ? 'update' : 'add', {
-                serialnumber: (device.serialnumber === '') ?
-                  editDevice.serialnumber : device.serialnumber,
-                name: (device.name === '') ?  editDevice.name : device.name,
-              })">
-              {{okProp}}
-            </button>
-            <button class="font-semibold hover:transform hover:scale-105 transition-all"
-              v-on:click="$emit('close')">
-              Close
-            </button>
-        </div>
+        <button class="font-semibold hover:transform hover:scale-105 transition-all"
+          v-on:click="$emit('close')">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </template>

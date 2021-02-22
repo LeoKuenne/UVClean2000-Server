@@ -6,6 +6,10 @@ const DeviceStateChangedModule = require('./Event/DeviceStateChangedModule');
 const DeviceChangeStateModule = require('./Command/DeviceChangeStateModule');
 const AddGroupModule = require('./Command/AddGroupModule');
 const GroupAddedModule = require('./Event/GroupAddedModule');
+const GroupAddDeviceModule = require('./Command/GroupAddDeviceModule');
+const GroupDeleteDeviceModule = require('./Command/GroupDeleteDeviceModule');
+const GroupDeviceAddedModule = require('./Event/GroupDeviceAddedModule');
+const GroupDeviceDeletedModule = require('./Event/GroupDeviceDeletedModule');
 const GroupChangeStateModule = require('./Command/GroupChangeStateModule');
 const GroupStateChangedModule = require('./Event/GroupStateChangedModule');
 const DeleteGroupModule = require('./Command/DeleteGroupModule');
@@ -15,15 +19,19 @@ module.exports = {
   modules: [
     AddDeviceModul,
     DeleteDeviceModule,
-    AddGroupModule,
-    DeleteGroupModule,
-    DeviceChangeStateModule,
-    GroupChangeStateModule,
     DeviceAddedModule,
     DeviceDeletedModule,
     DeviceStateChangedModule,
+    DeviceChangeStateModule,
+    AddGroupModule,
     GroupAddedModule,
+    GroupAddDeviceModule,
+    GroupDeleteDeviceModule,
+    GroupDeviceAddedModule,
+    GroupDeviceDeletedModule,
+    GroupChangeStateModule,
     GroupStateChangedModule,
+    DeleteGroupModule,
     GroupDeletedModule,
   ],
 };

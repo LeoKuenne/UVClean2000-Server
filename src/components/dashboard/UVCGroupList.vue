@@ -1,10 +1,10 @@
 <template>
   <div class="p-5 overflow-auto" id="groups">
-    <div class="flex p-2 items-center bg-white shadow">
+    <div class="flex items-center space-x-5">
       <h2 class="text-lg font-bold">Groups</h2>
       <button
         @click="showAddForm"
-        class="w-full text-left text-primary inline-flex items-center px-2
+        class="flex text-left text-primary bg-white shadow items-center p-2
         hover:text-gray-600 hover:transform hover:scale-105
           hover:font-semibold transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 mr-2" viewBox="0 0 16 16">
@@ -19,7 +19,6 @@
     <div class="flex flex-row flex-wrap content-center justify-center">
         <UVCGroup
           @edit="editGroup($event)"
-          v-on="$listeners"
           v-for="group in $dataStore.groups"
           :key="group.id"
           :group="group"

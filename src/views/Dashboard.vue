@@ -7,10 +7,6 @@
     </Sidebar>
     <router-view
       class="w-5/6 h-full"
-      @deviceAdd="deviceAdd($event)"
-      @changeState="changeState($event)"
-      @deviceUpdate="changeState($event)"
-      @deviceDelete="deviceDelete($event)"
       @groupAdd="groupAdd($event)"
       @groupUpdate="groupChangeState($event)"
       @groupDelete="groupDelete($event)">
@@ -46,14 +42,11 @@ export default {
     showGroups() {
       this.$router.push({ name: 'groups' });
     },
-    changeState(newState) {
-      this.$root.$data.socket.emit('device_changeState', newState);
+    deviceAddGroup(props) {
+      this.$root.$data.socket.emit('group_addDevice', { group: props.group, device: props.device });
     },
-    deviceAdd(device) {
-      this.$root.$data.socket.emit('device_add', device);
-    },
-    deviceDelete(serialnumber) {
-      this.$root.$data.socket.emit('device_delete', { serialnumber });
+    deviceRemoveGroup(props) {
+      this.$root.$data.socket.emit('group_deleteDevice', { group: props.group, device: props.device });
     },
     groupAdd(name) {
       this.$root.$data.socket.emit('group_add', name);

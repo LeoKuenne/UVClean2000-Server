@@ -34,6 +34,15 @@ function database(eventemitter, db) {
 
   eventemitter.on('addDevice', async (device) => {
     logger.info(`adding Device ${device.serialnumber} | ${device.name} to database`);
+
+    if (device.name === '' || device.name.match(/[^0-9A-Za-z+ ]/gm) !== null) {
+      throw new Error(`Name has to be vaild. Only numbers, letters and "+" are allowed.\n Invalid characters: ${device.name.match(/[^0-9A-Za-z+ ]/gm).join(',')}`);
+    }
+
+    if (device.serialnumber === '' || device.serialnumber.match(/[^0-9]/gm) !== null) {
+      throw new Error(`Serialnumber has to be vaild. Only Numbers are allowed.\n Invalid characters: ${device.serialnumber.match(/[^0-9]/gm).join(',')}`);
+    }
+
     await db.addDevice(device);
     await db.getDevice(device.serialnumber).then((dev) => {
       logger.info('added Device to database, sending deviceAdded event', dev);

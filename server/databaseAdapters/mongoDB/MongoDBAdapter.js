@@ -600,7 +600,8 @@ module.exports = class MongoDBAdapter {
    * Gets all groups
    */
   async getGroups() {
-    const groupData = await UVCGroupModel.find().exec();
+    const groupData = await UVCGroupModel.find()
+      .exec();
 
     const groups = [];
     groupData.map((group) => {
@@ -712,7 +713,17 @@ module.exports = class MongoDBAdapter {
       $pull: {
         devices: deviceSerialnumber,
       },
-    }, (e) => {
+    }, { new: true }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    }).exec();
+
+    const docClient = await UVCDeviceModel.updateOne({
+      _id: deviceSerialnumber,
+    }, {
+      $set: {
+        group: null,
+      },
+    }, { new: true }, (e) => {
       if (e !== null) { console.error(e); throw e; }
     }).exec();
 

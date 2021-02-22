@@ -5,11 +5,16 @@
       <div class="flex flex-row justify-between items-center">
         <div>
           <h3 class="text-md font-bold">{{device.name}}</h3>
-          <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
+          <div class="flex space-x-5">
+            <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
+            <h4 class="text-sm text-gray-200" v-if="device.group !== 'undefined'">
+              Group: {{device.group}}
+            </h4>
+          </div>
         </div>
         <dropdownMenu
           class="text-primary"
-          :menuItems="[ 'Edit', 'View chart' ]"
+          :menuItems="[ 'Edit', 'View chart', 'Add to Group' ]"
           @itemClicked="menuItemClicked($event)">
         </dropdownMenu>
       </div>
@@ -200,7 +205,11 @@ export default {
         case 'View chart':
           this.$router.push({ path: '/chart', query: { device: this.device.serialnumber } });
           break;
+        case 'Add to Group':
+          this.$emit('assignGroup', this.device);
+          break;
         default:
+          console.log(event);
           break;
       }
     },

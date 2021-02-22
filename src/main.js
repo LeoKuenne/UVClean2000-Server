@@ -55,6 +55,34 @@ new Vue({
       this.$dataStore.groups.push(group);
     });
 
+    socket.on('group_deviceAdded', (prop) => {
+      console.log('Event: group_deviceAdded', prop);
+
+      const group = this.$dataStore.groups.filter((g) => prop.group.id === g.id);
+      const i = this.$dataStore.groups.indexOf(group);
+      this.$dataStore.groups[i] = prop.group;
+
+      const device = this.$dataStore.devices
+        .filter((g) => prop.device.serialnumber === g.serialnumber);
+      const j = this.$dataStore.devices.indexOf(device);
+      console.log(i, j);
+      this.$dataStore.devices[j].group = prop.group;
+    });
+
+    socket.on('group_deviceDeleted', (prop) => {
+      console.log('Event: group_deviceDeleted', prop);
+
+      const group = this.$dataStore.groups.filter((g) => prop.group.id === g.id);
+      const i = this.$dataStore.groups.indexOf(group);
+      this.$dataStore.groups[i] = prop.group;
+
+      const device = this.$dataStore.devices
+        .filter((g) => prop.device.serialnumber === g.serialnumber);
+      const j = this.$dataStore.devices.indexOf(device);
+      console.log(i, j);
+      this.$dataStore.devices[j].group = prop.group;
+    });
+
     socket.on('device_stateChanged', (props) => {
       // console.log('Event: device_stateChanged', props);
 

@@ -1,10 +1,10 @@
 <template>
   <div class="p-5 overflow-auto" id="devices">
-    <div class="flex p-2 items-center bg-white shadow">
+    <div class="flex items-center space-x-5">
       <h2 class="text-lg font-bold">Devices</h2>
       <button
         @click="showAddForm"
-        class="w-full text-left text-primary inline-flex items-center px-2
+        class="flex text-left text-primary bg-white shadow items-center p-2
         hover:text-gray-600 hover:transform hover:scale-105
           hover:font-semibold transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 mr-2" viewBox="0 0 16 16">
@@ -19,74 +19,269 @@
     <div class="flex flex-row flex-wrap content-center justify-center">
         <UVCDevice
           @edit="editDevice($event)"
-          v-on="$listeners"
+          @assignGroup="showGroupForm($event)"
+          @changeState="changeDeviceState($event)"
           v-for="device in $dataStore.devices"
           :key="device.serialnumber"
           :device="device"
           class="shadow-lg">
         </UVCDevice>
     </div>
-    <div
-      v-show="showEditForm"
-      class="fixed top-0 left-0 h-full w-full
-      bg-black bg-opacity-50 flex justify-center items-center"
-      >
-      <FormUVCDevice
-        @close="showEditForm = false"
-        @update="updateDevice($event)"
-        @delete="deleteDevice($event)"
-        @add="addDevice($event)"
-        :editDevice="formDevice"
-        :isEdit="isFormEdit"
-        class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
-        </FormUVCDevice>
-    </div>
+    <UVCForm
+      :title="heading"
+      :show="showEditForm"
+      :errorMessage="errorMessage"
+      @close="closeAddForm">
+      <label for="add_devicename">Devicename</label>
+      <input id="add_devicename"
+        :value="formDevice.name"
+        @input="formDevice.name = $event.target.value"
+        type="text"
+        placeholder="UVCClean2000 Dach"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <label for="add_deviceserialnumber">Serialnumber</label>
+      <input id="add_deviceserialnumber"
+        :value="formDevice.serialnumber"
+        :disabled="isFormEdit"
+        @input="formDevice.serialnumber = $event.target.value"
+        type="text"
+        placeholder="123456789"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <div class="">
+        <button class="float-left font-semibold hover:transform hover:scale-105 transition-all
+          text-red-500"
+          v-show="isFormEdit"
+          @click="deleteDevice(formDevice.serialnumber)">
+          Delete
+        </button>
+        <div class="float-right space-x-2">
+          <button class="font-semibold p-2 hover:transform hover:scale-105 transition-all
+            bg-primary text-white"
+            @click="(isFormEdit) ? updateDevice(formDevice) : addDevice(formDevice)">
+            {{okProp}}
+          </button>
+          <button class="font-semibold hover:transform hover:scale-105 transition-all"
+            @click="closeAddForm">
+            Close
+          </button>
+        </div>
+      </div>
+    </UVCForm>
+
+    <UVCForm
+      :title="'Group Assignment'"
+      :show="showGroupAssignmentForm"
+      :errorMessage="errorMessage"
+      @mounted="fetchGroups"
+      @close="closeGroupForm">
+      <h2><span class="font-bold">Device:</span> {{formDevice.name}}</h2>
+      <div class="w-full flex items-center space-x-2">
+        <label for="device" class="font-bold">Choose the group:</label>
+        <select name="device"
+          v-model="formSelectedGroup"
+          id="device"
+          class="text-black w-full p-2 rounded border border-primary">
+          <option v-for="group in formGroups"
+            :key="group.id"
+            v-bind:value="group.id">
+            {{ group.name }}
+          </option>
+        </select>
+      </div>
+      <div class="items-center">
+        <div class="float-left">
+          <button class="font-semibold hover:transform hover:scale-105 transition-all
+            text-red-500">
+            Remove assignment
+          </button>
+        </div>
+        <div class="float-right space-x-2">
+          <button
+            @click="assignDeviceToGroup"
+            class="font-semibold p-2 hover:transform hover:scale-105 transition-all
+              bg-primary text-white">
+            Assign
+          </button>
+          <button
+            @click="closeGroupForm"
+            class="font-semibold hover:transform hover:scale-105 transition-all">
+            Close
+          </button>
+        </div>
+      </div>
+    </UVCForm>
+
   </div>
 </template>
 <script>
 import UVCDevice from './UVCDevice.vue';
-import FormUVCDevice from './FormUVCDevice.vue';
+import UVCForm from '../UVCForm.vue';
 
 export default {
   name: 'UVCDeviceList',
   components: {
     UVCDevice,
-    FormUVCDevice,
+    UVCForm,
+  },
+  computed: {
+    okProp() {
+      return this.isFormEdit ? 'Update' : 'Add';
+    },
+    heading() {
+      return this.isFormEdit ? 'Update Device' : 'Add Device';
+    },
   },
   methods: {
-    showAddForm() {
+    /**
+     * Called by the group assignment form when its mounted
+     */
+    async fetchGroups() {
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
+        .then((response) => {
+          this.formGroups = response;
+        });
+    },
+    /**
+     * Called by a device when it's wants to be edited
+     */
+    editDevice(device) {
+      this.formDevice = {
+        serialnumber: device.serialnumber,
+        name: device.name,
+      };
+      this.isFormEdit = true;
+      this.showEditForm = true;
+    },
+    /**
+     * Called when the Add to group menu item is clicked
+     */
+    showGroupForm(device) {
+      this.formDevice = {
+        name: device.name,
+        serialnumber: device.serialnumber,
+        group: device.group,
+      };
+      this.showGroupAssignmentForm = true;
+    },
+    /**
+     * Called by the close events at the group
+     */
+    closeGroupForm() {
       this.formDevice = {
         name: '',
         serialnumber: '',
       };
+      this.showGroupAssignmentForm = false;
+    },
+    /**
+     * Called when the assign button of the group form is clicked
+     */
+    assignDeviceToGroup() {
+      console.log({
+        group: this.formDevice.serialnumber,
+        device: this.formSelectedGroup,
+      });
+
+      this.$root.$data.socket.emit('group_addDevice', {
+        group: this.formDevice.serialnumber,
+        device: this.formSelectedGroup,
+      });
+      this.showGroupAssignmentForm = false;
+    },
+    removeClicked(event) {
+      if (event.mode === 'deviceAssign') {
+        this.$emit('deviceRemoveGroup', {
+          device: event.device,
+          group: event.group,
+        });
+      }
+      this.showGroupAssignmentForm = false;
+    },
+    /**
+     * Called by the Add UVClean Device button in the menu bar
+     */
+    showAddForm() {
       this.isFormEdit = false;
       this.showEditForm = true;
     },
+    /**
+     * Called by the close events from the modal
+     */
+    closeAddForm() {
+      this.showEditForm = false;
+      this.formDevice = {
+        name: '',
+        serialnumber: '',
+      };
+      this.errorMessage = '';
+    },
+    /**
+     * Called when the Add button in the modal is pressed
+     */
     addDevice(device) {
-      this.$emit('deviceAdd', device);
+      if (device.name === '' || device.name.match(/[^0-9A-Za-z+ ]/gm) !== null) {
+        this.errorMessage = `Name has to be vaild. Only numbers, letters and "+" are allowed.\n Invalid characters: ${device.name.match(/[^0-9A-Za-z+ ]/gm).join(',')}`;
+        return;
+      }
+
+      if (device.serialnumber === '' || device.serialnumber.match(/[^0-9]/gm) !== null) {
+        this.errorMessage = `Serialnumber has to be vaild. Only Numbers are allowed.\n Invalid characters: ${device.serialnumber.match(/[^0-9]/gm).join(',')}`;
+        return;
+      }
+
+      this.$root.$data.socket.emit('device_add', {
+        name: device.name,
+        serialnumber: device.serialnumber,
+      });
       this.showEditForm = false;
     },
-    editDevice(device) {
-      this.formDevice = device;
-      this.isFormEdit = true;
-      this.showEditForm = true;
-    },
+    /**
+     * Called when the Update button in the modal is pressed
+     */
     updateDevice(device) {
-      this.$emit('deviceUpdate', { serialnumber: device.serialnumber, prop: 'name', newValue: device.name });
+      this.$root.$data.socket.emit('device_changeState', {
+        serialnumber: device.serialnumber,
+        prop: 'name',
+        newValue: device.name,
+      });
       this.showEditForm = false;
     },
+    /**
+     * Called when the Delete button in the modal is pressed
+     */
     deleteDevice(serialnumber) {
-      this.$emit('deviceDelete', serialnumber);
+      this.$root.$data.socket.emit('device_delete', { serialnumber });
       this.showEditForm = false;
+    },
+    /**
+     * Called when any state in the devices should be changed
+     */
+    changeDeviceState(newState) {
+      if (newState.serialnumber === undefined
+        || newState.prop === undefined
+        || newState.newValue === undefined) {
+        console.log('New State can not be parsed', newState);
+        return;
+      }
+      this.$root.$data.socket.emit('device_changeState', newState);
     },
   },
   data() {
     return {
       showEditForm: false,
+      showGroupAssignmentForm: false,
+      errorMessage: '',
       isFormEdit: false,
+      formSelectedGroup: '',
+      formGroups: [],
       formDevice: {
         name: '',
         serialnumber: '',
+      },
+      groupAssignmentOptions: {
+        device: {
+          name: '',
+        },
       },
     };
   },

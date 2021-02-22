@@ -13,8 +13,16 @@
         </dropdownMenu>
       </div>
     </div>
+    <div>
+      <h4 class="text-lg pt-5 font-bold col-span-2">Groupmembers:</h4>
+      <div>
+        <div v-for="device in group.devices" :key="device">
+          <span>SN: {{device}}</span>
+        </div>
+      </div>
+    </div>
     <div class="p-2 grid grid-cols-2 space-y-2 items-center">
-      <label for="b_group_state">Devie State</label>
+      <label for="b_group_state">Group State</label>
       <button id="b_group_state"
         class="p-2 text-white hover:transform hover:scale-105 transition-all"
         v-bind:class="{ 'bg-green-500': group.engineState, 'bg-red-500': !group.engineState }"
