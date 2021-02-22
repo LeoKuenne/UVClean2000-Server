@@ -1,22 +1,67 @@
 {
-  "http": {
-    "port": 3000,
-    "secure": false,
-    "key": "./ssl/localhost_key.pem",
-    "cert": "./ssl/localhost_cert.pem"
-  },
-  "mqtt": {
-    "broker": "192.168.4.10",
-    "port": 1883
-  },
-  "database": {
-    "mongoDB": {
-      "uri": "192.168.4.10",
-      "port": 27017,
-      "database": "uvclean-server"
+  "env": "development",
+  "production": {
+    "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
+    "http": {
+      "cors": "",
+      "broker": "192.168.4.10",
+      "port": 3000,
+      "secure": false,
+      "key": "./ssl/localhost_key.pem",
+      "cert": "./ssl/localhost_cert.pem"
+    },
+    "mqtt": {
+      "broker": "192.168.4.10",
+      "port": 1883
+    },
+    "database": {
+      "mongoDB": {
+        "uri": "192.168.4.10",
+        "port": 27017,
+        "database": "uvclean-server"
+      }
     }
   },
-  "outdated": {
-    "uri": "127.0.0.1"
+  "staging": {
+    "desc": "Testing on server. Frontend build is running on localhost, Backend is running on server",
+    "http": {
+      "cors": "localhost:8080",
+      "port": 3000,
+      "secure": false,
+      "key": "./ssl/localhost_key.pem",
+      "cert": "./ssl/localhost_cert.pem"
+    },
+    "mqtt": {
+      "broker": "192.168.4.10",
+      "port": 1883
+    },
+    "database": {
+      "mongoDB": {
+        "uri": "192.168.4.10",
+        "port": 27017,
+        "database": "uvclean-server"
+      }
+    }
+  },
+  "development": {
+    "desc": "Development on localhost. Database and MQTT Broker is running on localhost",
+    "http": {
+      "cors": "localhost:8080",
+      "port": 3000,
+      "secure": false,
+      "key": "./ssl/localhost_key.pem",
+      "cert": "./ssl/localhost_cert.pem"
+    },
+    "mqtt": {
+      "broker": "localhost",
+      "port": 1883
+    },
+    "database": {
+      "mongoDB": {
+        "uri": "localhost",
+        "port": 27017,
+        "database": "uvclean-server"
+      }
+    }
   }
 }

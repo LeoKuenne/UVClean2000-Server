@@ -7,7 +7,7 @@ const EventEmitter = require('events');
 const MongooseError = require('mongoose').Error;
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
 const controlModules = require('./controlModules/ControlModules').modules;
-const MainLogger = require('./logger.js').logger;
+const MainLogger = require('./Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
@@ -24,19 +24,14 @@ class UVCleanServer extends EventEmitter {
     this.httpServer = http.createServer(this.app);
     this.io = socketio(this.httpServer, {
       cors: {
-        origin: 'http://192.168.4.10:3000',
+        origin: `http://${config.http.cors}`,
         methods: ['GET', 'POST'],
       },
     });
 
-    // this.app.use(history());
     this.app.use(cors());
 
     this.app.use(express.static(`${__dirname}/dashboard/static`));
-
-    // this.app.get('/', (req, res) => {
-    //   res.sendFile(`${__dirname}/dashboard/dist/index.html`);
-    // });
 
     this.app.get('/devices', async (req, res) => {
       const db = await this.database.getDevices();

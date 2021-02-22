@@ -6,7 +6,7 @@ const LampValueModel = require('./models/lampValue');
 const TachoModel = require('./models/tacho');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroupModel = require('./models/group').uvcGroupModel;
-const MainLogger = require('../../logger.js').logger;
+const MainLogger = require('../../Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'MongoDBAdapter' });
 

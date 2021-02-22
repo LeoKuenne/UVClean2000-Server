@@ -1,4 +1,4 @@
-const MainLogger = require('../../logger.js').logger;
+const MainLogger = require('../../Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'GroupAddedModule' });
 
