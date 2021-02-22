@@ -61,9 +61,9 @@ function mqtt(eventemitter, mqttClient) {
             if (topicArray[4] === 'tempBody') {
               newState.prop = 'currentBodyAlarm';
             } else if (topicArray[4] === 'tempFan') {
-              newState.prop = 'currentFanAlarm';
+              newState.prop = 'currentFanState';
             } else {
-              newState.prop = 'currentLampAlarm';
+              newState.prop = 'currentLampState';
             }
 
             break;
@@ -108,18 +108,18 @@ function database(eventemitter, db) {
     let device = {};
 
     switch (newState.prop) {
-      case 'currentLampAlarm':
-        db.setAlarmState({
-          device: newState.serialnumber,
-          lamp: newState.lamp,
-          state: newState.newValue,
-        });
-        break;
       case 'currentLampValue':
         db.addLampValue({
           device: newState.serialnumber,
           lamp: newState.lamp,
           value: newState.newValue,
+        });
+        break;
+      case 'currentLampState':
+        db.setAlarmState({
+          device: newState.serialnumber,
+          state: newState.newValue,
+          lamp: newState.lamp,
         });
         break;
       case 'tacho':
@@ -132,6 +132,12 @@ function database(eventemitter, db) {
         db.addAirVolume({
           device: newState.serialnumber,
           volume: newState.newValue,
+        });
+        break;
+      case 'currentFanState':
+        db.addFanState({
+          device: newState.serialnumber,
+          state: newState.newValue,
         });
         break;
 

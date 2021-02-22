@@ -79,7 +79,9 @@
       </div>
       <div class="col-span-2 flex justify-between">
         <span class="font-semibold">Fan Temperature Alarm</span>
-        <span class="text-right" v-if="device.tacho">{{device.currentFanAlarm}}</span>
+        <span class="text-right" v-if="device.currentFanState">
+          {{device.currentFanState.state}}
+        </span>
       </div>
       <div class="col-span-2 flex flex-col space-y-5 pb-5">
         <div class="">

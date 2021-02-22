@@ -66,8 +66,12 @@ new Vue({
             case 'name':
               dev.name = `${props.newValue}`;
               break;
-            case 'currentFanAlarm':
-              dev.currentFanAlarm = `${props.newValue}`;
+            case 'currentFanState':
+              if (dev[props.prop] === undefined) {
+                dev[props.prop] = { state: `${props.newValue}` };
+              } else {
+                dev[props.prop].state = `${props.newValue}`;
+              }
               break;
             case 'currentBodyAlarm':
               dev.currentBodyAlarm = `${props.newValue}`;
@@ -94,7 +98,7 @@ new Vue({
             case 'engineLevel':
               dev[props.prop] = parseInt(props.newValue, 10);
               break;
-            case 'currentLampAlarm':
+            case 'currentLampState':
               propertie = dev[props.prop];
               if (propertie[props.lamp - 1] === undefined) {
                 propertie[props.lamp - 1] = { lamp: props.lamp, state: props.newValue };

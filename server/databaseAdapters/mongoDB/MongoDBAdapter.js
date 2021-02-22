@@ -4,6 +4,7 @@ const AirVolumeModel = require('./models/airVolume');
 const AlarmStateModel = require('./models/alarmState');
 const LampValueModel = require('./models/lampValue');
 const TachoModel = require('./models/tacho');
+const FanStateModel = require('./models/fanState');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroupModel = require('./models/group').uvcGroupModel;
 const MainLogger = require('../../Logger.js').logger;
@@ -96,9 +97,10 @@ module.exports = class MongoDBAdapter {
 
     const device = await UVCDeviceModel.findOne({
       _id: deviceID,
-    }).populate('currentLampAlarm', 'date lamp state')
+    }).populate('currentLampState', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
+      .populate('currentFanState', 'date state')
       .populate('currentLampValue', 'date lamp value')
       .exec();
 
@@ -111,8 +113,8 @@ module.exports = class MongoDBAdapter {
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentBodyAlarm: device.currentBodyAlarm,
-      currentFanAlarm: device.currentFanAlarm,
-      currentLampAlarm: device.currentLampAlarm,
+      currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
+      currentLampState: device.currentLampState,
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
@@ -127,9 +129,10 @@ module.exports = class MongoDBAdapter {
    */
   async getDevices() {
     const db = await UVCDeviceModel.find()
-      .populate('currentLampAlarm', 'date lamp state')
+      .populate('currentLampState', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
       .populate('tacho', 'date tacho')
+      .populate('currentFanAlarm', 'date state')
       .populate('currentLampValue', 'date lamp value')
       .exec();
 
@@ -143,13 +146,13 @@ module.exports = class MongoDBAdapter {
         engineState: device.engineState,
         engineLevel: device.engineLevel,
         currentBodyAlarm: device.currentBodyAlarm,
-        currentFanAlarm: device.currentFanAlarm,
-        currentLampAlarm: device.currentLampAlarm,
+        currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
+        currentLampState: device.currentLampState,
         currentLampValue: device.currentLampValue,
         identifyMode: device.identifyMode,
         eventMode: device.eventMode,
-        tacho: (device.tacho) ? device.tacho : 0,
-        currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : 0,
+        tacho: (device.tacho) ? device.tacho : { tacho: 0 },
+        currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : { volume: 0 },
       };
       devices.push(d);
       return device;
@@ -217,8 +220,8 @@ module.exports = class MongoDBAdapter {
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentBodyAlarm: device.currentBodyAlarm,
-      currentFanAlarm: device.currentFanAlarm,
-      currentLampAlarm: device.currentLampAlarm,
+      currentFanState: device.currentFanState,
+      currentLampState: device.currentLampState,
       currentLampValue: device.currentLampValue,
       identifyMode: device.identifyMode,
       eventMode: device.eventMode,
@@ -292,7 +295,7 @@ module.exports = class MongoDBAdapter {
       _id: alarmState.device,
     }, {
       $set: {
-        [`currentLampAlarm.${alarmState.lamp - 1}`]: docAlarmState._id,
+        [`currentLampState.${alarmState.lamp - 1}`]: docAlarmState._id,
       },
     }, (e) => {
       if (e !== null) { console.error(e); throw e; }
@@ -400,6 +403,54 @@ module.exports = class MongoDBAdapter {
    */
   async getTachos(deviceID, fromDate, toDate) {
     const query = TachoModel.find({ device: deviceID }, '-_id device tacho date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
+  }
+
+  /**
+   * Adds a fan Alarm document to the database.
+   * @param {Object} fanState The FanState object with the device id
+   * respectively serialnumber of that device and the fanState
+   * @param {string} fanAlarm.device the device id respectively serialnumber of that device
+   * @param {string} fanAlarm.state the alarm state
+   * @returns {Document<any>} Returns the FanState Document
+   */
+  async addFanState(fanState) {
+    const docFanState = new FanStateModel(fanState);
+    const err = docFanState.validateSync();
+    if (err !== undefined) throw err;
+
+    await docFanState.save().catch((e) => {
+      if (e) { console.error(e); }
+    });
+
+    UVCDeviceModel.updateOne({
+      _id: fanState.device,
+    }, {
+      $set: {
+        currentFanState: docFanState._id,
+      },
+    }, (e) => {
+      if (e !== null) { console.error(e); throw e; }
+    });
+
+    return docFanState;
+  }
+
+  /**
+   * Gets all FanState documents of that device
+   * @param {String} deviceID The device ID respectively serialnumber of that device
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
+   */
+  async getFanStates(deviceID, fromDate, toDate) {
+    const query = FanStateModel.find({ device: deviceID }, '-_id device state date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }

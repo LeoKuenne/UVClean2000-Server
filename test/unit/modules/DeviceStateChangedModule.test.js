@@ -67,9 +67,9 @@ describe('MQTT Section', () => {
     ['UVClean/1/stateChanged/engineState', false, { serialnumber: '1', prop: 'engineState', newValue: false }],
     ['UVClean/1/stateChanged/engineLevel', 1, { serialnumber: '1', prop: 'engineLevel', newValue: 1 }],
     ['UVClean/1/stateChanged/alarm/tempBody', 'Ok', { serialnumber: '1', prop: 'currentBodyAlarm', newValue: 'Ok' }],
-    ['UVClean/1/stateChanged/alarm/tempFan', 'Ok', { serialnumber: '1', prop: 'currentFanAlarm', newValue: 'Ok' }],
+    ['UVClean/1/stateChanged/alarm/tempFan', 'Ok', { serialnumber: '1', prop: 'currentFanState', newValue: 'Ok' }],
     ['UVClean/1/stateChanged/alarm/1', 'Ok', {
-      serialnumber: '1', prop: 'currentLampAlarm', lamp: 1, newValue: 'Ok',
+      serialnumber: '1', prop: 'currentLampState', lamp: 1, newValue: 'Ok',
     }],
     ['UVClean/1/stateChanged/lamp/1', 'Ok', {
       serialnumber: '1', prop: 'currentLampValue', lamp: 1, newValue: 'Ok',
@@ -115,65 +115,41 @@ describe('MQTT Section', () => {
 });
 
 describe('Database Section', () => {
-  it('Database Module updates database according to the event - engineState / default', () => {
+  test.only.each([
+    [{ serialnumber: '1', prop: 'engineState', newValue: false },
+      'updateDevice', { serialnumber: '1', engineState: false }],
+    [{ serialnumber: '1', prop: 'engineLevel', newValue: 1 },
+      'updateDevice', { serialnumber: '1', engineLevel: 1 }],
+    [{ serialnumber: '1', prop: 'currentBodyAlarm', newValue: 'Ok' },
+      'updateDevice', { serialnumber: '1', currentBodyAlarm: 'Ok' }],
+    [{ serialnumber: '1', prop: 'currentFanState', newValue: 'Ok' },
+      'addFanState', { device: '1', state: 'Ok' }],
+    [{
+      serialnumber: '1', prop: 'currentLampState', lamp: 1, newValue: 'Ok',
+    },
+    'setAlarmState', { device: '1', state: 'Ok', lamp: 1 }],
+    [{
+      serialnumber: '1', prop: 'currentLampValue', lamp: 1, newValue: 10,
+    },
+    'addLampValue', { device: '1', lamp: 1, value: 10 }],
+    [{ serialnumber: '1', prop: 'identifyMode', newValue: false },
+      'updateDevice', { serialnumber: '1', identifyMode: false }],
+    [{ serialnumber: '1', prop: 'eventMode', newValue: false },
+      'updateDevice', { serialnumber: '1', eventMode: false }],
+    [{ serialnumber: '1', prop: 'tacho', newValue: 10 },
+      'addTacho', { device: '1', tacho: 10 }],
+    [{ serialnumber: '1', prop: 'currentAirVolume', newValue: 10 },
+      'addAirVolume', { device: '1', volume: 10 }],
+  ])('Database Module gets %o and updates the database with %s method and %o as parameter', (event, dbMethod, result) => {
     const eventemitter = new EventEmitter();
-    const db = {
-      updateDevice: jest.fn(),
-    };
+
+    const db = {};
+    db[dbMethod] = jest.fn();
 
     deviceStateChanged.databaseModule(eventemitter, db);
 
-    eventemitter.emit('deviceStateChanged', {
-      serialnumber: '1',
-      prop: 'engineState',
-      newValue: true,
-    });
+    eventemitter.emit('deviceStateChanged', event);
 
-    expect(db.updateDevice).toHaveBeenCalledWith({
-      serialnumber: '1',
-      engineState: true,
-    });
-  });
-
-  it('Database Module updates database according to the event - alarm', () => {
-    const eventemitter = new EventEmitter();
-    const db = {
-      setAlarmState: jest.fn(),
-    };
-
-    deviceStateChanged.databaseModule(eventemitter, db);
-
-    eventemitter.emit('deviceStateChanged', {
-      serialnumber: '1',
-      prop: 'alarm',
-      newValue: 'Alarm',
-      lamp: 1,
-    });
-
-    expect(db.setAlarmState).toHaveBeenCalledWith({
-      device: '1',
-      state: 'Alarm',
-      lamp: 1,
-    });
-  });
-
-  it('Database Module updates database according to the event - currentAirVolume', () => {
-    const eventemitter = new EventEmitter();
-    const db = {
-      addAirVolume: jest.fn(),
-    };
-
-    deviceStateChanged.databaseModule(eventemitter, db);
-
-    eventemitter.emit('deviceStateChanged', {
-      serialnumber: '1',
-      prop: 'currentAirVolume',
-      newValue: 123,
-    });
-
-    expect(db.addAirVolume).toHaveBeenCalledWith({
-      device: '1',
-      volume: 123,
-    });
+    expect(db[dbMethod]).toHaveBeenCalledWith(result);
   });
 });

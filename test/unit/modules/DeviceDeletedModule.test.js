@@ -19,18 +19,16 @@ describe('SocketIO Section', () => {
     const socket = new EventEmitter();
     const fn = jest.fn();
 
-    const device = {
-      serialnumber: 1,
-      name: 'Test',
-    };
+    const serialnumber = '1';
 
     socket.on('device_deleted', fn);
 
     deviceDeletedModule.socketIOModule(eventemitter, socket, {});
 
-    eventemitter.emit('deviceDeleted', device);
+    eventemitter.emit('deviceDeleted', serialnumber);
 
     expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith(serialnumber);
   });
 
   it('SocketIO Module gets removed with removeSocketIOModule', () => {
@@ -39,10 +37,7 @@ describe('SocketIO Section', () => {
     const fn = jest.fn();
     const spy = jest.spyOn(eventemitter, 'removeAllListeners');
 
-    const device = {
-      serialnumber: 1,
-      name: 'Test',
-    };
+    const serialnumber = '1';
 
     socket.on('device_deleted', fn);
 
@@ -50,7 +45,7 @@ describe('SocketIO Section', () => {
     deviceDeletedModule.removeSocketIOModule(eventemitter, socket, {});
     expect(spy).toHaveBeenCalledTimes(1);
 
-    eventemitter.emit('deviceDeleted', device);
+    eventemitter.emit('deviceDeleted', serialnumber);
 
     expect(fn).toHaveBeenCalledTimes(0);
   });
@@ -64,14 +59,11 @@ describe('MQTT Section', () => {
       unsubscribe: jest.fn(),
     };
 
-    const device = {
-      serialnumber: '1',
-      name: 'Test',
-    };
+    const serialnumber = '1';
 
     deviceDeletedModule.mqttClientModule(eventemitter, mqttClient);
-    eventemitter.emit('deviceDeleted', device);
+    eventemitter.emit('deviceDeleted', serialnumber);
 
-    expect(mqttClient.unsubscribe).toHaveBeenCalledWith(`UVClean/${device.serialnumber}/#`);
+    expect(mqttClient.unsubscribe).toHaveBeenCalledWith(`UVClean/${serialnumber}/#`);
   });
 });

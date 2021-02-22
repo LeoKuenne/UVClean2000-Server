@@ -75,9 +75,9 @@ describe('MongoDBAdapter Functions', () => {
       expect(returnedDevice.group).toBeDefined();
       expect(returnedDevice.engineState).toBe(false);
       expect(returnedDevice.engineLevel).toBe(0);
-      expect(returnedDevice.currentFanAlarm).toBe('Ok');
+      expect(returnedDevice.currentFanState).toStrictEqual({ state: '' });
       expect(returnedDevice.currentBodyAlarm).toBe('Ok');
-      expect(returnedDevice.currentLampAlarm).toBeDefined();
+      expect(returnedDevice.currentLampState).toBeDefined();
       expect(returnedDevice.currentLampValue).toBeDefined();
       expect(returnedDevice.identifyMode).toBe(false);
       expect(returnedDevice.eventMode).toBe(false);
@@ -128,14 +128,14 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].name).toBe(`Test Device ${i + 1}`);
         expect(dbData[i].engineState).toBe(false);
         expect(dbData[i].engineLevel).toBe(0);
-        expect(dbData[i].currentFanAlarm).toBe('Ok');
+        expect(dbData[i].currentFanState).toStrictEqual({ state: '' });
         expect(dbData[i].currentBodyAlarm).toBe('Ok');
-        expect(dbData[i].currentLampAlarm).toBeDefined();
+        expect(dbData[i].currentLampState).toBeDefined();
         expect(dbData[i].currentLampValue).toBeDefined();
         expect(dbData[i].identifyMode).toBe(false);
         expect(dbData[i].eventMode).toBe(false);
-        expect(dbData[i].tacho).toStrictEqual(0);
-        expect(dbData[i].currentAirVolume).toStrictEqual(0);
+        expect(dbData[i].tacho).toStrictEqual({ tacho: 0 });
+        expect(dbData[i].currentAirVolume).toStrictEqual({ volume: 0 });
       }
     });
 
@@ -435,7 +435,7 @@ describe('MongoDBAdapter Functions', () => {
       expect(addedAlarmState.state).toBe(alarmState.state);
 
       const d = await database.getDevice(device.serialnumber);
-      expect(d.currentLampAlarm[alarmState.lamp - 1]._id).toStrictEqual(addedAlarmState._id);
+      expect(d.currentLampState[alarmState.lamp - 1]._id).toStrictEqual(addedAlarmState._id);
     });
 
     it('setAlarmState throws an error if the validation fails', async () => {
@@ -486,8 +486,8 @@ describe('MongoDBAdapter Functions', () => {
       await database.getAlarmState(device.serialnumber);
       const databaseDevice = await database.getDevice(device.serialnumber);
 
-      for (let i = 1; i <= databaseDevice.currentLampAlarm.length; i += 1) {
-        const alarmState = databaseDevice.currentLampAlarm[i - 1];
+      for (let i = 1; i <= databaseDevice.currentLampState.length; i += 1) {
+        const alarmState = databaseDevice.currentLampState[i - 1];
         expect(alarmState.lamp).toBe(i);
         expect(alarmState.state).toBe(alarms[i - 1].state);
       }
@@ -971,6 +971,187 @@ describe('MongoDBAdapter Functions', () => {
       for (let i = 0; i < docTachos.length; i += 1) {
         expect(docTachos[i].device).toBe('TestDevice');
         expect(docTachos[i].tacho).toBe(tachos[i + 2].tacho);
+      }
+    });
+  });
+
+  describe('FanState functions', () => {
+    beforeEach(async () => {
+      await database.clearCollection('uvcdevices');
+      await database.clearCollection('fanstates');
+    });
+
+    it('addFanState adds a FanState Document correct and returns the object', async () => {
+      const fanState = {
+        device: 'TestDevice',
+        state: '1',
+      };
+
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const addedFanState = await database.addFanState(fanState);
+      expect(addedFanState.device).toBe(fanState.device);
+      expect(addedFanState.state).toBe(fanState.state);
+
+      const d = await database.getDevice(fanState.device);
+      console.log(d);
+      expect(d.currentFanState.state).toStrictEqual(addedFanState.state);
+    });
+
+    it('addFanState throws an error if the validation fails', async () => {
+      const fanState = {
+        state: '1',
+      };
+
+      await database.addFanState(fanState).catch((e) => {
+        expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
+      });
+    });
+
+    it('addFanState throws an error if the device does not exists', async () => {
+      const fanState = {
+        device: 'TestDevice',
+        state: '1',
+      };
+
+      await database.addFanState(fanState).catch((e) => {
+        expect(e.toString()).toBe('Error: Device does not exists');
+      });
+    });
+
+    it('getFanStates gets all FanState of one device', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const fanStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        fanStates.push({
+          device: 'TestDevice',
+          state: `${i * 10}`,
+        });
+      }
+
+      await Promise.all(
+        fanStates.map(async (a) => {
+          await database.addFanState(a);
+        }),
+      );
+
+      const docFanStates = await database.getFanStates('TestDevice');
+
+      expect(docFanStates.length).toBe(fanStates.length);
+
+      for (let i = 0; i < docFanStates.length; i += 1) {
+        expect(docFanStates[i].device).toBe('TestDevice');
+        expect(docFanStates[i].state).toBe(fanStates[i].state);
+      }
+    });
+
+    it('getFanStates gets all FanState of one device before a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const fanStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        fanStates.push({
+          device: 'TestDevice',
+          state: `${i * 10}`,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        fanStates.map(async (a) => {
+          await database.addFanState(a);
+        }),
+      );
+
+      const docFanStates = await database.getFanStates('TestDevice', new Date(3 * 10000));
+
+      expect(docFanStates.length).toBe(fanStates.length - 2);
+
+      for (let i = 0; i < docFanStates.length; i += 1) {
+        expect(docFanStates[i].device).toBe('TestDevice');
+        expect(docFanStates[i].state).toBe(fanStates[i + 2].state);
+      }
+    });
+
+    it('getFanStates gets all FanState of one device after a specific date', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const fanStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        fanStates.push({
+          device: 'TestDevice',
+          state: `${i * 10}`,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        fanStates.map(async (a) => {
+          await database.addFanState(a);
+        }),
+      );
+
+      const docFanStates = await database.getFanStates('TestDevice', undefined, new Date(7 * 10000));
+
+      expect(docFanStates.length).toBe(fanStates.length - 3);
+
+      for (let i = 0; i < docFanStates.length; i += 1) {
+        expect(docFanStates[i].device).toBe('TestDevice');
+        expect(docFanStates[i].state).toBe(fanStates[i].state);
+      }
+    });
+
+    it('getFanStates gets all FanState of one device in a specific time range', async () => {
+      const device = {
+        serialnumber: 'TestDevice',
+        name: 'Test Device 1',
+      };
+
+      await database.addDevice(device);
+
+      const fanStates = [];
+      for (let i = 1; i <= 10; i += 1) {
+        fanStates.push({
+          device: 'TestDevice',
+          state: i * 10,
+          date: new Date(i * 10000),
+        });
+      }
+
+      await Promise.all(
+        fanStates.map(async (a) => {
+          await database.addFanState(a);
+        }),
+      );
+
+      const docFanStates = await database.getFanStates('TestDevice', new Date(3 * 10000), new Date(7 * 10000));
+
+      expect(docFanStates.length).toBe(fanStates.length - 5);
+
+      for (let i = 0; i < docFanStates.length; i += 1) {
+        expect(docFanStates[i].device).toBe('TestDevice');
+        expect(docFanStates[i].fanState).toBe(fanStates[i + 2].fanState);
       }
     });
   });
