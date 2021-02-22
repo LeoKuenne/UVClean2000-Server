@@ -1582,8 +1582,10 @@ describe('MongoDBAdapter Functions', () => {
       });
       await database.addDeviceToGroup(device.serialnumber, `${group.id}`);
       const docGroup = await database.getGroup(`${group.id}`);
+      const docDevice = await database.getDevice(`${device.serialnumber}`);
       expect(docGroup.devices.length).toBe(1);
       expect(docGroup.devices[0]).toBe(device.serialnumber);
+      expect(docDevice.group).toBe(group.id);
     });
 
     it('addDeviceToGroup adds an multiple devices to the group', async () => {
@@ -1605,6 +1607,8 @@ describe('MongoDBAdapter Functions', () => {
       expect(docGroup.devices.length).toBe(10);
       for (let i = 0; i < 10; i += 1) {
         expect(docGroup.devices[i]).toBe(devices[i].serialnumber);
+        const docDevice = await database.getDevice(docGroup.devices[i]);
+        expect(docDevice.group).toBe(docGroup.id);
       }
     });
 
@@ -1655,6 +1659,8 @@ describe('MongoDBAdapter Functions', () => {
       await database.deleteDeviceFromGroup(device.serialnumber, `${group._id}`);
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(0);
+      const docDevice = await database.getDevice(device.serialnumber);
+      expect(docDevice.group).toBe('null');
     });
 
     it('deleteDeviceFromGroup deletes an multiple devices from the group', async () => {
@@ -1674,6 +1680,12 @@ describe('MongoDBAdapter Functions', () => {
 
       await database.deleteDeviceFromGroup('15', `${group._id}`);
       await database.deleteDeviceFromGroup('16', `${group._id}`);
+
+      const docDevice1 = await database.getDevice('15');
+      expect(docDevice1.group).toBe('null');
+
+      const docDevice2 = await database.getDevice('16');
+      expect(docDevice2.group).toBe('null');
 
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(8);
