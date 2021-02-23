@@ -263,6 +263,7 @@ export default {
         console.log('New State can not be parsed', newState);
         return;
       }
+      console.log(newState);
       this.$root.$data.socket.emit('device_changeState', newState);
     },
   },

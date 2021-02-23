@@ -81,7 +81,7 @@ class UVCleanServer extends EventEmitter {
 
         // Debug any messages that are coming from the frontend
         socket.onAny((event, ...args) => {
-          logger.debug(`Debug: Socket.io Message: ${event}`, args);
+          logger.debug(`Socket.io Message: ${event}`, args);
         });
 
         socket.on('disconnect', () => {

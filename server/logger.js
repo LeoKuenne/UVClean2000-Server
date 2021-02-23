@@ -26,7 +26,7 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.File({ filename: `logs/error/${d}.log`, level: 'error' }),
-    new winston.transports.File({ filename: `logs/combined/${d}.log` }),
+    new winston.transports.File({ filename: `logs/combined/${d}.log`, level: 'debug' }),
   ],
 });
 
@@ -36,6 +36,8 @@ const myFormat = format.printf(({
 
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
+    levels: winston.config.syslog.levels,
+    level: 'debug',
     format: format.combine(
       format.colorize(),
       format.timestamp({
