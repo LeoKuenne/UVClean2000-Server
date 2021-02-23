@@ -38,7 +38,7 @@ function database(eventemitter, db) {
     switch (newState.prop) {
       case 'name':
         docGroup = await db.updateGroup({
-          _id: newState.id,
+          id: `${newState.id}`,
           name: newState.newValue,
         });
 
