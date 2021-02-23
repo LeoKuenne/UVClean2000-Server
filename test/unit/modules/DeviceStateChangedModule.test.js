@@ -115,7 +115,7 @@ describe('MQTT Section', () => {
 });
 
 describe('Database Section', () => {
-  test.only.each([
+  test.each([
     [{ serialnumber: '1', prop: 'engineState', newValue: false },
       'updateDevice', { serialnumber: '1', engineState: false }],
     [{ serialnumber: '1', prop: 'engineLevel', newValue: 1 },

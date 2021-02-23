@@ -668,7 +668,9 @@ module.exports = class MongoDBAdapter {
       },
     ).exec();
 
-    console.log(docDevice.group);
+    if (docDevice === null) {
+      throw new Error('Device does not exists');
+    }
 
     if (docDevice.group !== undefined || docDevice.group === null) {
       await this.deleteDeviceFromGroup(`${docDevice.serialnumber}`, `${docDevice.group}`);

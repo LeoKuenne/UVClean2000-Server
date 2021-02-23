@@ -95,7 +95,7 @@ describe('Database Section', () => {
     });
 
     expect(spy).toHaveBeenCalledWith({
-      _id: '1',
+      id: '1',
       name: 'Test Gruppe',
     });
   });

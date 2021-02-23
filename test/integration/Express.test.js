@@ -28,6 +28,7 @@ describe('Express Route testing', () => {
   beforeEach(() => {
     database.clearCollection('uvcdevices');
     database.clearCollection('uvcgroups');
+    database.clearCollection('airvolumes');
   });
 
   it('GET /devices', async (done) => {
@@ -112,15 +113,10 @@ describe('Express Route testing', () => {
       volumes.push({
         device: '1',
         volume: 10 * i,
-        date: new Date(i * 10000),
+        date: new Date((i + 1) * 10000),
       });
+      await database.addAirVolume(volumes[i]);
     }
-
-    await Promise.all(
-      volumes.map(async (v) => {
-        await database.addAirVolume(v);
-      }),
-    );
 
     const res = await request.get('/device')
       .query({ device: '1' })
@@ -128,8 +124,8 @@ describe('Express Route testing', () => {
     expect(res.status).toBe(200);
     for (let i = 0; i < 10; i += 1) {
       expect(res.body[i].device).toBe(device.serialnumber);
-      expect(res.body[i].volume).toBe(volumes[i].volume);
       expect(res.body[i].date).toBe(volumes[i].date.toISOString());
+      expect(res.body[i].volume).toBe(volumes[i].volume);
     }
     done();
   });
