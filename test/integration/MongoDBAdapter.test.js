@@ -1588,6 +1588,33 @@ describe('MongoDBAdapter Functions', () => {
       expect(docDevice.group).toBe(group.id);
     });
 
+    it('addDeviceToGroup removes device from the group its assigned to', async () => {
+      const device = await database.addDevice({
+        serialnumber: '1',
+        name: 'TestDevice',
+      });
+
+      const group1 = await database.addGroup({
+        name: 'Test Group1',
+      });
+
+      const group2 = await database.addGroup({
+        name: 'Test Group2',
+      });
+
+      await database.addDeviceToGroup(device.serialnumber, `${group1.id}`);
+      await database.addDeviceToGroup(device.serialnumber, `${group2.id}`);
+
+      const docGroup1 = await database.getGroup(`${group1.id}`);
+      const docGroup2 = await database.getGroup(`${group2.id}`);
+      const docDevice = await database.getDevice(`${device.serialnumber}`);
+
+      expect(docGroup1.devices.length).toBe(0);
+      expect(docGroup2.devices.length).toBe(1);
+      expect(docGroup2.devices[0]).toBe(device.serialnumber);
+      expect(docDevice.group).toBe(group2.id);
+    });
+
     it('addDeviceToGroup adds an multiple devices to the group', async () => {
       const group = await database.addGroup({
         name: 'Test Group',

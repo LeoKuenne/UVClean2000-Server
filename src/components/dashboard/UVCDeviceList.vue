@@ -183,8 +183,8 @@ export default {
       });
 
       this.$root.$data.socket.emit('group_addDevice', {
-        group: this.formDevice.serialnumber,
-        device: this.formSelectedGroup,
+        device: this.formDevice.serialnumber,
+        group: this.formSelectedGroup,
       });
       this.showGroupAssignmentForm = false;
     },

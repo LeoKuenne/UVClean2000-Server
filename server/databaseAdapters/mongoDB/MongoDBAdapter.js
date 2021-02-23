@@ -660,8 +660,21 @@ module.exports = class MongoDBAdapter {
   async addDeviceToGroup(deviceSerialnumber, groupID) {
     if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and typeof string'); }
     if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    logger.info(`Adding device ${deviceSerialnumber} to group ${groupID}`);
 
-    const docDevice = await UVCDeviceModel.updateOne(
+    const docDevice = await UVCDeviceModel.findOne(
+      {
+        serialnumber: deviceSerialnumber,
+      },
+    ).exec();
+
+    console.log(docDevice.group);
+
+    if (docDevice.group !== undefined || docDevice.group === null) {
+      await this.deleteDeviceFromGroup(`${docDevice.serialnumber}`, `${docDevice.group}`);
+    }
+
+    await UVCDeviceModel.updateOne(
       {
         serialnumber: deviceSerialnumber,
       },
@@ -697,6 +710,7 @@ module.exports = class MongoDBAdapter {
   async deleteDeviceFromGroup(deviceSerialnumber, groupID) {
     if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and typeof string'); }
     if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    logger.info(`Deleting device ${deviceSerialnumber} from group ${groupID}`);
 
     await this.getDevice(deviceSerialnumber);
 

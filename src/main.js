@@ -21,24 +21,12 @@ new Vue({
   data: {
     socket,
   },
-  created() {
+  async created() {
     window.onbeforeunload = () => {
       socket.emit('leave', this.username);
     };
 
-    fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/devices`).then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        this.$dataStore.devices = data;
-        console.log(this.$dataStore);
-      });
-
-    fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        this.$dataStore.groups = data;
-        console.log(this.$dataStore);
-      });
+    await this.fetchDataFromServer();
 
     // Debug any messages that are coming from the backend
     socket.onAny((event, ...args) => {
@@ -55,32 +43,16 @@ new Vue({
       this.$dataStore.groups.push(group);
     });
 
-    socket.on('group_deviceAdded', (prop) => {
+    socket.on('group_deviceAdded', async (prop) => {
       console.log('Event: group_deviceAdded', prop);
 
-      const group = this.$dataStore.groups.filter((g) => prop.group.id === g.id);
-      const i = this.$dataStore.groups.indexOf(group);
-      this.$dataStore.groups[i] = prop.group;
-
-      const device = this.$dataStore.devices
-        .filter((g) => prop.device.serialnumber === g.serialnumber);
-      const j = this.$dataStore.devices.indexOf(device);
-      console.log(i, j);
-      this.$dataStore.devices[j].group = prop.group;
+      await this.fetchDataFromServer();
     });
 
-    socket.on('group_deviceDeleted', (prop) => {
+    socket.on('group_deviceDeleted', async (prop) => {
       console.log('Event: group_deviceDeleted', prop);
 
-      const group = this.$dataStore.groups.filter((g) => prop.group.id === g.id);
-      const i = this.$dataStore.groups.indexOf(group);
-      this.$dataStore.groups[i] = prop.group;
-
-      const device = this.$dataStore.devices
-        .filter((g) => prop.device.serialnumber === g.serialnumber);
-      const j = this.$dataStore.devices.indexOf(device);
-      console.log(i, j);
-      this.$dataStore.devices[j].group = prop.group;
+      await this.fetchDataFromServer();
     });
 
     socket.on('device_stateChanged', (props) => {
@@ -191,5 +163,22 @@ new Vue({
         }
       }
     });
+  },
+  methods: {
+    async fetchDataFromServer() {
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/devices`).then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          this.$dataStore.devices = data;
+          console.log(this.$dataStore);
+        });
+
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          this.$dataStore.groups = data;
+          console.log(this.$dataStore);
+        });
+    },
   },
 }).$mount('#app');
