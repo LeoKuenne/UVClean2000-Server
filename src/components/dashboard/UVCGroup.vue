@@ -13,11 +13,15 @@
         </dropdownMenu>
       </div>
     </div>
-    <div>
-      <h4 class="text-lg pt-5 font-bold col-span-2">Groupmembers:</h4>
-      <div>
-        <div v-for="device in group.devices" :key="device">
-          <span>SN: {{device}}</span>
+    <div class="p-2">
+      <h4 class="text-lg pt-2 font-bold col-span-2">Groupmembers:</h4>
+      <div class="pl-2 space-y-1">
+        <div
+          class="bg-gray-200 p-2 rounded"
+          v-for="device in group.devices"
+          :key="device">
+          <h5 class="font-semibold text-sm">{{device.name}}</h5>
+          <h5 class="italic text-xs">SN: {{device.serialnumber}}</h5>
         </div>
       </div>
     </div>

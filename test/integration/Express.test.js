@@ -37,7 +37,7 @@ describe('Express Route testing', () => {
       devices.push({
         serialnumber: `${i}`,
         name: `Test ${i}`,
-        group: 'undefined',
+        group: {},
         engineState: false,
         engineLevel: 0,
         currentBodyState: { state: '' },

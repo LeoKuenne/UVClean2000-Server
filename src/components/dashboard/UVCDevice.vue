@@ -5,12 +5,10 @@
       <div class="flex flex-row justify-between items-center">
         <div>
           <h3 class="text-md font-bold">{{device.name}}</h3>
-          <div class="flex space-x-5">
-            <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
-            <h4 class="text-sm text-gray-200" v-if="device.group !== 'undefined'">
-              Group: {{device.group}}
-            </h4>
-          </div>
+          <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
+          <h4 class="text-sm text-gray-200" v-if="device.group.name !== undefined">
+            Group: {{device.group.name}}
+          </h4>
         </div>
         <dropdownMenu
           class="text-primary"

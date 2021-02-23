@@ -72,7 +72,7 @@ describe('MongoDBAdapter Functions', () => {
       const returnedDevice = await database.getDevice(device.serialnumber);
       expect(returnedDevice.serialnumber).toBe(device.serialnumber);
       expect(returnedDevice.name).toBe(device.name);
-      expect(returnedDevice.group).toBeDefined();
+      expect(returnedDevice.group).toStrictEqual({});
       expect(returnedDevice.engineState).toBe(false);
       expect(returnedDevice.engineLevel).toBe(0);
       expect(returnedDevice.currentFanState).toStrictEqual({ state: '' });
@@ -126,6 +126,7 @@ describe('MongoDBAdapter Functions', () => {
       for (let i = 0; i < dbData.length; i += 1) {
         expect(dbData[i].serialnumber).toBe(`MongoDBAdapter_Test_${i + 1}`);
         expect(dbData[i].name).toBe(`Test Device ${i + 1}`);
+        expect(dbData[i].group).toStrictEqual({});
         expect(dbData[i].engineState).toBe(false);
         expect(dbData[i].engineLevel).toBe(0);
         expect(dbData[i].currentFanState).toStrictEqual({ state: '' });
@@ -141,13 +142,13 @@ describe('MongoDBAdapter Functions', () => {
 
     it('updateDevice updates a device correct and returns the object', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 2',
       };
 
       await database.addDevice(
         {
-          serialnumber: '123456789',
+          serialnumber: '000000000000000001111111',
           name: 'Test Device 1',
         },
       );
@@ -158,7 +159,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('updateDevice throws error if device is not available', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 2',
       };
 
@@ -179,7 +180,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('deleteDevice deletes a device', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -192,7 +193,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('deleteDevice deletes a device and is removed from the group', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
       await database.addDevice(device);
@@ -254,12 +255,12 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addAirVolume adds a AirVolume Document correct and returns the object', async () => {
       const airVolume = {
-        device: '1',
+        device: '000000000000000000000001',
         volume: 10,
       };
 
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -297,7 +298,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getAirVolumes gets all AirVolumes of one device', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -329,7 +330,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getAirVolumes gets all AirVolumes of one device after a specific date', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -362,7 +363,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getAirVolumes gets all AirVolumes of one device in a specific time range', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -395,7 +396,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getAirVolumes gets all AirVolumes of one device before a specific date', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -435,13 +436,13 @@ describe('MongoDBAdapter Functions', () => {
 
     it('setAlarmState adds a AlarmState Document correct and returns the object', async () => {
       const alarmState = {
-        device: '1',
+        device: '000000000000000000000001',
         lamp: 1,
         state: 'OK',
       };
 
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -468,7 +469,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('setAlarmState throws an error if the device does not exists', async () => {
       const alarmState = {
-        device: '1',
+        device: '000000000000000000000001',
         lamp: 1,
         state: 'OK',
       };
@@ -480,7 +481,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('setAlarmState changes the AlarmState of a device proberly', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -489,7 +490,7 @@ describe('MongoDBAdapter Functions', () => {
       const alarms = [];
       for (let i = 1; i <= 10; i += 1) {
         alarms.push({
-          device: '1',
+          device: '000000000000000000000001',
           lamp: i,
           state: (i % 2 === 1) ? 'OK' : 'Alarm',
         });
@@ -513,7 +514,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getAlarmState gets all AlarmStates of one device', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -522,7 +523,7 @@ describe('MongoDBAdapter Functions', () => {
       const alarms = [];
       for (let i = 1; i <= 10; i += 1) {
         alarms.push({
-          device: '1',
+          device: '000000000000000000000001',
           lamp: i,
           state: (i % 2 === 1) ? 'OK' : 'Alarm',
         });
@@ -534,12 +535,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const alarmStates = await database.getAlarmState('1');
+      const alarmStates = await database.getAlarmState('000000000000000000000001');
 
       expect(alarms.length).toBe(alarmStates.length);
 
       for (let i = 0; i < alarms.length; i += 1) {
-        expect(alarmStates[i].device).toBe('1');
+        expect(alarmStates[i].device).toBe('000000000000000000000001');
         expect(alarmStates[i].lamp).toBe(alarms[i].lamp);
         expect(alarmStates[i].state).toBe(alarms[i].state);
       }
@@ -554,13 +555,13 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addLampValue adds a LampValue Document correct and returns the object', async () => {
       const lampValue = {
-        device: '1',
+        device: '000000000000000000000001',
         lamp: 1,
         value: 100,
       };
 
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -587,7 +588,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addLampValue throws an error if the device does not exists', async () => {
       const lampValue = {
-        device: '1',
+        device: '000000000000000000000001',
         lamp: 1,
         value: 100,
       };
@@ -599,7 +600,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addLampValue changes the LampValue of a device proberly', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -608,7 +609,7 @@ describe('MongoDBAdapter Functions', () => {
       const lampValues = [];
       for (let i = 1; i <= 10; i += 1) {
         lampValues.push({
-          device: '1',
+          device: '000000000000000000000001',
           lamp: i,
           value: i * 10,
         });
@@ -631,7 +632,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getLampValues gets all LampValues of one device', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -640,7 +641,7 @@ describe('MongoDBAdapter Functions', () => {
       const values = [];
       for (let i = 1; i <= 10; i += 1) {
         values.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           lamp: i,
           value: i * 10,
         });
@@ -652,12 +653,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const lampValues = await database.getLampValues('123456789');
+      const lampValues = await database.getLampValues('000000000000000001111111');
 
       expect(values.length).toBe(lampValues.length);
 
       for (let i = 0; i < values.length; i += 1) {
-        expect(lampValues[i].device).toBe('123456789');
+        expect(lampValues[i].device).toBe('000000000000000001111111');
         expect(lampValues[i].lamp).toBe(values[i].lamp);
         expect(lampValues[i].value).toBe(values[i].value);
       }
@@ -665,7 +666,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getLampValues gets all LampValues of one device and one lamp', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -674,7 +675,7 @@ describe('MongoDBAdapter Functions', () => {
       const values = [];
       for (let i = 1; i <= 10; i += 1) {
         values.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           lamp: i + (i % 2),
           value: i * 10,
         });
@@ -689,7 +690,7 @@ describe('MongoDBAdapter Functions', () => {
       const lampValues = [];
 
       for (let i = 0; i < 5; i += 1) {
-        lampValues[i] = await database.getLampValues('123456789', `${(i + 1) * 2}`);
+        lampValues[i] = await database.getLampValues('000000000000000001111111', `${(i + 1) * 2}`);
       }
 
       expect(lampValues.length).toBe(5);
@@ -699,7 +700,7 @@ describe('MongoDBAdapter Functions', () => {
         expect(lampValuesAtLamp.length).toBe(2);
         for (let j = 0; j < lampValuesAtLamp.length; j += 1) {
           const element = lampValuesAtLamp[j];
-          expect(element.device).toBe('123456789');
+          expect(element.device).toBe('000000000000000001111111');
           expect(element.lamp).toBe((i + 1) * 2);
           expect(element.value).toBe((i * 2 + j + 1) * 10);
         }
@@ -708,7 +709,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getLampValues gets all LampValues of one device after a specific date', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -717,7 +718,7 @@ describe('MongoDBAdapter Functions', () => {
       const values = [];
       for (let i = 1; i <= 10; i += 1) {
         values.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           lamp: i,
           value: i * 10,
           date: new Date((i) * 10000),
@@ -730,12 +731,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const lampValues = await database.getLampValues('123456789', undefined, new Date(3 * 10000));
+      const lampValues = await database.getLampValues('000000000000000001111111', undefined, new Date(3 * 10000));
 
       expect(lampValues.length).toBe(values.length - 2);
 
       for (let i = 0; i < lampValues.length; i += 1) {
-        expect(lampValues[i].device).toBe('123456789');
+        expect(lampValues[i].device).toBe('000000000000000001111111');
         expect(lampValues[i].lamp).toBe(values[i + 2].lamp);
         expect(lampValues[i].value).toBe(values[i + 2].value);
       }
@@ -743,7 +744,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getLampValues gets all LampValues of one device before a specific date', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -752,7 +753,7 @@ describe('MongoDBAdapter Functions', () => {
       const values = [];
       for (let i = 1; i <= 10; i += 1) {
         values.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           lamp: i,
           value: i * 10,
           date: new Date((i) * 10000),
@@ -765,12 +766,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const lampValues = await database.getLampValues('123456789', undefined, undefined, new Date(7 * 10000));
+      const lampValues = await database.getLampValues('000000000000000001111111', undefined, undefined, new Date(7 * 10000));
 
       expect(lampValues.length).toBe(values.length - 3);
 
       for (let i = 0; i < lampValues.length; i += 1) {
-        expect(lampValues[i].device).toBe('123456789');
+        expect(lampValues[i].device).toBe('000000000000000001111111');
         expect(lampValues[i].lamp).toBe(values[i].lamp);
         expect(lampValues[i].value).toBe(values[i].value);
       }
@@ -778,7 +779,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getLampValues gets all LampValues of one device in a specific time range', async () => {
       const device = {
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'Test Device 1',
       };
 
@@ -787,7 +788,7 @@ describe('MongoDBAdapter Functions', () => {
       const values = [];
       for (let i = 1; i <= 10; i += 1) {
         values.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           lamp: i,
           value: i * 10,
           date: new Date((i) * 10000),
@@ -800,12 +801,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const lampValues = await database.getLampValues('123456789', undefined, new Date(3 * 10000), new Date(7 * 10000));
+      const lampValues = await database.getLampValues('000000000000000001111111', undefined, new Date(3 * 10000), new Date(7 * 10000));
 
       expect(lampValues.length).toBe(values.length - 5);
 
       for (let i = 0; i < lampValues.length; i += 1) {
-        expect(lampValues[i].device).toBe('123456789');
+        expect(lampValues[i].device).toBe('000000000000000001111111');
         expect(lampValues[i].lamp).toBe(values[i + 2].lamp);
         expect(lampValues[i].value).toBe(values[i + 2].value);
       }
@@ -820,12 +821,12 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addTacho adds a Tacho Document correct and returns the object', async () => {
       const tacho = {
-        device: '123456789',
+        device: '000000000000000001111111',
         tacho: 1,
       };
 
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -852,7 +853,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('setAlarmState throws an error if the device does not exists', async () => {
       const tacho = {
-        device: '123456789',
+        device: '000000000000000001111111',
         tacho: 1,
       };
 
@@ -863,7 +864,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getTachos gets all Tacho of one device', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -872,7 +873,7 @@ describe('MongoDBAdapter Functions', () => {
       const tachos = [];
       for (let i = 1; i <= 10; i += 1) {
         tachos.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           tacho: i * 10,
         });
       }
@@ -883,19 +884,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docTachos = await database.getTachos('123456789');
+      const docTachos = await database.getTachos('000000000000000001111111');
 
       expect(docTachos.length).toBe(tachos.length);
 
       for (let i = 0; i < docTachos.length; i += 1) {
-        expect(docTachos[i].device).toBe('123456789');
+        expect(docTachos[i].device).toBe('000000000000000001111111');
         expect(docTachos[i].tacho).toBe(tachos[i].tacho);
       }
     });
 
     it('getTachos gets all Tacho of one device before a specific date', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -904,7 +905,7 @@ describe('MongoDBAdapter Functions', () => {
       const tachos = [];
       for (let i = 1; i <= 10; i += 1) {
         tachos.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           tacho: i * 10,
           date: new Date(i * 10000),
         });
@@ -916,19 +917,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docTachos = await database.getTachos('123456789', new Date(3 * 10000));
+      const docTachos = await database.getTachos('000000000000000001111111', new Date(3 * 10000));
 
       expect(docTachos.length).toBe(tachos.length - 2);
 
       for (let i = 0; i < docTachos.length; i += 1) {
-        expect(docTachos[i].device).toBe('123456789');
+        expect(docTachos[i].device).toBe('000000000000000001111111');
         expect(docTachos[i].tacho).toBe(tachos[i + 2].tacho);
       }
     });
 
     it('getTachos gets all Tacho of one device after a specific date', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -937,7 +938,7 @@ describe('MongoDBAdapter Functions', () => {
       const tachos = [];
       for (let i = 1; i <= 10; i += 1) {
         tachos.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           tacho: i * 10,
           date: new Date(i * 10000),
         });
@@ -949,19 +950,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docTachos = await database.getTachos('123456789', undefined, new Date(7 * 10000));
+      const docTachos = await database.getTachos('000000000000000001111111', undefined, new Date(7 * 10000));
 
       expect(docTachos.length).toBe(tachos.length - 3);
 
       for (let i = 0; i < docTachos.length; i += 1) {
-        expect(docTachos[i].device).toBe('123456789');
+        expect(docTachos[i].device).toBe('000000000000000001111111');
         expect(docTachos[i].tacho).toBe(tachos[i].tacho);
       }
     });
 
     it('getTachos gets all Tacho of one device in a specific time range', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -970,7 +971,7 @@ describe('MongoDBAdapter Functions', () => {
       const tachos = [];
       for (let i = 1; i <= 10; i += 1) {
         tachos.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           tacho: i * 10,
           date: new Date(i * 10000),
         });
@@ -982,12 +983,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docTachos = await database.getTachos('123456789', new Date(3 * 10000), new Date(7 * 10000));
+      const docTachos = await database.getTachos('000000000000000001111111', new Date(3 * 10000), new Date(7 * 10000));
 
       expect(docTachos.length).toBe(tachos.length - 5);
 
       for (let i = 0; i < docTachos.length; i += 1) {
-        expect(docTachos[i].device).toBe('123456789');
+        expect(docTachos[i].device).toBe('000000000000000001111111');
         expect(docTachos[i].tacho).toBe(tachos[i + 2].tacho);
       }
     });
@@ -1001,12 +1002,12 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addFanState adds a FanState Document correct and returns the object', async () => {
       const fanState = {
-        device: '123456789',
+        device: '000000000000000001111111',
         state: '1',
       };
 
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1033,7 +1034,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addFanState throws an error if the device does not exists', async () => {
       const fanState = {
-        device: '123456789',
+        device: '000000000000000001111111',
         state: '1',
       };
 
@@ -1044,7 +1045,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getFanStates gets all FanState of one device', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1053,7 +1054,7 @@ describe('MongoDBAdapter Functions', () => {
       const fanStates = [];
       for (let i = 1; i <= 10; i += 1) {
         fanStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: `${i * 10}`,
         });
       }
@@ -1064,19 +1065,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docFanStates = await database.getFanStates('123456789');
+      const docFanStates = await database.getFanStates('000000000000000001111111');
 
       expect(docFanStates.length).toBe(fanStates.length);
 
       for (let i = 0; i < docFanStates.length; i += 1) {
-        expect(docFanStates[i].device).toBe('123456789');
+        expect(docFanStates[i].device).toBe('000000000000000001111111');
         expect(docFanStates[i].state).toBe(fanStates[i].state);
       }
     });
 
     it('getFanStates gets all FanState of one device before a specific date', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1085,7 +1086,7 @@ describe('MongoDBAdapter Functions', () => {
       const fanStates = [];
       for (let i = 1; i <= 10; i += 1) {
         fanStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: `${i * 10}`,
           date: new Date(i * 10000),
         });
@@ -1097,19 +1098,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docFanStates = await database.getFanStates('123456789', new Date(3 * 10000));
+      const docFanStates = await database.getFanStates('000000000000000001111111', new Date(3 * 10000));
 
       expect(docFanStates.length).toBe(fanStates.length - 2);
 
       for (let i = 0; i < docFanStates.length; i += 1) {
-        expect(docFanStates[i].device).toBe('123456789');
+        expect(docFanStates[i].device).toBe('000000000000000001111111');
         expect(docFanStates[i].state).toBe(fanStates[i + 2].state);
       }
     });
 
     it('getFanStates gets all FanState of one device after a specific date', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1118,7 +1119,7 @@ describe('MongoDBAdapter Functions', () => {
       const fanStates = [];
       for (let i = 1; i <= 10; i += 1) {
         fanStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: `${i * 10}`,
           date: new Date(i * 10000),
         });
@@ -1130,19 +1131,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docFanStates = await database.getFanStates('123456789', undefined, new Date(7 * 10000));
+      const docFanStates = await database.getFanStates('000000000000000001111111', undefined, new Date(7 * 10000));
 
       expect(docFanStates.length).toBe(fanStates.length - 3);
 
       for (let i = 0; i < docFanStates.length; i += 1) {
-        expect(docFanStates[i].device).toBe('123456789');
+        expect(docFanStates[i].device).toBe('000000000000000001111111');
         expect(docFanStates[i].state).toBe(fanStates[i].state);
       }
     });
 
     it('getFanStates gets all FanState of one device in a specific time range', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1151,7 +1152,7 @@ describe('MongoDBAdapter Functions', () => {
       const fanStates = [];
       for (let i = 1; i <= 10; i += 1) {
         fanStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: i * 10,
           date: new Date(i * 10000),
         });
@@ -1163,12 +1164,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docFanStates = await database.getFanStates('123456789', new Date(3 * 10000), new Date(7 * 10000));
+      const docFanStates = await database.getFanStates('000000000000000001111111', new Date(3 * 10000), new Date(7 * 10000));
 
       expect(docFanStates.length).toBe(fanStates.length - 5);
 
       for (let i = 0; i < docFanStates.length; i += 1) {
-        expect(docFanStates[i].device).toBe('123456789');
+        expect(docFanStates[i].device).toBe('000000000000000001111111');
         expect(docFanStates[i].fanState).toBe(fanStates[i + 2].fanState);
       }
     });
@@ -1182,12 +1183,12 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addBodyState adds a BodyState Document correct and returns the object', async () => {
       const bodyState = {
-        device: '123456789',
+        device: '000000000000000001111111',
         state: '1',
       };
 
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1198,7 +1199,6 @@ describe('MongoDBAdapter Functions', () => {
       expect(addedBodyState.state).toBe(bodyState.state);
 
       const d = await database.getDevice(bodyState.device);
-      console.log(d);
       expect(d.currentBodyState.state).toStrictEqual(addedBodyState.state);
     });
 
@@ -1214,7 +1214,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addBodyState throws an error if the device does not exists', async () => {
       const bodyState = {
-        device: '123456789',
+        device: '000000000000000001111111',
         state: '1',
       };
 
@@ -1225,7 +1225,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('getBodyStates gets all BodyState of one device', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1234,7 +1234,7 @@ describe('MongoDBAdapter Functions', () => {
       const bodyStates = [];
       for (let i = 1; i <= 10; i += 1) {
         bodyStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: `${i * 10}`,
         });
       }
@@ -1245,19 +1245,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docBodyStates = await database.getBodyStates('123456789');
+      const docBodyStates = await database.getBodyStates('000000000000000001111111');
 
       expect(docBodyStates.length).toBe(bodyStates.length);
 
       for (let i = 0; i < docBodyStates.length; i += 1) {
-        expect(docBodyStates[i].device).toBe('123456789');
+        expect(docBodyStates[i].device).toBe('000000000000000001111111');
         expect(docBodyStates[i].state).toBe(bodyStates[i].state);
       }
     });
 
     it('getBodyStates gets all BodyState of one device before a specific date', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1266,7 +1266,7 @@ describe('MongoDBAdapter Functions', () => {
       const bodyStates = [];
       for (let i = 1; i <= 10; i += 1) {
         bodyStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: `${i * 10}`,
           date: new Date(i * 10000),
         });
@@ -1278,19 +1278,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docBodyStates = await database.getBodyStates('123456789', new Date(3 * 10000));
+      const docBodyStates = await database.getBodyStates('000000000000000001111111', new Date(3 * 10000));
 
       expect(docBodyStates.length).toBe(bodyStates.length - 2);
 
       for (let i = 0; i < docBodyStates.length; i += 1) {
-        expect(docBodyStates[i].device).toBe('123456789');
+        expect(docBodyStates[i].device).toBe('000000000000000001111111');
         expect(docBodyStates[i].state).toBe(bodyStates[i + 2].state);
       }
     });
 
     it('getBodyStates gets all BodyState of one device after a specific date', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1299,7 +1299,7 @@ describe('MongoDBAdapter Functions', () => {
       const bodyStates = [];
       for (let i = 1; i <= 10; i += 1) {
         bodyStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: `${i * 10}`,
           date: new Date(i * 10000),
         });
@@ -1311,19 +1311,19 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docBodyStates = await database.getBodyStates('123456789', undefined, new Date(7 * 10000));
+      const docBodyStates = await database.getBodyStates('000000000000000001111111', undefined, new Date(7 * 10000));
 
       expect(docBodyStates.length).toBe(bodyStates.length - 3);
 
       for (let i = 0; i < docBodyStates.length; i += 1) {
-        expect(docBodyStates[i].device).toBe('123456789');
+        expect(docBodyStates[i].device).toBe('000000000000000001111111');
         expect(docBodyStates[i].state).toBe(bodyStates[i].state);
       }
     });
 
     it('getBodyStates gets all BodyState of one device in a specific time range', async () => {
       const device = {
-        serialnumber: '123456789',
+        serialnumber: '000000000000000001111111',
         name: 'Test Device 1',
       };
 
@@ -1332,7 +1332,7 @@ describe('MongoDBAdapter Functions', () => {
       const bodyStates = [];
       for (let i = 1; i <= 10; i += 1) {
         bodyStates.push({
-          device: '123456789',
+          device: '000000000000000001111111',
           state: i * 10,
           date: new Date(i * 10000),
         });
@@ -1344,12 +1344,12 @@ describe('MongoDBAdapter Functions', () => {
         }),
       );
 
-      const docBodyStates = await database.getBodyStates('123456789', new Date(3 * 10000), new Date(7 * 10000));
+      const docBodyStates = await database.getBodyStates('000000000000000001111111', new Date(3 * 10000), new Date(7 * 10000));
 
       expect(docBodyStates.length).toBe(bodyStates.length - 5);
 
       for (let i = 0; i < docBodyStates.length; i += 1) {
-        expect(docBodyStates[i].device).toBe('123456789');
+        expect(docBodyStates[i].device).toBe('000000000000000001111111');
         expect(docBodyStates[i].bodyState).toBe(bodyStates[i + 2].bodyState);
       }
     });
@@ -1366,7 +1366,7 @@ describe('MongoDBAdapter Functions', () => {
     it('Returns the latest currentAirVolume Date', async () => {
       await database.addDevice({
         name: 'Test Device',
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
       });
 
       for (let i = 0; i < 10; i += 1) {
@@ -1386,7 +1386,7 @@ describe('MongoDBAdapter Functions', () => {
     it('Returns undefined if no currentAirVolume Document for that device exists', async () => {
       await database.addDevice({
         name: 'Test Device',
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
       });
       const latestDuration = await database.getDurationOfAvailableData('1', 'currentAirVolume');
       expect(latestDuration).toBeUndefined();
@@ -1395,19 +1395,19 @@ describe('MongoDBAdapter Functions', () => {
     it('Returns the latest lampValues Date', async () => {
       await database.addDevice({
         name: 'Test Device',
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
       });
 
       for (let i = 0; i < 10; i += 1) {
         await database.addLampValue({
           lamp: (i + 1),
           value: 10,
-          device: '1',
+          device: '000000000000000000000001',
           date: new Date((i + 1) * 100),
         });
       }
-      const duration = await database.getDurationOfAvailableData('1', 'lampValues');
-      expect(duration).toStrictEqual({
+      const duration = await database.getDurationOfAvailableData('000000000000000000000001', 'lampValues');
+      expect(duration).toEqual({
         to: new Date(10 * 100),
         from: new Date(100),
       });
@@ -1416,7 +1416,7 @@ describe('MongoDBAdapter Functions', () => {
     it('Returns undefined if no lampValues Document for that device exists', async () => {
       await database.addDevice({
         name: 'Test Device',
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
       });
       const latestDuration = await database.getDurationOfAvailableData('1', 'lampValues');
       expect(latestDuration).toBeUndefined();
@@ -1425,7 +1425,7 @@ describe('MongoDBAdapter Functions', () => {
     it('Returns the latest tacho Date', async () => {
       await database.addDevice({
         name: 'Test Device',
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
       });
 
       for (let i = 0; i < 10; i += 1) {
@@ -1445,7 +1445,7 @@ describe('MongoDBAdapter Functions', () => {
     it('Returns undefined if no tacho Document for that device exists', async () => {
       await database.addDevice({
         name: 'Test Device',
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
       });
       const latestDuration = await database.getDurationOfAvailableData('1', 'tacho');
       expect(latestDuration).toBeUndefined();
@@ -1574,7 +1574,7 @@ describe('MongoDBAdapter Functions', () => {
       const devices = [];
       for (let i = 0; i < 10; i += 1) {
         devices.push({
-          serialnumber: `1${i}`,
+          serialnumber: `00000000000000000000000${i}`,
           name: `TestDevice ${i}`,
         });
         const docDevice = await database.addDevice(devices[i]);
@@ -1584,7 +1584,7 @@ describe('MongoDBAdapter Functions', () => {
 
       for (let i = 0; i < 10; i += 1) {
         const docDevice = await database.getDevice(devices[i].serialnumber);
-        expect(docDevice.group).toBe('undefined');
+        expect(docDevice.group).toStrictEqual({});
       }
     });
 
@@ -1602,7 +1602,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addDeviceToGroup throws an error if group does not exists', async () => {
       const device = await database.addDevice({
-        serialnumber: 'T1',
+        serialnumber: '000000000000000000000001',
         name: 'TestDevice',
       });
 
@@ -1614,7 +1614,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addDeviceToGroup adds an device to the group', async () => {
       const device = await database.addDevice({
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'TestDevice',
       });
       const group = await database.addGroup({
@@ -1624,13 +1624,14 @@ describe('MongoDBAdapter Functions', () => {
       const docGroup = await database.getGroup(`${group.id}`);
       const docDevice = await database.getDevice(`${device.serialnumber}`);
       expect(docGroup.devices.length).toBe(1);
-      expect(docGroup.devices[0]).toBe(device.serialnumber);
-      expect(docDevice.group).toBe(group.id);
+      expect(docGroup.devices[0].toString()).toBe(device.serialnumber);
+      expect(docDevice.group.name).toStrictEqual(group.name);
+      expect(docDevice.group._id.toString()).toMatch(group.id);
     });
 
     it('addDeviceToGroup removes device from the group its assigned to', async () => {
       const device = await database.addDevice({
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'TestDevice',
       });
 
@@ -1651,8 +1652,9 @@ describe('MongoDBAdapter Functions', () => {
 
       expect(docGroup1.devices.length).toBe(0);
       expect(docGroup2.devices.length).toBe(1);
-      expect(docGroup2.devices[0]).toBe(device.serialnumber);
-      expect(docDevice.group).toBe(group2.id);
+      expect(docGroup2.devices[0].toString()).toMatch(device.serialnumber);
+      expect(docDevice.group.name).toMatch(group2.name);
+      expect(docDevice.group._id.toString()).toMatch(group2.id);
     });
 
     it('addDeviceToGroup adds an multiple devices to the group', async () => {
@@ -1663,7 +1665,7 @@ describe('MongoDBAdapter Functions', () => {
       const devices = [];
       for (let i = 0; i < 10; i += 1) {
         devices.push({
-          serialnumber: `1${i}`,
+          serialnumber: `00000000000000000000000${i}`,
           name: `TestDevice ${i}`,
         });
         const docDevice = await database.addDevice(devices[i]);
@@ -1673,15 +1675,16 @@ describe('MongoDBAdapter Functions', () => {
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(10);
       for (let i = 0; i < 10; i += 1) {
-        expect(docGroup.devices[i]).toBe(devices[i].serialnumber);
-        const docDevice = await database.getDevice(docGroup.devices[i]);
-        expect(docDevice.group).toBe(docGroup.id);
+        expect(docGroup.devices[i].toString()).toMatch(devices[i].serialnumber);
+        const docDevice = await database.getDevice(`${docGroup.devices[i]}`);
+        expect(docDevice.group.name).toStrictEqual(group.name);
+        expect(docDevice.group._id.toString()).toMatch(group.id);
       }
     });
 
     it('addDeviceToGroup sets the group of that device', async () => {
       const device = await database.addDevice({
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'TestDevice',
       });
       const group = await database.addGroup({
@@ -1689,7 +1692,8 @@ describe('MongoDBAdapter Functions', () => {
       });
       await database.addDeviceToGroup(device.serialnumber, `${group._id}`);
       const docDevice = await database.getDevice(device.serialnumber);
-      expect(docDevice.group).toBe(`${group._id}`);
+      expect(docDevice.group.name).toStrictEqual(group.name);
+      expect(docDevice.group._id.toString()).toMatch(group.id);
     });
 
     it('addDeviceToGroup sets the group of multiple devices', async () => {
@@ -1700,7 +1704,7 @@ describe('MongoDBAdapter Functions', () => {
       const devices = [];
       for (let i = 0; i < 10; i += 1) {
         devices.push({
-          serialnumber: `1${i}`,
+          serialnumber: `00000000000000000000000${i}`,
           name: `TestDevice ${i}`,
         });
         const docDevice = await database.addDevice(devices[i]);
@@ -1710,13 +1714,14 @@ describe('MongoDBAdapter Functions', () => {
       const docDevices = await database.getDevices();
       expect(docDevices.length).toBe(10);
       for (let i = 0; i < 10; i += 1) {
-        expect(docDevices[i].group).toBe(`${group._id}`);
+        expect(docDevices[i].group.name).toStrictEqual(group.name);
+        expect(docDevices[i].group._id.toString()).toMatch(group.id);
       }
     });
 
     it('deleteDeviceFromGroup deletes an device from the group', async () => {
       const device = await database.addDevice({
-        serialnumber: '1',
+        serialnumber: '000000000000000000000001',
         name: 'TestDevice',
       });
       const group = await database.addGroup({
@@ -1727,7 +1732,7 @@ describe('MongoDBAdapter Functions', () => {
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(0);
       const docDevice = await database.getDevice(device.serialnumber);
-      expect(docDevice.group).toBe('undefined');
+      expect(docDevice.group).toStrictEqual({});
     });
 
     it('deleteDeviceFromGroup deletes an multiple devices from the group', async () => {
@@ -1738,27 +1743,27 @@ describe('MongoDBAdapter Functions', () => {
       const devices = [];
       for (let i = 0; i < 10; i += 1) {
         devices.push({
-          serialnumber: `1${i}`,
+          serialnumber: `00000000000000000000000${i}`,
           name: `TestDevice ${i}`,
         });
         const docDevice = await database.addDevice(devices[i]);
         await database.addDeviceToGroup(docDevice.serialnumber, `${group._id}`);
       }
 
-      await database.deleteDeviceFromGroup('15', `${group._id}`);
-      await database.deleteDeviceFromGroup('16', `${group._id}`);
+      await database.deleteDeviceFromGroup('000000000000000000000005', `${group._id}`);
+      await database.deleteDeviceFromGroup('000000000000000000000006', `${group._id}`);
 
-      const docDevice1 = await database.getDevice('15');
-      expect(docDevice1.group).toBe('undefined');
+      const docDevice1 = await database.getDevice('000000000000000000000005');
+      expect(docDevice1.group).toStrictEqual({});
 
-      const docDevice2 = await database.getDevice('16');
-      expect(docDevice2.group).toBe('undefined');
+      const docDevice2 = await database.getDevice('000000000000000000000006');
+      expect(docDevice2.group).toStrictEqual({});
 
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(8);
       for (let i = 0; i < 10; i += 1) {
         if (i === 5 || i === 6) return;
-        expect(docGroup.devices[i]).toBe(devices[i].serialnumber);
+        expect(docGroup.devices[i].toString()).toBe(devices[i].serialnumber);
       }
     });
   });

@@ -96,6 +96,7 @@ module.exports = class MongoDBAdapter {
       .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
       .populate('currentLampValue', 'date lamp value')
+      .populate('group', 'name')
       .exec();
 
     if (device === null || device === undefined) throw new Error('Device does not exists');
@@ -103,7 +104,7 @@ module.exports = class MongoDBAdapter {
     const d = {
       serialnumber: device.serialnumber,
       name: device.name,
-      group: `${device.group}`,
+      group: (device.group) ? device.group : { },
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
@@ -125,6 +126,7 @@ module.exports = class MongoDBAdapter {
     const db = await UVCDeviceModel.find()
       .populate('currentLampState', 'date lamp state')
       .populate('currentAirVolume', 'date volume')
+      .populate('group', 'name')
       .populate('tacho', 'date tacho')
       .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
@@ -137,7 +139,7 @@ module.exports = class MongoDBAdapter {
       const d = {
         serialnumber: device.serialnumber,
         name: device.name,
-        group: `${device.group}`,
+        group: (device.group) ? device.group : { },
         engineState: device.engineState,
         engineLevel: device.engineLevel,
         currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
@@ -206,11 +208,10 @@ module.exports = class MongoDBAdapter {
         _id: new ObjectId(device.group),
       }, {
         $pull: {
-          devices: device.serialnumber,
+          devices: device._id,
         },
-      }, { new: true }, (e) => {
-        if (e !== null) { throw e; }
-      }).exec();
+      }, { new: true })
+        .exec();
     }
     const d = {
       serialnumber: device.serialnumber,
@@ -715,7 +716,7 @@ module.exports = class MongoDBAdapter {
       _id: new ObjectId(groupID),
     }, {
       $addToSet: {
-        devices: deviceSerialnumber,
+        devices: docDevice._id,
       },
     }, (e) => {
       if (e !== null) { throw e; }
@@ -740,21 +741,21 @@ module.exports = class MongoDBAdapter {
 
     await this.getDevice(deviceSerialnumber);
 
-    const docGroup = await UVCGroupModel.updateOne({
-      _id: new ObjectId(groupID),
+    const docDevice = await UVCDeviceModel.updateOne({
+      serialnumber: deviceSerialnumber,
     }, {
-      $pull: {
-        devices: deviceSerialnumber,
+      $unset: {
+        group: 1,
       },
     }, { new: true }, (e) => {
       if (e !== null) { throw e; }
     }).exec();
 
-    const docClient = await UVCDeviceModel.updateOne({
-      serialnumber: deviceSerialnumber,
+    const docGroup = await UVCGroupModel.updateOne({
+      _id: new ObjectId(groupID),
     }, {
-      $unset: {
-        group: 1,
+      $pull: {
+        devices: docDevice._id,
       },
     }, { new: true }, (e) => {
       if (e !== null) { throw e; }

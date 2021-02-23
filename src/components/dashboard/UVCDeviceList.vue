@@ -184,6 +184,11 @@ export default {
         group: this.formSelectedGroup,
       });
 
+      if (this.formSelectedGroup === '') {
+        this.errorMessage = 'You have to select a group to assign the device to.';
+        return;
+      }
+
       this.$root.$data.socket.emit('group_addDevice', {
         device: this.formDevice.serialnumber,
         group: this.formSelectedGroup,

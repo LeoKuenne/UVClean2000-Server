@@ -43,15 +43,10 @@ new Vue({
       this.$dataStore.devices.push(device);
     });
 
-    socket.on('device_deleted', (device) => {
+    socket.on('device_deleted', async (device) => {
       console.log('Event: device_deleted', device);
-      if (device.serialnumber !== undefined) {
-        for (let i = 0; i < this.$dataStore.devices.length; i += 1) {
-          if (device.serialnumber === this.$dataStore.devices[i].serialnumber) {
-            this.$dataStore.devices.splice(i, 1);
-          }
-        }
-      }
+
+      await this.fetchDataFromServer();
     });
 
     socket.on('group_added', (group) => {
