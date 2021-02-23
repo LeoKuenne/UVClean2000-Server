@@ -1,10 +1,8 @@
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
 const socketio = require('socket.io');
 const mqtt = require('mqtt');
 const EventEmitter = require('events');
 const MongooseError = require('mongoose').Error;
+const ExpressServer = require('./ExpressServer');
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
 const controlModules = require('./controlModules/ControlModules').modules;
 const MainLogger = require('./Logger.js').logger;
@@ -20,97 +18,12 @@ class UVCleanServer extends EventEmitter {
     this.database = new MongoDBAdapter(`${this.config.database.mongoDB.uri}:${this.config.database.mongoDB.port}`,
       this.config.database.mongoDB.database);
 
-    this.app = express();
-    this.httpServer = http.createServer(this.app);
-    this.io = socketio(this.httpServer, {
+    this.express = new ExpressServer(this.config.http, this.database);
+    this.io = socketio(this.express.httpServer, {
       cors: {
         origin: `http://${config.http.cors}`,
         methods: ['GET', 'POST'],
       },
-    });
-
-    this.app.use(cors());
-
-    this.app.use(express.static(`${__dirname}/dashboard/static`));
-
-    this.app.get('/devices', async (req, res) => {
-      const db = await this.database.getDevices();
-
-      res.json(db);
-    });
-
-    this.app.get('/groups', async (req, res) => {
-      const db = await this.database.getGroups();
-
-      res.json(db);
-    });
-
-    this.app.get('/serialnumbers', async (req, res) => {
-      const db = await this.database.getSerialnumbers();
-
-      res.json(db);
-    });
-
-    this.app.get('/device', async (req, res) => {
-      const deviceID = req.query.device;
-      const { propertie, from, to } = req.query;
-
-      logger.info(`Got GET request on /device with propertie=${propertie}, from=${from}, to=${to}`);
-
-      let db = '';
-
-      switch (propertie) {
-        case 'airVolume':
-          db = await this.database.getAirVolume(deviceID,
-            (from === undefined || from === '') ? undefined : new Date(from),
-            (to === undefined || to === '') ? undefined : new Date(to));
-          break;
-        case 'lampValues':
-          db = await this.database.getLampValues(deviceID, undefined,
-            (from === undefined || from === '') ? undefined : new Date(from),
-            (to === undefined || to === '') ? undefined : new Date(to));
-          break;
-        case 'tacho':
-          db = await this.database.getTachos(deviceID,
-            (from === undefined || from === '') ? undefined : new Date(from),
-            (to === undefined || to === '') ? undefined : new Date(to));
-          break;
-        default:
-          res.sendStatus(404);
-          break;
-      }
-
-      res.json(db);
-    });
-
-    this.app.get('/timestamps', async (req, res) => {
-      const { propertie, device } = req.query;
-
-      logger.info(`Got GET request on /timestamps with propertie=${propertie}, device=${device}`);
-
-      if (device === undefined || device === '') {
-        res.sendStatus(404);
-        return;
-      }
-
-      let db = '';
-
-      switch (propertie) {
-        case 'airVolume':
-          db = await this.database.getDurationOfAvailableData(device, 'currentAirVolume');
-          break;
-        case 'lampValues':
-          db = await this.database.getDurationOfAvailableData(device, 'lampValues');
-          break;
-        case 'tacho':
-          db = await this.database.getDurationOfAvailableData(device, 'tacho');
-          break;
-        default:
-          res.sendStatus(404);
-          return;
-      }
-
-      res.json(db);
     });
   }
 
@@ -119,11 +32,7 @@ class UVCleanServer extends EventEmitter {
 
     await this.database.close();
 
-    if (this.httpServer.listening) {
-      this.httpServer.close((err) => {
-        throw err;
-      });
-    }
+    this.express.stopExpressServer();
 
     if (this.client !== undefined) { this.client.end(); }
 
@@ -135,9 +44,7 @@ class UVCleanServer extends EventEmitter {
     try {
       await this.database.connect();
 
-      this.httpServer.listen(this.config.http.port, () => {
-        logger.info(`HTTP listening on ${this.config.http.port}`);
-      });
+      this.express.startExpressServer();
 
       logger.info(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
       this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
