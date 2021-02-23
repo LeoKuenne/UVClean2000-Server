@@ -141,13 +141,13 @@ describe('MongoDBAdapter Functions', () => {
 
     it('updateDevice updates a device correct and returns the object', async () => {
       const device = {
-        serialnumber: 'MongoDBAdapter_Test_4',
+        serialnumber: '123456789',
         name: 'Test Device 2',
       };
 
       await database.addDevice(
         {
-          serialnumber: 'MongoDBAdapter_Test_4',
+          serialnumber: '123456789',
           name: 'Test Device 1',
         },
       );
@@ -158,7 +158,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('updateDevice throws error if device is not available', async () => {
       const device = {
-        serialnumber: 'MongoDBAdapter_Test_4',
+        serialnumber: '123456789',
         name: 'Test Device 2',
       };
 
@@ -179,7 +179,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('deleteDevice deletes a device', async () => {
       const device = {
-        serialnumber: 'MongoDBAdapter_Test_4',
+        serialnumber: '123456789',
         name: 'Test Device 1',
       };
 
@@ -188,6 +188,24 @@ describe('MongoDBAdapter Functions', () => {
       await database.getDevice(device.serialnumber).catch((err) => {
         expect(err.toString()).toBe('Error: Device does not exists');
       });
+    });
+
+    it('deleteDevice deletes a device and is removed from the group', async () => {
+      const device = {
+        serialnumber: '123456789',
+        name: 'Test Device 1',
+      };
+      await database.addDevice(device);
+
+      const group = {
+        name: 'Group',
+      };
+      const docGroup = await database.addGroup(group);
+      await database.addDeviceToGroup(device.serialnumber, `${docGroup._id}`);
+
+      await database.deleteDevice(device.serialnumber);
+      const newDocGroup = await database.getGroup(`${docGroup._id}`);
+      expect(newDocGroup.devices.length).toBe(0);
     });
 
     it('deleteDevice throws error if device is not available', async () => {
@@ -1548,6 +1566,28 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
+    it('deleteGroup deletes a group and removes the group of each device in that group', async () => {
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      const devices = [];
+      for (let i = 0; i < 10; i += 1) {
+        devices.push({
+          serialnumber: `1${i}`,
+          name: `TestDevice ${i}`,
+        });
+        const docDevice = await database.addDevice(devices[i]);
+        await database.addDeviceToGroup(docDevice.serialnumber, `${group._id}`);
+      }
+      await database.deleteGroup(group);
+
+      for (let i = 0; i < 10; i += 1) {
+        const docDevice = await database.getDevice(devices[i].serialnumber);
+        expect(docDevice.group).toBe('undefined');
+      }
+    });
+
     it('deleteGroup throws error if Group is not available', async () => {
       await database.deleteGroup({ id: '602e5dde6a51ff41b0625057' }).catch((err) => {
         expect(err.toString()).toBe('Error: Group does not exists');
@@ -1687,7 +1727,7 @@ describe('MongoDBAdapter Functions', () => {
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(0);
       const docDevice = await database.getDevice(device.serialnumber);
-      expect(docDevice.group).toBe('null');
+      expect(docDevice.group).toBe('undefined');
     });
 
     it('deleteDeviceFromGroup deletes an multiple devices from the group', async () => {
@@ -1709,10 +1749,10 @@ describe('MongoDBAdapter Functions', () => {
       await database.deleteDeviceFromGroup('16', `${group._id}`);
 
       const docDevice1 = await database.getDevice('15');
-      expect(docDevice1.group).toBe('null');
+      expect(docDevice1.group).toBe('undefined');
 
       const docDevice2 = await database.getDevice('16');
-      expect(docDevice2.group).toBe('null');
+      expect(docDevice2.group).toBe('undefined');
 
       const docGroup = await database.getGroup(`${group._id}`);
       expect(docGroup.devices.length).toBe(8);

@@ -201,6 +201,17 @@ module.exports = class MongoDBAdapter {
 
     const device = await UVCDeviceModel.findOneAndDelete({ serialnumber }).exec();
     if (device === null) throw new Error('Device does not exists');
+    if (device.group !== undefined) {
+      await UVCGroupModel.updateOne({
+        _id: new ObjectId(device.group),
+      }, {
+        $pull: {
+          devices: device.serialnumber,
+        },
+      }, { new: true }, (e) => {
+        if (e !== null) { throw e; }
+      }).exec();
+    }
     const d = {
       serialnumber: device.serialnumber,
       name: device.name,
@@ -231,7 +242,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docAirVolume.save().catch((e) => {
-      if (e) { }
+      if (e) { throw e; }
     });
 
     UVCDeviceModel.updateOne({
@@ -467,7 +478,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docBodyState.save().catch((e) => {
-      if (e) { }
+      if (e) { throw e; }
     });
 
     UVCDeviceModel.updateOne({
@@ -640,6 +651,20 @@ module.exports = class MongoDBAdapter {
   async deleteGroup(group) {
     if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined and typeof string.');
 
+    const devices = await (await this.getGroup(`${group.id}`)).devices;
+    for (let i = 0; i < devices.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await UVCDeviceModel.updateOne({
+        serialnumber: devices[i],
+      }, {
+        $unset: {
+          group: 1,
+        },
+      }, { new: true }, (e) => {
+        if (e !== null) { throw e; }
+      }).exec();
+    }
+
     const docGroup = await UVCGroupModel.findOneAndDelete(
       { _id: new ObjectId(group.id) },
     ).exec();
@@ -671,7 +696,7 @@ module.exports = class MongoDBAdapter {
     if (docDevice === null) {
       throw new Error('Device does not exists');
     }
-    logger.info('%o', docDevice);
+
     if (docDevice.group !== undefined) {
       await this.deleteDeviceFromGroup(`${docDevice.serialnumber}`, `${docDevice.group}`);
     }

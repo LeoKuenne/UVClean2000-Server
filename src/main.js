@@ -43,9 +43,25 @@ new Vue({
       this.$dataStore.devices.push(device);
     });
 
+    socket.on('device_deleted', (device) => {
+      console.log('Event: device_deleted', device);
+      if (device.serialnumber !== undefined) {
+        for (let i = 0; i < this.$dataStore.devices.length; i += 1) {
+          if (device.serialnumber === this.$dataStore.devices[i].serialnumber) {
+            this.$dataStore.devices.splice(i, 1);
+          }
+        }
+      }
+    });
+
     socket.on('group_added', (group) => {
       console.log('Event: group_added', group);
       this.$dataStore.groups.push(group);
+    });
+
+    socket.on('group_deleted', async (group) => {
+      console.log('Event: group_deleted', group);
+      await this.fetchDataFromServer();
     });
 
     socket.on('group_deviceAdded', async (prop) => {
@@ -145,28 +161,6 @@ new Vue({
         return false;
       });
       console.log('Group that changed:', g);
-    });
-
-    socket.on('device_deleted', (device) => {
-      console.log('Event: device_deleted', device);
-      if (device.serialnumber !== undefined) {
-        for (let i = 0; i < this.$dataStore.devices.length; i += 1) {
-          if (device.serialnumber === this.$dataStore.devices[i].serialnumber) {
-            this.$dataStore.devices.splice(i, 1);
-          }
-        }
-      }
-    });
-
-    socket.on('group_deleted', (group) => {
-      console.log('Event: group_deleted', group);
-      if (group.id !== undefined) {
-        for (let i = 0; i < this.$dataStore.groups.length; i += 1) {
-          if (group.id === this.$dataStore.groups[i].id) {
-            this.$dataStore.groups.splice(i, 1);
-          }
-        }
-      }
     });
   },
   methods: {
