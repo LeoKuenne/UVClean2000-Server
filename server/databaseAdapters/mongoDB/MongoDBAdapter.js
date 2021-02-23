@@ -231,7 +231,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docAirVolume.save().catch((e) => {
-      if (e) { console.error(e); }
+      if (e) { }
     });
 
     UVCDeviceModel.updateOne({
@@ -241,7 +241,7 @@ module.exports = class MongoDBAdapter {
         currentAirVolume: docAirVolume._id,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     });
 
     return docAirVolume;
@@ -288,7 +288,7 @@ module.exports = class MongoDBAdapter {
         [`currentLampState.${alarmState.lamp - 1}`]: docAlarmState._id,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     });
 
     // if (device === null) throw new Error('Device does not exists');
@@ -328,7 +328,7 @@ module.exports = class MongoDBAdapter {
         [`currentLampValue.${lampValue.lamp - 1}`]: docLampValue._id,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     });
 
     // if (device === null) throw new Error('Device does not exists');
@@ -373,7 +373,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docTacho.save().catch((e) => {
-      if (e) { console.error(e); }
+      if (e) { }
     });
 
     UVCDeviceModel.updateOne({
@@ -383,7 +383,7 @@ module.exports = class MongoDBAdapter {
         tacho: docTacho._id,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     });
 
     return docTacho;
@@ -420,7 +420,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docFanState.save().catch((e) => {
-      if (e) { console.error(e); }
+      if (e) { }
     });
 
     UVCDeviceModel.updateOne({
@@ -430,7 +430,7 @@ module.exports = class MongoDBAdapter {
         currentFanState: docFanState._id,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     });
 
     return docFanState;
@@ -467,7 +467,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docBodyState.save().catch((e) => {
-      if (e) { console.error(e); }
+      if (e) { }
     });
 
     UVCDeviceModel.updateOne({
@@ -477,7 +477,7 @@ module.exports = class MongoDBAdapter {
         currentBodyState: docBodyState._id,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     });
 
     return docBodyState;
@@ -671,8 +671,8 @@ module.exports = class MongoDBAdapter {
     if (docDevice === null) {
       throw new Error('Device does not exists');
     }
-
-    if (docDevice.group !== undefined || docDevice.group === null) {
+    logger.info('%o', docDevice);
+    if (docDevice.group !== undefined) {
       await this.deleteDeviceFromGroup(`${docDevice.serialnumber}`, `${docDevice.group}`);
     }
 
@@ -682,7 +682,7 @@ module.exports = class MongoDBAdapter {
       },
       { group: new ObjectId(groupID) },
       (e) => {
-        if (e !== null) { console.error(e); throw e; }
+        if (e !== null) { throw e; }
       },
     ).exec();
 
@@ -693,9 +693,8 @@ module.exports = class MongoDBAdapter {
         devices: deviceSerialnumber,
       },
     }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     }).exec().catch((e) => {
-      console.error(e);
       throw e;
     });
 
@@ -723,17 +722,17 @@ module.exports = class MongoDBAdapter {
         devices: deviceSerialnumber,
       },
     }, { new: true }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     }).exec();
 
     const docClient = await UVCDeviceModel.updateOne({
       serialnumber: deviceSerialnumber,
     }, {
-      $set: {
-        group: null,
+      $unset: {
+        group: 1,
       },
     }, { new: true }, (e) => {
-      if (e !== null) { console.error(e); throw e; }
+      if (e !== null) { throw e; }
     }).exec();
 
     return docGroup;

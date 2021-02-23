@@ -13,6 +13,7 @@ const AddGroup = require('./controlModules/SocketIOCommands/AddGroup');
 const DeleteGroup = require('./controlModules/SocketIOCommands/DeleteGroup');
 const GroupChangeState = require('./controlModules/SocketIOCommands/GroupChangeState');
 const AddDeviceToGroup = require('./controlModules/SocketIOCommands/AddDeviceToGroup');
+const RemoveDeviceFromGroup = require('./controlModules/SocketIOCommands/RemoveDeviceFromGroup');
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
@@ -82,6 +83,7 @@ class UVCleanServer extends EventEmitter {
         DeleteGroup(this.database, this.io, this.client, socket);
         GroupChangeState(this.database, this.io, this.client, socket);
         AddDeviceToGroup(this.database, this.io, this.client, socket);
+        RemoveDeviceFromGroup(this.database, this.io, this.client, socket);
 
         // Debug any messages that are coming from the frontend
         socket.onAny((event, ...args) => {

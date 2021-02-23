@@ -1,9 +1,9 @@
 const MainLogger = require('../../Logger.js').logger;
 
-const logger = MainLogger.child({ service: 'AddDeviceToGroupCommand' });
+const logger = MainLogger.child({ service: 'RemoveDeviceFromGroupCommand' });
 
 async function execute(db, io, mqtt, message) {
-  logger.info('Event: group_addDevice: %o', message);
+  logger.info('Event: group_deviceDelete: %o', message);
   const { device, group } = message;
 
   if (device !== undefined && typeof device !== 'string') {
@@ -14,13 +14,13 @@ async function execute(db, io, mqtt, message) {
     throw new Error('Group must be defined and of type string');
   }
 
-  await db.addDeviceToGroup(device, group);
-  io.emit('group_deviceAdded');
+  await db.deleteDeviceFromGroup(device, group);
+  io.emit('group_deviceDeleted');
 }
 
 module.exports = function register(db, io, mqtt, ioSocket) {
   logger.info('Registering socketIO module');
-  ioSocket.on('group_addDevice', async (message) => {
+  ioSocket.on('group_deviceDelete', async (message) => {
     try {
       await execute(db, io, mqtt, message);
     } catch (e) {

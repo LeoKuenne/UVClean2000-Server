@@ -90,7 +90,9 @@
       </div>
       <div class="items-center">
         <div class="float-left">
-          <button class="font-semibold p-2 text-red-500
+          <button
+            @click="removeGroupAssignment"
+            class="font-semibold p-2 text-red-500
             hover:transform hover:scale-105 transition-all">
             Remove assignment
           </button>
@@ -178,8 +180,8 @@ export default {
      */
     assignDeviceToGroup() {
       console.log({
-        group: this.formDevice.serialnumber,
-        device: this.formSelectedGroup,
+        device: this.formDevice.serialnumber,
+        group: this.formSelectedGroup,
       });
 
       this.$root.$data.socket.emit('group_addDevice', {
@@ -188,13 +190,16 @@ export default {
       });
       this.showGroupAssignmentForm = false;
     },
-    removeClicked(event) {
-      if (event.mode === 'deviceAssign') {
-        this.$emit('deviceRemoveGroup', {
-          device: event.device,
-          group: event.group,
-        });
-      }
+    removeGroupAssignment() {
+      console.log({
+        device: this.formDevice.serialnumber,
+        group: this.formSelectedGroup,
+      });
+
+      this.$root.$data.socket.emit('group_deviceDelete', {
+        device: this.formDevice.serialnumber,
+        group: this.formSelectedGroup,
+      });
       this.showGroupAssignmentForm = false;
     },
     /**
