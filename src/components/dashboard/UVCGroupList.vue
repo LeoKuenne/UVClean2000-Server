@@ -19,13 +19,64 @@
     <div class="flex flex-row flex-wrap content-center justify-center">
         <UVCGroup
           @edit="editGroup($event)"
+          @changeState="changeGroupState($event)"
           v-for="group in $dataStore.groups"
           :key="group.id"
           :group="group"
           class="shadow-lg">
         </UVCGroup>
     </div>
-    <div
+    <UVCForm
+      :title="heading"
+      :show="showEditForm"
+      :errorMessage="errorMessage"
+      @close="closeAddForm">
+      <label for="add_groupname">Group Name</label>
+      <input id="add_groupname"
+        v-bind:value="formGroup.name"
+        @input="formGroup.name = $event.target.value"
+        type="text"
+        placeholder="Dach"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <label v-if="isFormEdit" for="add_groupid">Group ID</label>
+      <input v-if="isFormEdit" id="add_groupid"
+        v-bind:value="formGroup.id"
+        v-bind:disabled="isFormEdit"
+        @input="formGroup.id = $event.target.value"
+        type="text"
+        placeholder="123456789"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <div class="">
+        <button
+          @click="deleteGroup(formGroup)"
+          class="float-left p-2 text-red-500 font-semibold
+            hover:transform hover:scale-105 transition-all"
+          v-show="isFormEdit">
+          Delete
+        </button>
+        <div class="float-right space-x-2">
+          <button
+            @click="(isFormEdit) ? updateGroup(formGroup) : addGroup(formGroup)"
+            class="font-semibold p-2 hover:transform hover:scale-105 transition-all
+            bg-primary text-white">
+            {{okProp}}
+          </button>
+          <button
+            @click="closeAddForm"
+            class="font-semibold hover:transform hover:scale-105 transition-all">
+            Close
+          </button>
+        </div>
+      </div>
+    </UVCForm>
+    <!-- <UVCForm
+      :title="'Group Assignment'"
+      :show="showGroupAssignmentForm"
+      :errorMessage="errorMessage"
+      @mounted="fetchGroups"
+      @close="closeGroupForm">
+    </UVCForm> -->
+    <!-- <div
       v-show="showEditForm"
       class="fixed top-0 left-0 h-full w-full
       bg-black bg-opacity-50 flex justify-center items-center"
@@ -39,18 +90,26 @@
         :isEdit="isFormEdit"
         class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
       </FormUVCGroup>
-    </div>
+    </div> -->
   </div>
 </template>
 <script>
 import UVCGroup from './UVCGroup.vue';
-import FormUVCGroup from './FormUVCGroup.vue';
+import UVCForm from '../UVCForm.vue';
 
 export default {
   name: 'UVCGroupList',
   components: {
     UVCGroup,
-    FormUVCGroup,
+    UVCForm,
+  },
+  computed: {
+    okProp() {
+      return this.isFormEdit ? 'Update' : 'Add';
+    },
+    heading() {
+      return this.isFormEdit ? 'Update Group' : 'Add Group';
+    },
   },
   methods: {
     showAddForm() {
@@ -61,28 +120,79 @@ export default {
       this.isFormEdit = false;
       this.showEditForm = true;
     },
-    addGroup(event) {
-      this.$emit('groupAdd', event.name);
+    /**
+     * Called by the close events from the modal
+     */
+    closeAddForm() {
       this.showEditForm = false;
+      this.formGroup = {
+        name: '',
+        id: '',
+      };
+      this.errorMessage = '';
+    },
+    addGroup(group) {
+      if (group.name === '' || group.name.match(/[^0-9A-Za-z+ ]/gm) !== null) {
+        this.errorMessage = `Name has to be vaild. Only numbers, letters and "+" are allowed.\n Invalid characters: ${group.name.match(/[^0-9A-Za-z+ ]/gm).join(',')}`;
+        return;
+      }
+
+      this.$root.$data.socket.emit('group_add', {
+        name: group.name,
+      });
+      this.showEditForm = false;
+      this.errorMessage = '';
+    },
+    /**
+     * Called when the assign button of the group form is clicked
+     */
+    assignDeviceToGroup() {
     },
     editGroup(group) {
-      this.formGroup = group;
+      this.formGroup = {
+        name: group.name,
+        id: group.id,
+      };
       this.isFormEdit = true;
       this.showEditForm = true;
     },
     updateGroup(group) {
-      this.$emit('groupUpdate', { id: group.id, prop: 'name', newValue: group.name });
+      if (group.name === '' || group.name.match(/[^0-9A-Za-z+ ]/gm) !== null) {
+        this.errorMessage = `Name has to be vaild. Only numbers, letters and "+" are allowed.\n Invalid characters: ${group.name.match(/[^0-9A-Za-z+ ]/gm).join(',')}`;
+        return;
+      }
+
+      this.$root.$data.socket.emit('group_changeState', {
+        id: group.id,
+        prop: 'name',
+        newValue: group.name,
+      });
+      this.showEditForm = false;
+      this.errorMessage = '';
+    },
+    deleteGroup(group) {
+      this.$root.$data.socket.emit('group_delete', { id: group.id });
       this.showEditForm = false;
     },
-    deleteGroup(serialnumber) {
-      this.$emit('groupDelete', serialnumber);
-      this.showEditForm = false;
+    /**
+     * Called when any state in the devices should be changed
+     */
+    changeGroupState(newState) {
+      if (newState.id === undefined
+        || newState.prop === undefined
+        || newState.newValue === undefined) {
+        console.log('New State can not be parsed', newState);
+        return;
+      }
+      console.log(newState);
+      this.$root.$data.socket.emit('group_changeState', newState);
     },
   },
   data() {
     return {
       showEditForm: false,
       isFormEdit: false,
+      errorMessage: '',
       formGroup: {
         name: '',
         id: '',

@@ -22,6 +22,17 @@ function removeSocketIO(eventemitter, ioSocket, ioServer) {
 
 function mqtt(eventemitter, mqttClient) {
   logger.info('Registering mqtt module');
+  eventemitter.on('groupChangeState', (group) => {
+    let propertie = '';
+    switch (group.prop) {
+      case 'state':
+        propertie = 'engineState';
+        break;
+      default:
+        throw new Error(`Can not parse state ${group.prop} for MQTT`);
+    }
+    mqttClient.publish(`UVClean/${group.serialnumber}/changeState/${propertie}`, `${group.newValue}`);
+  });
 }
 
 function removeMQTT(eventemitter, ioSocket, ioServer) {

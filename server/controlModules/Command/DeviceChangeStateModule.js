@@ -29,7 +29,7 @@ function mqtt(eventemitter, mqttClient) {
         propertie = 'engineState';
         break;
       default:
-        propertie = device.prop;
+        logger.error(`Can not parse state ${device.prop} for MQTT`);
         break;
     }
     mqttClient.publish(`UVClean/${device.serialnumber}/changeState/${propertie}`, `${device.newValue}`);

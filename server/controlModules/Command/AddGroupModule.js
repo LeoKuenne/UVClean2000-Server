@@ -4,8 +4,10 @@ const logger = MainLogger.child({ service: 'AddGroupModule' });
 
 function socketIO(eventemitter, ioSocket, ioServer) {
   logger.info('Registering socketIO module');
-  ioSocket.on('group_add', (name) => {
-    eventemitter.emit('addGroup', name);
+  ioSocket.on('group_add', (group) => {
+    eventemitter.emit('addGroup', {
+      name: group.name,
+    });
   });
 }
 
@@ -25,8 +27,8 @@ function removeMQTT(eventemitter, ioSocket, ioServer) {
 function database(eventemitter, db) {
   logger.info('Registering database module');
   eventemitter.on('addGroup', async (name) => {
-    const group = await db.addGroup({ name });
-    const docGroup = await db.getGroup(`${group._id}`).then((group) => {
+    const group = await db.addGroup(name);
+    const docGroup = await db.getGroup(`${group._id}`).then(() => {
       eventemitter.emit('groupAdded', {
         name: group.name,
         id: group.id,

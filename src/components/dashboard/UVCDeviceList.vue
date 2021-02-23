@@ -48,7 +48,7 @@
         placeholder="123456789"
         class="rounded p-2 border-2 border-gray-500 mb-4">
       <div class="">
-        <button class="float-left font-semibold hover:transform hover:scale-105 transition-all
+        <button class="float-left p-2 font-semibold hover:transform hover:scale-105 transition-all
           text-red-500"
           v-show="isFormEdit"
           @click="deleteDevice(formDevice.serialnumber)">
@@ -90,8 +90,8 @@
       </div>
       <div class="items-center">
         <div class="float-left">
-          <button class="font-semibold hover:transform hover:scale-105 transition-all
-            text-red-500">
+          <button class="font-semibold p-2 text-red-500
+            hover:transform hover:scale-105 transition-all">
             Remove assignment
           </button>
         </div>
@@ -234,6 +234,7 @@ export default {
         serialnumber: device.serialnumber,
       });
       this.showEditForm = false;
+      this.errorMessage = '';
     },
     /**
      * Called when the Update button in the modal is pressed
