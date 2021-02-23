@@ -4,8 +4,15 @@ const EventEmitter = require('events');
 const MongooseError = require('mongoose').Error;
 const ExpressServer = require('./ExpressServer');
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
-const controlModules = require('./controlModules/ControlModules').modules;
 const MainLogger = require('./Logger.js').logger;
+const AddDevice = require('./controlModules/SocketIOCommands/AddDevice');
+const DeleteDevice = require('./controlModules/SocketIOCommands/DeleteDevice');
+const DeviceChangeState = require('./controlModules/SocketIOCommands/DeviceChangeState');
+const DeviceStateChanged = require('./controlModules/MQTTEvents/DeviceStateChanged');
+const AddGroup = require('./controlModules/SocketIOCommands/AddGroup');
+const DeleteGroup = require('./controlModules/SocketIOCommands/DeleteGroup');
+const GroupChangeState = require('./controlModules/SocketIOCommands/GroupChangeState');
+const AddDeviceToGroup = require('./controlModules/SocketIOCommands/AddDeviceToGroup');
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
@@ -49,18 +56,11 @@ class UVCleanServer extends EventEmitter {
       logger.info(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
       this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
-      // Register all Database Modules
-      controlModules.forEach((module) => {
-        module.databaseModule(this, this.database);
-      });
+      // Register MQTT actions
+      DeviceStateChanged(this.database, this.io, this.client);
 
       this.client.on('connect', async () => {
         logger.info(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
-
-        // Register all MQTT Modules
-        controlModules.forEach((module) => {
-          module.mqttClientModule(this, this.client);
-        });
 
         // Subscribe to all devices that already exists
         const db = await this.database.getDevices();
@@ -74,22 +74,22 @@ class UVCleanServer extends EventEmitter {
       this.io.on('connection', (socket) => {
         logger.info('A dashboard connected');
         logger.info(`Registering SocketIO Modules for socket ${socket.request.connection.remoteAddress}`);
-        // Register all SocketIO Modules
-        controlModules.forEach((module) => {
-          module.socketIOModule(this, socket, this.io);
-        });
+
+        AddDevice(this.database, this.io, this.client, socket);
+        DeleteDevice(this.database, this.io, this.client, socket);
+        DeviceChangeState(this.database, this.io, this.client, socket);
+        AddGroup(this.database, this.io, this.client, socket);
+        DeleteGroup(this.database, this.io, this.client, socket);
+        GroupChangeState(this.database, this.io, this.client, socket);
+        AddDeviceToGroup(this.database, this.io, this.client, socket);
 
         // Debug any messages that are coming from the frontend
         socket.onAny((event, ...args) => {
-          logger.debug(`Socket.io Message: ${event}`, args);
+          logger.debug(`Socket.io Message: ${event}, %o`, args);
         });
 
         socket.on('disconnect', () => {
           logger.info('A dashboard disconnected');
-          // Remove all SocketIO Modules
-          controlModules.forEach((module) => {
-            // module.removeSocketIOModule(this, socket, this.io);
-          });
         });
       });
     } catch (e) {

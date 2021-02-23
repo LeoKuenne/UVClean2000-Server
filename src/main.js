@@ -33,6 +33,11 @@ new Vue({
       console.debug(`Debug: Event - ${event}`, args);
     });
 
+    socket.on('error', (error) => {
+      console.error('error in backend', error);
+      // alert(error.message);
+    });
+
     socket.on('device_added', (device) => {
       console.log('Event: device_added', device);
       this.$dataStore.devices.push(device);
@@ -142,11 +147,11 @@ new Vue({
       console.log('Group that changed:', g);
     });
 
-    socket.on('device_deleted', (serialnumber) => {
-      console.log('Event: device_deleted', serialnumber);
-      if (serialnumber !== undefined) {
+    socket.on('device_deleted', (device) => {
+      console.log('Event: device_deleted', device);
+      if (device.serialnumber !== undefined) {
         for (let i = 0; i < this.$dataStore.devices.length; i += 1) {
-          if (serialnumber === this.$dataStore.devices[i].serialnumber) {
+          if (device.serialnumber === this.$dataStore.devices[i].serialnumber) {
             this.$dataStore.devices.splice(i, 1);
           }
         }

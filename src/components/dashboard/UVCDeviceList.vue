@@ -243,7 +243,7 @@ export default {
       this.$root.$data.socket.emit('device_changeState', {
         serialnumber: device.serialnumber,
         prop: 'name',
-        newValue: device.name,
+        newValue: `${device.name}`,
       });
       this.showEditForm = false;
     },
@@ -251,7 +251,7 @@ export default {
      * Called when the Delete button in the modal is pressed
      */
     deleteDevice(serialnumber) {
-      this.$root.$data.socket.emit('device_delete', { serialnumber });
+      this.$root.$data.socket.emit('device_delete', { serialnumber: `${serialnumber}` });
       this.showEditForm = false;
     },
     /**
@@ -265,7 +265,12 @@ export default {
         return;
       }
       console.log(newState);
-      this.$root.$data.socket.emit('device_changeState', newState);
+
+      this.$root.$data.socket.emit('device_changeState', {
+        serialnumber: newState.serialnumber,
+        prop: `${newState.prop}`,
+        newValue: `${newState.newValue}`,
+      });
     },
   },
   data() {

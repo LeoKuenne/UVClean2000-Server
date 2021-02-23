@@ -32,7 +32,7 @@ module.exports = class MongoDBAdapter {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
-      useFindAndModify: true,
+      useFindAndModify: false,
     });
 
     logger.info(`Connected to: mongodb://${this.uri}${(this.databaseName !== '') ? `/${this.databaseName}` : ''}`);
