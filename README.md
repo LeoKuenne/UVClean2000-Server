@@ -27,6 +27,20 @@ A Client has properties and functions:
 ## MongoDB Startup
 mongod.exe --serviceName MongoDB-UVCleanServer --serviceDisplayName MongoDB-UVCleanServer --serviceUser Leo --dbpath dbData/
 
+## Notes and thoughts about the actions
+
+group_changeState:
+socket.IO.on('group_changeState') -> database.hasGroup(groupID) -> database.getDevicesFromGroup(groupID) -> mqtt.sendToDevices(changeState)
+
+device_stateChanged:
+mqtt.on('device_stateChanged') -> database.updateDevice(stateChanged) -> database.updateGroup(stateChanged) -> socket.IO.emit('device_stateChanged')
+
+group_add:
+socket.IO.on('group_add') -> database.addGroup(groupID) -> socket.IO.emit('group_added')
+
+group_addDevice:
+socket.IO.on('group_addDevice') -> database.addDeviceToGroup(device, group) -> socket.IO.emit('group_deviceAdded)
+
 ## MQTT Helper
 mqtt sub -h 127.0.0.1 -t UVClean/# -v
 mqtt publish -h 127.0.0.1 -t UVClean/0002145702154/changeState/dummyData -m false
