@@ -6,11 +6,11 @@ async function execute(db, io, mqtt, message) {
   logger.info('Event: group_deviceDelete: %o', message);
   const { device, group } = message;
 
-  if (device !== undefined && typeof device !== 'string') {
+  if ((device !== undefined && typeof device !== 'string') || device === '') {
     throw new Error('Device must be defined and of type string');
   }
 
-  if (group !== undefined && typeof group !== 'string') {
+  if ((group !== undefined && typeof group !== 'string') || group === '') {
     throw new Error('Group must be defined and of type string');
   }
 

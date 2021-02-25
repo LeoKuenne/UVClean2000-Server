@@ -586,7 +586,9 @@ module.exports = class MongoDBAdapter {
       throw new Error('GroupID has to be a string');
     }
 
-    const groupData = await UVCGroupModel.findOne({ _id: groupID }).exec();
+    const groupData = await UVCGroupModel.findOne({ _id: groupID })
+      .populate('devices', 'serialnumber name')
+      .exec();
 
     if (groupData === null) {
       throw new Error('Group does not exists');
@@ -606,6 +608,7 @@ module.exports = class MongoDBAdapter {
    */
   async getGroups() {
     const groupData = await UVCGroupModel.find()
+      .populate('devices', 'serialnumber name')
       .exec();
 
     const groups = [];
@@ -656,7 +659,7 @@ module.exports = class MongoDBAdapter {
     for (let i = 0; i < devices.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       await UVCDeviceModel.updateOne({
-        serialnumber: devices[i],
+        serialnumber: devices[i]._id,
       }, {
         $unset: {
           group: 1,
@@ -702,17 +705,16 @@ module.exports = class MongoDBAdapter {
       await this.deleteDeviceFromGroup(`${docDevice.serialnumber}`, `${docDevice.group}`);
     }
 
-    await UVCDeviceModel.updateOne(
+    await UVCDeviceModel.findOneAndUpdate(
       {
         serialnumber: deviceSerialnumber,
       },
       { group: new ObjectId(groupID) },
-      (e) => {
-        if (e !== null) { throw e; }
-      },
-    ).exec();
+    ).exec().catch((e) => {
+      throw e;
+    });
 
-    const docGroup = await UVCGroupModel.updateOne({
+    const docGroup = await UVCGroupModel.findOneAndUpdate({
       _id: new ObjectId(groupID),
     }, {
       $addToSet: {
@@ -739,27 +741,25 @@ module.exports = class MongoDBAdapter {
     if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
     logger.info(`Deleting device ${deviceSerialnumber} from group ${groupID}`);
 
-    await this.getDevice(deviceSerialnumber);
-
-    const docDevice = await UVCDeviceModel.updateOne({
+    const docDevice = await UVCDeviceModel.findOneAndUpdate({
       serialnumber: deviceSerialnumber,
     }, {
       $unset: {
         group: 1,
       },
-    }, { new: true }, (e) => {
-      if (e !== null) { throw e; }
-    }).exec();
+    }, { new: true }).exec().catch((e) => {
+      throw e;
+    });
 
-    const docGroup = await UVCGroupModel.updateOne({
+    const docGroup = await UVCGroupModel.findOneAndUpdate({
       _id: new ObjectId(groupID),
     }, {
       $pull: {
         devices: docDevice._id,
       },
-    }, { new: true }, (e) => {
-      if (e !== null) { throw e; }
-    }).exec();
+    }, { new: true }).exec().catch((e) => {
+      throw e;
+    });
 
     return docGroup;
   }

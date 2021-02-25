@@ -83,8 +83,8 @@
           class="text-black w-full p-2 rounded border border-primary">
           <option v-for="group in formGroups"
             :key="group.id"
-            v-bind:value="group.id">
-            {{ group.name }}
+            :value="group.id">
+            {{group.name}}
           </option>
         </select>
       </div>
@@ -163,6 +163,8 @@ export default {
         serialnumber: device.serialnumber,
         group: device.group,
       };
+      // eslint-disable-next-line no-underscore-dangle
+      this.formSelectedGroup = (device.group._id === undefined) ? '' : device.group._id;
       this.showGroupAssignmentForm = true;
     },
     /**
@@ -198,7 +200,7 @@ export default {
     removeGroupAssignment() {
       console.log({
         device: this.formDevice.serialnumber,
-        group: this.formSelectedGroup,
+        group: this.formDevice.group,
       });
 
       this.$root.$data.socket.emit('group_deviceDelete', {
