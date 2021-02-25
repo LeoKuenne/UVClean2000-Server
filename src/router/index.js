@@ -17,6 +17,9 @@ const routes = [
         name: 'devices',
         path: '/dashboard/devices',
         component: UVCDeviceList,
+        props(route) {
+          return route.query || {};
+        },
       },
       {
         name: 'groups',

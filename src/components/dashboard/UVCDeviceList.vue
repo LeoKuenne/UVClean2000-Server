@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 overflow-auto" id="devices">
+  <div class="p-5 overflow-auto">
     <div class="flex items-center space-x-5">
       <h2 class="text-lg font-bold">Devices</h2>
       <button
@@ -16,7 +16,7 @@
         Add UVClean Device
       </button>
     </div>
-    <div class="flex flex-row flex-wrap content-center justify-center">
+    <div class="flex flex-row flex-wrap content-center justify-center" id="uvcdevicelist">
         <UVCDevice
           @edit="editDevice($event)"
           @assignGroup="showGroupForm($event)"
@@ -24,7 +24,8 @@
           v-for="device in $dataStore.devices"
           :key="device.serialnumber"
           :device="device"
-          class="shadow-lg">
+          :ref="'device' + device.serialnumber"
+          class="m-5 w-96 border-primary border shadow-lg">
         </UVCDevice>
     </div>
     <UVCForm
@@ -125,6 +126,14 @@ export default {
     UVCDevice,
     UVCForm,
   },
+  props: ['device'],
+  mounted() {
+    this.$nextTick(() => {
+      if (this.device !== undefined && this.device.match(/[0-9]/gm)) {
+        this.scrollToElement(this.device);
+      }
+    });
+  },
   computed: {
     okProp() {
       return this.isFormEdit ? 'Update' : 'Add';
@@ -134,6 +143,15 @@ export default {
     },
   },
   methods: {
+    /**
+     * Called if the device is selected in the query
+     */
+    scrollToElement(device) {
+      const element = this.$refs[`device${device}`];
+      if (element && element[0]) {
+        element[0].$el.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
     /**
      * Called by the group assignment form when its mounted
      */

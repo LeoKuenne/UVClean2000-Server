@@ -41,21 +41,23 @@ async function execute(db, io, mqtt, topic, message) {
       newState.prop = 'eventMode';
       break;
     case 'alarm':
-      if (topicArray[4] === 'tempBody') {
+      if (topicArray[4] === undefined) {
+        throw new Error(`Can not parse state with propertie ${newState.prop}`);
+      } else if (topicArray[4] === 'tempBody') {
         newState.prop = 'currentBodyState';
       } else if (topicArray[4] === 'tempFan') {
         newState.prop = 'currentFanState';
-      } else {
+      } else if (!Number.isNaN(topicArray[4])) {
         newState.prop = 'currentLampState';
+      } else {
+        throw new Error(`Can not parse state with propertie ${newState.prop}`);
       }
-
       break;
     case 'tacho':
       newState.prop = 'tacho';
       break;
     default:
-      // Do not parse and interpret these change
-      return;
+      throw new Error(`Can not parse state with propertie ${newState.prop}`);
   }
 
   parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);

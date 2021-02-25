@@ -54,13 +54,13 @@ new Vue({
       this.$dataStore.groups.push(group);
     });
 
-    socket.on('group_deleted', async (group) => {
-      console.log('Event: group_deleted', group);
+    socket.on('group_deleted', async () => {
+      console.log('Event: group_deleted');
       await this.fetchDataFromServer();
     });
 
-    socket.on('group_deviceAdded', async (prop) => {
-      console.log('Event: group_deviceAdded', prop);
+    socket.on('group_deviceAdded', async () => {
+      console.log('Event: group_deviceAdded');
 
       await this.fetchDataFromServer();
     });

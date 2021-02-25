@@ -1,5 +1,5 @@
 <template>
-  <div class="m-5 w-96 border-primary border">
+  <div>
     <div :class="[ hasDeviceAlarm ? 'bg-red-500' : 'bg-primary' ]"
       class="p-2 items-center text-white">
       <div class="flex flex-row justify-between items-center">
@@ -21,7 +21,7 @@
       <label for="b_device_state">Devie State</label>
       <button id="b_device_state"
         class="p-2 text-white hover:transform hover:scale-105 transition-all"
-        v-bind:class="{ 'bg-green-500': device.engineState, 'bg-red-500': !device.engineState }"
+        :class="{ 'bg-green-500': device.engineState, 'bg-red-500': !device.engineState }"
         @click="$emit('changeState', {
           serialnumber: device.serialnumber,
           prop: 'engineState',
@@ -44,7 +44,7 @@
       <label for="b_identify">Identify</label>
       <button id="b_identify"
         class="p-2 text-white hover:transform hover:scale-105 transition-all"
-        v-bind:class="{ 'bg-green-500': device.identifyMode, 'bg-red-500': !device.identifyMode }"
+        :class="{ 'bg-green-500': device.identifyMode, 'bg-red-500': !device.identifyMode }"
         @click="$emit('changeState', {
           serialnumber: device.serialnumber,
           prop: 'identifyMode',
@@ -114,7 +114,9 @@
           </div>
           <transition name="slide">
             <div v-if="showLampValues" class="col-span-2  grid grid-cols-4">
-              <div class="w-16" v-for="(lampValue, lamp) in device.currentLampValue" :key="lamp">
+              <div class="w-16"
+                v-for="(lampValue, lamp) in device.currentLampValue"
+                :key="lamp">
                 {{lampValue.lamp}}: {{lampValue.value}} V,
               </div>
             </div>
@@ -219,17 +221,10 @@ export default {
     return {
       showAlarmStates: true,
       showLampValues: true,
+      hasDeviceAlarm: false,
     };
   },
   computed: {
-    hasDeviceAlarm() {
-      if (this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok').length === 0
-        && this.device.currentBodyState.state === 'Ok'
-        && this.device.currentFanState.state === 'Ok') {
-        return false;
-      }
-      return true;
-    },
     showCurrentBodyStateSection() {
       return this.device.currentBodyState.state !== 'Ok';
     },

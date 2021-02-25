@@ -5,12 +5,14 @@
       @showDevices="showDevices"
       @showGroups="showGroups">
     </Sidebar>
-    <router-view
-      class="w-5/6 h-full"
-      @groupAdd="groupAdd($event)"
-      @groupUpdate="groupChangeState($event)"
-      @groupDelete="groupDelete($event)">
-    </router-view>
+    <transition name="fade" mode="out-in">
+      <router-view
+        class="w-5/6 h-full"
+        @groupAdd="groupAdd($event)"
+        @groupUpdate="groupChangeState($event)"
+        @groupDelete="groupDelete($event)">
+      </router-view>
+    </transition>
     <!-- <component v-bind:is="currentViewComponent"
       class="flex-grow"
       ></component> -->
@@ -29,10 +31,6 @@ export default {
   computed: {
     currentViewComponent() {
       return this.currentView;
-    },
-    deviceList() {
-      console.log('DeviceList getter/setter');
-      return this.$root.$data.dataStore;
     },
   },
   methods: {
@@ -68,3 +66,12 @@ export default {
   },
 };
 </script>
+
+<style>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .2s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+</style>
