@@ -14,7 +14,6 @@ const levels = {
 const d = new Date().toISOString().replace(/[.:-]/gm, '');
 
 const logger = winston.createLogger({
-  levels: winston.config.syslog.levels,
   format: format.combine(
     format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss',
@@ -28,6 +27,10 @@ const logger = winston.createLogger({
     // new winston.transports.File({ filename: `logs/error/${d}.log`, level: 'error' }),
     // new winston.transports.File({ filename: `logs/combined/${d}.log`, level: 'debug' }),
   ],
+  rejectionHandlers: [
+    new winston.transports.File({ filename: 'logs/rejections.log' }),
+    new winston.transports.Console(),
+  ],
 });
 
 const myFormat = format.printf(({
@@ -36,7 +39,6 @@ const myFormat = format.printf(({
 
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
-    levels: winston.config.syslog.levels,
     level: 'debug',
     format: format.combine(
       format.colorize(),

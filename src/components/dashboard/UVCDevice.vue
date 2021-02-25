@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :class="[ hasDeviceAlarm ? 'bg-red-500' : 'bg-primary' ]"
+    <div :class="[ device.alarmState ? 'bg-red-500' : 'bg-primary' ]"
       class="p-2 items-center text-white">
       <div class="flex flex-row justify-between items-center">
         <div>

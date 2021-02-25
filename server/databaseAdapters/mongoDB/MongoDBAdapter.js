@@ -107,6 +107,7 @@ module.exports = class MongoDBAdapter {
       group: (device.group) ? device.group : { },
       engineState: device.engineState,
       engineLevel: device.engineLevel,
+      alarmState: device.alarmState,
       currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
       currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
       currentLampState: device.currentLampState,
@@ -142,6 +143,7 @@ module.exports = class MongoDBAdapter {
         group: (device.group) ? device.group : { },
         engineState: device.engineState,
         engineLevel: device.engineLevel,
+        alarmState: device.alarmState,
         currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
         currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
         currentLampState: device.currentLampState,
@@ -286,7 +288,7 @@ module.exports = class MongoDBAdapter {
    * @param {String} alarmState.lamp The lamp of the alarmstate
    * @returns Returns the alarmState document
    */
-  async setAlarmState(alarmState) {
+  async setLampState(alarmState) {
     const docAlarmState = new AlarmStateModel(alarmState);
     const err = docAlarmState.validateSync();
     if (err !== undefined) throw err;
@@ -313,7 +315,7 @@ module.exports = class MongoDBAdapter {
    * @param {String} serialnumber The device serialnumber of that device
    * @returns {Array} Returns an array of AlarmState that match the deviceID
    */
-  async getAlarmState(serialnumber) {
+  async getLampState(serialnumber) {
     return AlarmStateModel.find({ device: serialnumber }, 'device lamp state date').exec();
   }
 
@@ -762,5 +764,41 @@ module.exports = class MongoDBAdapter {
     });
 
     return docGroup;
+  }
+
+  async setDeviceAlarm(deviceSerialnumber, alarmState) {
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and of type string'); }
+    if (typeof alarmState !== 'boolean') { throw new Error('alarmState must be defined and of type boolean'); }
+    const d = await UVCDeviceModel.findOneAndUpdate({
+      serialnumber: deviceSerialnumber,
+    }, {
+      $set: {
+        alarmState,
+      },
+    }, { new: true }).exec().catch((e) => {
+      throw e;
+    });
+
+    if (d === null) {
+      throw new Error('Device does not exists');
+    }
+  }
+
+  /**
+   * Gets the alarm state of the device
+   * @param {string} deviceSerialnumber The Serialnumber of the device with the alarm
+   */
+  async getDeviceAlarm(deviceSerialnumber) {
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and of type string'); }
+
+    const d = await UVCDeviceModel.findOne({
+      serialnumber: deviceSerialnumber,
+    }, 'alarmState');
+
+    if (d === null) {
+      throw new Error('Device does not exists');
+    }
+
+    return d.alarmState;
   }
 };

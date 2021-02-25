@@ -40,6 +40,7 @@ describe('Express Route testing', () => {
         group: {},
         engineState: false,
         engineLevel: 0,
+        alarmState: false,
         currentBodyState: { state: '' },
         currentFanState: { state: '' },
         currentLampState: [],

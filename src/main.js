@@ -28,14 +28,20 @@ new Vue({
 
     await this.fetchDataFromServer();
 
-    // Debug any messages that are coming from the backend
-    socket.onAny((event, ...args) => {
-      console.debug(`Debug: Event - ${event}`, args);
-    });
-
     socket.on('error', (error) => {
       console.error('error in backend', error);
       // alert(error.message);
+    });
+
+    socket.on('device_alarm', (alarmProp) => {
+      console.log('Event: device_alarm', alarmProp);
+      this.$dataStore.devices.filter((device) => {
+        if (device.serialnumber === alarmProp.serialnumber) {
+          const dev = device;
+          dev.alarmState = `${alarmProp.alarmValue}` !== 'false';
+        }
+        return device;
+      });
     });
 
     socket.on('device_added', (device) => {

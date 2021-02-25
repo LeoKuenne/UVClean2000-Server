@@ -15,6 +15,7 @@ const uvcDeviceSchema = new mongoose.Schema({
   group: { type: Schema.Types.ObjectId, ref: 'UVCGroup' },
   engineState: { type: Boolean, default: false },
   engineLevel: { type: Number, default: 0 },
+  alarmState: { type: Boolean, default: false },
   currentBodyState: { type: Schema.Types.ObjectId, ref: 'BodyState' },
   currentFanState: { type: Schema.Types.ObjectId, ref: 'FanState' },
   currentLampState: [{ type: Schema.Types.ObjectId, ref: 'AlarmState' }],
@@ -25,6 +26,16 @@ const uvcDeviceSchema = new mongoose.Schema({
   currentAirVolume: { type: Schema.Types.ObjectId, ref: 'AirVolume' },
 });
 const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema);
+
+function checkAlarmState(device) {
+  const lampStates = device.currentLampState.filter((state) => state.state === 'Alarm');
+  if (lampStates.length !== 0
+      || device.currentFanState === 'Alarm'
+      || device.currentBodyState === 'Alarm') {
+    return true;
+  }
+  return false;
+}
 
 function parseStates(propertie, subpropertie, value) {
   switch (propertie) {
@@ -52,6 +63,7 @@ function parseStates(propertie, subpropertie, value) {
 }
 
 module.exports = {
+  checkAlarmState,
   parseStates,
   uvcDeviceModel,
 };

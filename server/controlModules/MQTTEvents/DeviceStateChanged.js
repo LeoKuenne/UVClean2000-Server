@@ -76,39 +76,39 @@ async function execute(db, io, mqtt, topic, message) {
 
   switch (newState.prop) {
     case 'currentLampValue':
-      db.addLampValue({
+      await db.addLampValue({
         device: newState.serialnumber,
         lamp: newState.lamp,
         value: newState.newValue,
       });
       break;
     case 'currentLampState':
-      db.setAlarmState({
+      await db.setLampState({
         device: newState.serialnumber,
         state: newState.newValue,
         lamp: newState.lamp,
       });
       break;
     case 'tacho':
-      db.addTacho({
+      await db.addTacho({
         device: newState.serialnumber,
         tacho: newState.newValue,
       });
       break;
     case 'currentAirVolume':
-      db.addAirVolume({
+      await db.addAirVolume({
         device: newState.serialnumber,
         volume: newState.newValue,
       });
       break;
     case 'currentFanState':
-      db.addFanState({
+      await db.addFanState({
         device: newState.serialnumber,
         state: newState.newValue,
       });
       break;
     case 'currentBodyState':
-      db.addBodyState({
+      await db.addBodyState({
         device: newState.serialnumber,
         state: newState.newValue,
       });
@@ -121,8 +121,38 @@ async function execute(db, io, mqtt, topic, message) {
 
       device[newState.prop] = newState.newValue;
 
-      db.updateDevice(device);
+      await db.updateDevice(device);
       break;
+  }
+
+  // Alarm Checking
+  const updatedDevice = await db.getDevice(newState.serialnumber);
+  const hasAlarm = UVCDevice.checkAlarmState(updatedDevice);
+
+  console.log(updatedDevice, hasAlarm);
+
+  if (hasAlarm && !await db.getDeviceAlarm(newState.serialnumber)) {
+    logger.warn(`Device ${newState.serialnumber} has a alarm`);
+    io.emit('device_alarm', {
+      serialnumber: newState.serialnumber,
+      alarmValue: true,
+    });
+    db.setDeviceAlarm(newState.serialnumber, true);
+
+    // if (updatedDevice.group.id !== undefined) {
+    //   io.emit('device_alarm', {
+    //     serialnumber: newState.serialnumber,
+    //     alarmValue: true,
+    //   });
+    //   db.setGroupAlarm(newState.serialnumber, true);
+    // }
+  } else if (!hasAlarm && await db.getDeviceAlarm(newState.serialnumber)) {
+    logger.info(`Device ${newState.serialnumber} has no alarm anymore`);
+    io.emit('device_alarm', {
+      serialnumber: newState.serialnumber,
+      alarmValue: false,
+    });
+    db.setDeviceAlarm(newState.serialnumber, false);
   }
 
   io.emit('device_stateChanged', newState);
