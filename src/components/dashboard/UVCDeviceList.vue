@@ -127,6 +127,13 @@ export default {
     UVCForm,
   },
   props: ['device'],
+  watch: {
+    device() {
+      if (this.device !== undefined && this.device.match(/[0-9]/gm)) {
+        this.scrollToElement(this.device);
+      }
+    },
+  },
   mounted() {
     this.$nextTick(() => {
       if (this.device !== undefined && this.device.match(/[0-9]/gm)) {
