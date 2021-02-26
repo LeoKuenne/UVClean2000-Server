@@ -17,14 +17,16 @@
       </button>
     </div>
     <div class="flex flex-row flex-wrap content-center justify-center">
-        <UVCGroup
-          @edit="editGroup($event)"
-          @changeState="changeGroupState($event)"
-          v-for="group in $dataStore.groups"
-          :key="group.id"
-          :group="group"
-          class="shadow-lg">
-        </UVCGroup>
+      <UVCGroup
+        @edit="editGroup($event)"
+        @changeState="changeGroupState($event)"
+        v-for="grp in $dataStore.groups"
+        :key="grp.id"
+        :group="grp"
+        :ref="'group' + grp.id"
+        :class="[(group === grp.id) ? 'transform scale-105': '']"
+        class="m-5 w-80 border-primary border shadow-lg duration-200">
+      </UVCGroup>
     </div>
     <UVCForm
       :title="heading"
@@ -103,6 +105,7 @@ export default {
     UVCGroup,
     UVCForm,
   },
+  props: ['group'],
   computed: {
     okProp() {
       return this.isFormEdit ? 'Update' : 'Add';
@@ -111,7 +114,30 @@ export default {
       return this.isFormEdit ? 'Update Group' : 'Add Group';
     },
   },
+  watch: {
+    group() {
+      if (this.group !== undefined && this.group.match(/[0-9a-z]/gm)) {
+        this.scrollToElement(this.group);
+      }
+    },
+  },
+  mounted() {
+    this.$nextTick(() => {
+      if (this.group !== undefined && this.group.match(/[0-9a-z]/gm)) {
+        this.scrollToElement(this.group);
+      }
+    });
+  },
   methods: {
+    /**
+     * Called if the group is selected in the query
+     */
+    scrollToElement(group) {
+      const element = this.$refs[`group${group}`];
+      if (element && element[0]) {
+        element[0].$el.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
     showAddForm() {
       this.formGroup = {
         name: '',
@@ -201,3 +227,17 @@ export default {
   },
 };
 </script>
+
+<style>
+.smooth-enter-active,
+.smooth-leave-active {
+  @apply duration-200;
+  @apply ease-in-out;
+}
+
+.smooth-enter-to, .smooth-leave {
+}
+
+.smooth-enter, .smooth-leave-to {
+}
+</style>

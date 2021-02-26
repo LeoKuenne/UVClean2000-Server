@@ -25,6 +25,9 @@ const routes = [
         name: 'groups',
         path: '/dashboard/groups',
         component: UVCGroupList,
+        props(route) {
+          return route.query || {};
+        },
       },
     ],
     // meta: {

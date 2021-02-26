@@ -21,11 +21,12 @@
           @edit="editDevice($event)"
           @assignGroup="showGroupForm($event)"
           @changeState="changeDeviceState($event)"
-          v-for="device in $dataStore.devices"
-          :key="device.serialnumber"
-          :device="device"
-          :ref="'device' + device.serialnumber"
-          class="m-5 w-96 border-primary border shadow-lg">
+          v-for="dev in $dataStore.devices"
+          :key="dev.serialnumber"
+          :device="dev"
+          :ref="'device' + dev.serialnumber"
+          :class="[(device === dev.serialnumber) ? 'transform scale-105': '']"
+          class="m-5 w-96 border-primary border shadow-lg duration-200">
         </UVCDevice>
     </div>
     <UVCForm
