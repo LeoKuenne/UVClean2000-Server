@@ -13,7 +13,7 @@
           </div>
           <dropdownMenu
             class="text-primary"
-            :menuItems="[ 'Edit', 'View chart', 'Add to Group' ]"
+            :menuItems="[ 'Edit', 'View chart', 'Add to Group', 'Reset' ]"
             @itemClicked="menuItemClicked($event)">
           </dropdownMenu>
         </div>
@@ -81,7 +81,7 @@
 
         <div class="col-span-2">
             <div class="flex justify-between">
-              <span class="font-semibold">Lamp values</span>
+              <span class="font-semibold">Lamp values (V)</span>
               <button
                 class="bg-transparent text-color hover:bg-transparent py-0 m-0 hover:transform
                   hover:scale-105 transition-all"
@@ -118,7 +118,7 @@
                 <div class="w-16"
                   v-for="(lampValue, lamp) in device.currentLampValue"
                   :key="lamp">
-                  {{lampValue.lamp}}: {{lampValue.value}} V,
+                  {{lampValue.lamp}}: {{lampValue.value}},
                 </div>
               </div>
             </transition>
@@ -179,12 +179,6 @@
             </transition>
           </div>
         </div>
-
-        <span>Reset Device</span>
-        <button class="bg-red-500 p-2 font-semibold text-white hover:transform hover:scale-105
-          transition-all">
-          Reset
-        </button>
       </div>
     </div>
   </router-link>
@@ -209,6 +203,9 @@ export default {
           break;
         case 'Add to Group':
           this.$emit('assignGroup', this.device);
+          break;
+        case 'Reset':
+          this.$emit('reset', this.device);
           break;
         default:
           console.log(event);
