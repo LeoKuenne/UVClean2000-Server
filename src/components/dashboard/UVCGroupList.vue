@@ -16,7 +16,8 @@
         Add UVClean Group
       </button>
     </div>
-    <div class="flex flex-row flex-wrap content-center justify-center">
+    <router-link to="groups"
+      class="flex flex-row flex-wrap content-center justify-center cursor-default">
       <UVCGroup
         @edit="editGroup($event)"
         @changeState="changeGroupState($event)"
@@ -27,7 +28,7 @@
         :class="[(group === grp.id) ? 'transform scale-105': '']"
         class="m-5 w-80 border-primary border shadow-lg duration-200">
       </UVCGroup>
-    </div>
+    </router-link>
     <UVCForm
       :title="heading"
       :show="showEditForm"

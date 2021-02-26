@@ -16,7 +16,10 @@
         Add UVClean Device
       </button>
     </div>
-    <div class="flex flex-row flex-wrap content-center justify-center" id="uvcdevicelist">
+    <router-link to="devices"
+      class="flex flex-row flex-wrap content-center justify-center cursor-default"
+      id="uvcdevicelist"
+      @click="$route.query.device=''">
         <UVCDevice
           @edit="editDevice($event)"
           @assignGroup="showGroupForm($event)"
@@ -28,7 +31,7 @@
           :class="[(device === dev.serialnumber) ? 'transform scale-105': '']"
           class="m-5 w-96 border-primary border shadow-lg duration-200">
         </UVCDevice>
-    </div>
+    </router-link>
     <UVCForm
       :title="heading"
       :show="showEditForm"
