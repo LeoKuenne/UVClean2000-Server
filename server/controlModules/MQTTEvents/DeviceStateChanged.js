@@ -4,73 +4,56 @@ const MainLogger = require('../../Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'DeviceStateChangedEvent' });
 
-async function execute(db, io, mqtt, topic, message) {
-  logger.info(`Got MQTT message at topic ${topic} with message ${message}`);
-  const topicArray = topic.split('/');
-  const event = topicArray[2];
+function hasDeviceAlarm(databaseDevice, hasAlarm) {
+  if (hasAlarm === true && databaseDevice.alarmState === false) {
+    return true;
+  }
+  if (hasAlarm === false && databaseDevice.alarmState === true) {
+    return false;
+  }
+  return undefined;
+}
 
-  let newState = {};
-  let parsed = null;
+async function checkAlarm(db, io, newState) {
+  // Alarm Checking
+  const device = await db.getDevice(newState.serialnumber);
+  const deviceShouldHaveAlarm = UVCDevice.checkAlarmState(device);
+  const deviceGroup = (device.group.id !== undefined)
+    ? await db.getGroup(device.group.id) : undefined;
 
-  newState = {
-    serialnumber: `${topicArray[1]}`,
-    prop: `${topicArray[3]}`,
-  };
+  const alarmStateChangedToAlarm = hasDeviceAlarm(device, deviceShouldHaveAlarm);
 
-  // MQQT Mapping: Topic naming to database naming and which topic should be interpreted
-  switch (newState.prop) {
-    case 'name':
-      newState.prop = 'name';
-      break;
-    case 'engineState':
-      newState.prop = 'engineState';
-      break;
-    case 'engineLevel':
-      newState.prop = 'engineLevel';
-      break;
-    case 'airVolume':
-      newState.prop = 'currentAirVolume';
-      break;
-    case 'lamp':
-      newState.prop = 'currentLampValue';
-      break;
-    case 'identify':
-      newState.prop = 'identifyMode';
-      break;
-    case 'eventMode':
-      newState.prop = 'eventMode';
-      break;
-    case 'alarm':
-      if (topicArray[4] === undefined) {
-        throw new Error(`Can not parse state with propertie ${newState.prop}`);
-      } else if (topicArray[4] === 'tempBody') {
-        newState.prop = 'currentBodyState';
-      } else if (topicArray[4] === 'tempFan') {
-        newState.prop = 'currentFanState';
-      } else if (!Number.isNaN(topicArray[4])) {
-        newState.prop = 'currentLampState';
-      } else {
-        throw new Error(`Can not parse state with propertie ${newState.prop}`);
-      }
-      break;
-    case 'tacho':
-      newState.prop = 'tacho';
-      break;
-    default:
-      throw new Error(`Can not parse state with propertie ${newState.prop}`);
+  if (alarmStateChangedToAlarm === true && alarmStateChangedToAlarm !== undefined) {
+    logger.warn(`Device ${newState.serialnumber} has a alarm`);
+    await db.setDeviceAlarm(newState.serialnumber, true);
+    io.emit('device_alarm', {
+      serialnumber: newState.serialnumber,
+      alarmValue: true,
+    });
+  } else if (alarmStateChangedToAlarm === false && alarmStateChangedToAlarm !== undefined) {
+    logger.info(`Device ${newState.serialnumber} has no alarm anymore`);
+    await db.setDeviceAlarm(newState.serialnumber, false);
+    io.emit('device_alarm', {
+      serialnumber: newState.serialnumber,
+      alarmValue: false,
+    });
   }
 
-  parsed = UVCDevice.parseStates(newState.prop, topicArray[4], message);
+  if (device.group.id !== undefined) {
+    const group = await db.getGroup(device.group.id);
 
-  if (typeof parsed === 'object') {
-    if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
-      newState.lamp = parsed.lamp;
-      newState.newValue = parsed.value;
+    if (deviceGroup.alarmState !== group.alarmState) {
+      logger.warn(`Group ${group.id} has ${group.alarmState ? 'a alarm' : 'no alarm anymore'}`);
+      io.emit('group_deviceAlarm', {
+        serialnumber: newState.serialnumber,
+        group: group.id,
+        alarmValue: group.alarmState,
+      });
     }
-  } else {
-    newState.newValue = parsed;
   }
+}
 
+async function updateDatabase(db, newState) {
   logger.info(`Updating device ${newState.serialnumber} in database with new State`, newState);
   let device = {};
 
@@ -124,41 +107,89 @@ async function execute(db, io, mqtt, topic, message) {
       await db.updateDevice(device);
       break;
   }
+}
 
-  // Alarm Checking
-  const updatedDevice = await db.getDevice(newState.serialnumber);
-  const hasAlarm = UVCDevice.checkAlarmState(updatedDevice);
+/**
+ * Mapping the MQTT topic to the database schemas
+ * @param {String} topic The MQTT topic
+ * @returns {Object} Parsed Object with serialnumber, prop and subprop
+ */
+function mapMQTTTopicToDatabase(topic) {
+  const topicArray = topic.split('/');
 
-  console.log(updatedDevice, hasAlarm);
-
-  if (hasAlarm && !await db.getDeviceAlarm(newState.serialnumber)) {
-    logger.warn(`Device ${newState.serialnumber} has a alarm`);
-    io.emit('device_alarm', {
-      serialnumber: newState.serialnumber,
-      alarmValue: true,
-    });
-    db.setDeviceAlarm(newState.serialnumber, true);
-
-    // if (updatedDevice.group.id !== undefined) {
-    //   io.emit('device_alarm', {
-    //     serialnumber: newState.serialnumber,
-    //     alarmValue: true,
-    //   });
-    //   db.setGroupAlarm(newState.serialnumber, true);
-    // }
-  } else if (!hasAlarm && await db.getDeviceAlarm(newState.serialnumber)) {
-    logger.info(`Device ${newState.serialnumber} has no alarm anymore`);
-    io.emit('device_alarm', {
-      serialnumber: newState.serialnumber,
-      alarmValue: false,
-    });
-    db.setDeviceAlarm(newState.serialnumber, false);
+  if (topicArray.length < 4 || topicArray.length > 5) {
+    throw new Error('Topic can not be parsed because it has the wrong format');
   }
+
+  const serialnumber = topicArray[1];
+  const prop = topicArray[3];
+  const subprop = topicArray[4];
+
+  switch (prop) {
+    case 'name':
+      return { serialnumber, prop: 'name' };
+    case 'engineState':
+      return { serialnumber, prop: 'engineState' };
+    case 'engineLevel':
+      return { serialnumber, prop: 'engineLevel' };
+    case 'airVolume':
+      return { serialnumber, prop: 'currentAirVolume' };
+    case 'lamp':
+      if (subprop === undefined) {
+        throw new Error(`Can not parse state with propertie ${prop}`);
+      } else if (!Number.isNaN(subprop)) {
+        return { serialnumber, prop: 'currentLampValue', subprop: parseInt(subprop, 10) };
+      } else {
+        throw new Error(`Can not parse state with propertie ${prop}`);
+      }
+    case 'identify':
+      return { serialnumber, prop: 'identifyMode' };
+    case 'eventMode':
+      return { serialnumber, prop: 'eventMode' };
+    case 'alarm':
+      if (subprop === undefined) {
+        throw new Error(`Can not parse state with propertie ${prop}`);
+      } else if (subprop === 'tempBody') {
+        return { serialnumber, prop: 'currentBodyState' };
+      } else if (subprop === 'tempFan') {
+        return { serialnumber, prop: 'currentFanState' };
+      } else if (!Number.isNaN(parseInt(subprop, 10))) {
+        return { serialnumber, prop: 'currentLampState', subprop: parseInt(subprop, 10) };
+      } else {
+        throw new Error(`Can not parse state with propertie ${prop} with subpropertie ${subprop}`);
+      }
+    case 'tacho':
+      return { serialnumber, prop: 'tacho' };
+    default:
+      throw new Error(`Can not parse state with propertie ${prop}`);
+  }
+}
+
+async function execute(db, io, mqtt, topic, message) {
+  logger.info(`Got MQTT message at topic ${topic} with message ${message}`);
+
+  const props = mapMQTTTopicToDatabase(topic);
+
+  const parsed = UVCDevice.parseStates(props.prop, props.subprop, message);
+
+  const newState = {
+    serialnumber: props.serialnumber,
+    prop: props.prop,
+    newValue: parsed.value,
+  };
+
+  if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
+    newState.lamp = parsed.lamp;
+  }
+
+  await updateDatabase(db, newState);
+
+  await checkAlarm(db, io, newState);
 
   io.emit('device_stateChanged', newState);
 }
 
-module.exports = function register(db, io, mqtt) {
+function register(db, io, mqtt) {
   logger.info('Registering socketIO module');
   mqtt.on('message', async (topic, message) => {
     if (topic.split('/')[2] !== 'stateChanged') return;
@@ -166,7 +197,16 @@ module.exports = function register(db, io, mqtt) {
       await execute(db, io, mqtt, topic, message);
     } catch (e) {
       logger.error(e);
+      console.error(e);
       io.emit('error', { message: e.message });
     }
   });
+}
+module.exports = {
+  register,
+  mapMQTTTopicToDatabase,
+  checkAlarm,
+  updateDatabase,
+  execute,
+  hasDeviceAlarm,
 };

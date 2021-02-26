@@ -30,8 +30,8 @@ const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema);
 function checkAlarmState(device) {
   const lampStates = device.currentLampState.filter((state) => state.state === 'Alarm');
   if (lampStates.length !== 0
-      || device.currentFanState === 'Alarm'
-      || device.currentBodyState === 'Alarm') {
+      || device.currentFanState.state === 'Alarm'
+      || device.currentBodyState.state === 'Alarm') {
     return true;
   }
   return false;
@@ -42,19 +42,23 @@ function parseStates(propertie, subpropertie, value) {
     case 'name':
     case 'currentBodyState':
     case 'currentFanState':
-      return `${value}`;
+      return { value: `${value}` };
     case 'engineState':
     case 'eventMode':
     case 'identifyMode':
-      return (`${value}` === 'true');
+      return { value: (`${value}` === 'true') };
     case 'tacho':
     case 'currentAirVolume':
     case 'engineLevel':
-      return parseInt(value, 10);
+      return { value: parseInt(value, 10) };
     case 'currentLampState':
-    case 'currentLampValue':
       return {
         value: `${value}`,
+        lamp: parseInt(subpropertie, 10),
+      };
+    case 'currentLampValue':
+      return {
+        value: parseInt(value, 10),
         lamp: parseInt(subpropertie, 10),
       };
     default:

@@ -7,8 +7,10 @@ const TachoModel = require('./models/tacho');
 const FanStateModel = require('./models/fanState');
 const BodyStateModel = require('./models/bodyState');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
-const UVCGroupModel = require('./models/group').uvcGroupModel;
+const UVCGroup = require('../../dataModels/UVCGroup');
 const MainLogger = require('../../Logger.js').logger;
+
+const UVCGroupModel = UVCGroup.uvcGroupModel;
 
 const logger = MainLogger.child({ service: 'MongoDBAdapter' });
 
@@ -295,7 +297,7 @@ module.exports = class MongoDBAdapter {
 
     await docAlarmState.save();
 
-    UVCDeviceModel.updateOne({
+    const device = await UVCDeviceModel.updateOne({
       serialnumber: alarmState.device,
     }, {
       $set: {
@@ -305,7 +307,7 @@ module.exports = class MongoDBAdapter {
       if (e !== null) { throw e; }
     });
 
-    // if (device === null) throw new Error('Device does not exists');
+    if (device === null) throw new Error('Device does not exists');
 
     return docAlarmState;
   }
@@ -387,7 +389,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docTacho.save().catch((e) => {
-      if (e) { }
+      throw e;
     });
 
     UVCDeviceModel.updateOne({
@@ -423,7 +425,8 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a FanState document to the database.
-   * @param {Object} fanState The FanState object with the device serialnumber of that device and the fanState
+   * @param {Object} fanState The FanState object with the device serialnumber of that device
+   * and the fanState
    * @param {string} fanState.device the device serialnumber of that device
    * @param {string} fanState.state the alarm state
    * @returns {Document<any>} Returns the FanState Document
@@ -434,7 +437,7 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docFanState.save().catch((e) => {
-      if (e) { }
+      throw e;
     });
 
     UVCDeviceModel.updateOne({
@@ -470,7 +473,8 @@ module.exports = class MongoDBAdapter {
 
   /**
    * Adds a BodyState document to the database.
-   * @param {Object} bodyState The BodyState object with the device serialnumber of that device and the bodyState
+   * @param {Object} bodyState The BodyState object with the device serialnumber of that device and
+   * the bodyState
    * @param {string} bodyAlarm.device the device serialnumber of that device
    * @param {string} bodyAlarm.state the alarm state
    * @returns {Document<any>} Returns the BodyState Document
@@ -540,8 +544,10 @@ module.exports = class MongoDBAdapter {
         }
         return undefined;
       case 'lampValues':
-        dataLatest = await LampValueModel.find({ device: serialnumber }).sort({ date: -1 }).limit(1);
-        dataOldest = await LampValueModel.find({ device: serialnumber }).sort({ date: 1 }).limit(1);
+        dataLatest = await LampValueModel.find({ device: serialnumber })
+          .sort({ date: -1 }).limit(1);
+        dataOldest = await LampValueModel.find({ device: serialnumber })
+          .sort({ date: 1 }).limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {
             from: dataOldest[0].date,
@@ -588,9 +594,13 @@ module.exports = class MongoDBAdapter {
       throw new Error('GroupID has to be a string');
     }
 
+    logger.info(`Getting group ${groupID}`);
+
     const groupData = await UVCGroupModel.findOne({ _id: groupID })
-      .populate('devices', 'serialnumber name')
-      .exec();
+      .populate('devices', 'serialnumber name alarmState')
+      .exec().catch((e) => {
+        throw e;
+      });
 
     if (groupData === null) {
       throw new Error('Group does not exists');
@@ -600,6 +610,7 @@ module.exports = class MongoDBAdapter {
       id: groupData.id,
       name: groupData.name,
       devices: groupData.devices,
+      alarmState: groupData.alarmState,
     };
 
     return group;
@@ -610,7 +621,7 @@ module.exports = class MongoDBAdapter {
    */
   async getGroups() {
     const groupData = await UVCGroupModel.find()
-      .populate('devices', 'serialnumber name')
+      .populate('devices', 'serialnumber name alarmState')
       .exec();
 
     const groups = [];
@@ -619,6 +630,7 @@ module.exports = class MongoDBAdapter {
         id: group.id,
         name: group.name,
         devices: group.devices,
+        alarmState: group.alarmState,
       };
       groups.push(d);
       return group;
@@ -635,6 +647,8 @@ module.exports = class MongoDBAdapter {
    */
   async updateGroup(group) {
     if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined.');
+
+    logger.info(`Deleting group ${group.id} with %o`, group);
 
     const docGroup = await UVCGroupModel.findOneAndUpdate(
       { _id: new ObjectId(group.id) },
@@ -656,6 +670,8 @@ module.exports = class MongoDBAdapter {
    */
   async deleteGroup(group) {
     if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined and typeof string.');
+
+    logger.info(`Deleting group ${group}`);
 
     const devices = await (await this.getGroup(`${group.id}`)).devices;
     for (let i = 0; i < devices.length; i += 1) {
@@ -766,9 +782,16 @@ module.exports = class MongoDBAdapter {
     return docGroup;
   }
 
+  /**
+   * Sets the alarm state of the given device
+   * @param {string} deviceSerialnumber The Serialnumber of the device with the alarm
+   * @param {string} alarmState The alarm state to be set
+   */
   async setDeviceAlarm(deviceSerialnumber, alarmState) {
     if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and of type string'); }
     if (typeof alarmState !== 'boolean') { throw new Error('alarmState must be defined and of type boolean'); }
+    logger.info(`Setting alarm state of device ${deviceSerialnumber} to ${alarmState}`);
+
     const d = await UVCDeviceModel.findOneAndUpdate({
       serialnumber: deviceSerialnumber,
     }, {
@@ -776,11 +799,17 @@ module.exports = class MongoDBAdapter {
         alarmState,
       },
     }, { new: true }).exec().catch((e) => {
+      logger.error(e);
       throw e;
     });
 
     if (d === null) {
       throw new Error('Device does not exists');
+    }
+
+    if (d.group !== undefined) {
+      const group = await this.getGroup(`${d.group}`);
+      await this.setGroupAlarm(`${d.group}`, UVCGroup.checkAlarmState(group));
     }
   }
 
@@ -797,6 +826,48 @@ module.exports = class MongoDBAdapter {
 
     if (d === null) {
       throw new Error('Device does not exists');
+    }
+
+    return d.alarmState;
+  }
+
+  /**
+   * Sets the alarm state of the given Group
+   * @param {string} groupID The id of the Group with the alarm
+   * @param {string} alarmState The alarm state to be set
+   */
+  async setGroupAlarm(groupID, alarmState) {
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and of type string'); }
+    if (typeof alarmState !== 'boolean') { throw new Error('alarmState must be defined and of type boolean'); }
+    logger.info(`Setting alarm state of group ${groupID} to ${alarmState}`);
+    const d = await UVCGroupModel.findOneAndUpdate({
+      _id: new ObjectId(groupID),
+    }, {
+      $set: {
+        alarmState,
+      },
+    }, { new: true }).exec().catch((e) => {
+      throw e;
+    });
+
+    if (d === null) {
+      throw new Error('Group does not exists');
+    }
+  }
+
+  /**
+   * Gets the alarm state of the Group
+   * @param {string} groupID The id of the Group with the alarm
+   */
+  async getGroupAlarm(groupID) {
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and of type string'); }
+
+    const d = await UVCGroupModel.findOne({
+      _id: new ObjectId(groupID),
+    }, 'alarmState');
+
+    if (d === null) {
+      throw new Error('Group does not exists');
     }
 
     return d.alarmState;

@@ -1,6 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-await-in-loop */
-const { doesNotMatch } = require('assert');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
 let database;
@@ -1020,7 +1019,6 @@ describe('MongoDBAdapter Functions', () => {
         expect(addedFanState.state).toBe(fanState.state);
 
         const d = await database.getDevice(fanState.device);
-        console.log(d);
         expect(d.currentFanState.state).toStrictEqual(addedFanState.state);
       });
 
@@ -1374,6 +1372,75 @@ describe('MongoDBAdapter Functions', () => {
         expect(dev.alarmState).toBe(true);
       });
 
+      it('setDeviceAlarm sets the device alarm and group alarm correct', async () => {
+        const device = {
+          name: 'Test Device',
+          serialnumber: '000000000000000000000001',
+        };
+        await database.addDevice(device);
+
+        const group = await database.addGroup({ name: 'Test Group' });
+        await database.addDeviceToGroup(device.serialnumber, `${group._id}`);
+
+        await database.setDeviceAlarm(device.serialnumber, true);
+        const dev = await database.getDevice(device.serialnumber);
+        const grp = await database.getGroup(`${group._id}`);
+        expect(dev.alarmState).toBe(true);
+        expect(grp.alarmState).toBe(true);
+      });
+
+      it('setDeviceAlarm sets the device alarm and group alarm correct with multiple devices', async () => {
+        let group = await database.addGroup({ name: 'Test Group' });
+
+        for (let i = 0; i < 10; i += 1) {
+          await database.addDevice({
+            name: `Test Device ${i}`,
+            serialnumber: `00000000000000000000000${i}`,
+          });
+
+          await database.addDeviceToGroup(`00000000000000000000000${i}`, `${group._id}`);
+        }
+
+        for (let i = 0; i < 10; i += 1) {
+          await database.setDeviceAlarm(`00000000000000000000000${i}`, true);
+          let dev = await database.getDevice(`00000000000000000000000${i}`);
+          let grp = await database.getGroup(`${group._id}`);
+          expect(dev.alarmState).toBe(true);
+          expect(grp.alarmState).toBe(true);
+          await database.setDeviceAlarm(`00000000000000000000000${i}`, false);
+          dev = await database.getDevice(`00000000000000000000000${i}`);
+          grp = await database.getGroup(`${group._id}`);
+          expect(dev.alarmState).toBe(false);
+          expect(grp.alarmState).toBe(false);
+        }
+
+        group = await database.getGroup(`${group._id}`);
+        expect(group.alarmState).toBe(false);
+
+        for (let i = 0; i < 20; i += 1) {
+          if (i < 10) {
+            await database.setDeviceAlarm(`00000000000000000000000${i}`, true);
+            const dev = await database.getDevice(`00000000000000000000000${i}`);
+            const grp = await database.getGroup(`${group.id}`);
+            expect(dev.alarmState).toBe(true);
+            expect(grp.alarmState).toBe(true);
+          } else {
+            await database.setDeviceAlarm(`00000000000000000000000${i - 10}`, false);
+            const dev = await database.getDevice(`00000000000000000000000${i - 10}`);
+            const grp = await database.getGroup(`${group.id}`);
+            expect(dev.alarmState).toBe(false);
+            if (i === 19) {
+              expect(grp.alarmState).toBe(false);
+              return;
+            }
+            expect(grp.alarmState).toBe(true);
+          }
+        }
+
+        group = await database.getGroup(`${group.id}`);
+        expect(group.alarmState).toBe(true);
+      });
+
       it('setDeviceAlarm throws an error if the serialnumber is not a string', async (done) => {
         await database.setDeviceAlarm(123, true).catch((err) => {
           expect(err.toString()).toMatch('Error: deviceSerialnumber must be defined and of type string');
@@ -1547,6 +1614,7 @@ describe('MongoDBAdapter Functions', () => {
       const returnedGroup = await database.getGroup(`${docGroup._id}`);
       expect(returnedGroup.name).toBe(group.name);
       expect(returnedGroup.devices.length).toBe(0);
+      expect(returnedGroup.alarmState).toBe(false);
     });
 
     it('getGroup throws error if name is not string', async () => {
@@ -1577,6 +1645,7 @@ describe('MongoDBAdapter Functions', () => {
       for (let i = 0; i < dbData.length; i += 1) {
         expect(dbData[i].name).toBe(`Test Group ${i + 1}`);
         expect(dbData[i].devices.length).toBe(0);
+        expect(dbData[i].alarmState).toBe(false);
       }
     });
 
@@ -1826,6 +1895,60 @@ describe('MongoDBAdapter Functions', () => {
         if (i === 5 || i === 6) return;
         expect(docGroup.devices[i].serialnumber.toString()).toBe(devices[i].serialnumber);
       }
+    });
+
+    describe('Group Alarm functions', () => {
+      beforeEach(async () => {
+        await database.clearCollection('uvcgroups');
+      });
+
+      it('setGroupAlarm sets the Group alarm correct', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        await database.setGroupAlarm(group.id, true);
+        const dev = await database.getGroup(group.id);
+        expect(dev.alarmState).toBe(true);
+      });
+
+      it('setGroupAlarm throws an error if the id is not a string', async (done) => {
+        await database.setGroupAlarm(123, true).catch((err) => {
+          expect(err.toString()).toMatch('Error: groupID must be defined and of type string');
+          done();
+        });
+      });
+
+      it('setGroupAlarm throws an error if the Group does not exists', async (done) => {
+        await database.setGroupAlarm('000000000000000000000001', true).catch((err) => {
+          expect(err.toString()).toMatch('Error: Group does not exists');
+          done();
+        });
+      });
+
+      it('getGroupAlarm gets the Group alarm correct', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        await database.setGroupAlarm(group.id, true);
+        const dev = await database.getGroupAlarm(group.id);
+        expect(dev).toBe(true);
+      });
+
+      it('getGroupAlarm throws an error if the id is not a string', async (done) => {
+        await database.getGroupAlarm(123, true).catch((err) => {
+          expect(err.toString()).toMatch('Error: groupID must be defined and of type string');
+          done();
+        });
+      });
+
+      it('getGroupAlarm throws an error if the Group does not exists', async (done) => {
+        await database.getGroupAlarm('000000000000000000000001', true).catch((err) => {
+          expect(err.toString()).toMatch('Error: Group does not exists');
+          done();
+        });
+      });
     });
   });
 });

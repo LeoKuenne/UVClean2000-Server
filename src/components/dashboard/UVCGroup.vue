@@ -1,6 +1,8 @@
 <template>
   <div class="m-5 w-80 border-primary border">
-    <div class="bg-primary p-2 items-center text-white">
+    <div
+      :class="[group.alarmState ? 'bg-red-500' : 'bg-primary']"
+      class="p-2 items-center text-white">
       <div class="flex flex-row justify-between items-center">
         <div>
           <h3 class="text-md font-bold">{{group.name}}</h3>
@@ -17,7 +19,8 @@
       <h4 class="text-lg pt-2 font-bold col-span-2">Groupmembers:</h4>
       <div class="pl-2 space-y-1">
           <div
-            class="bg-gray-200 p-2 rounded hover:underline cursor-pointer"
+            :class="[device.alarmState ? 'bg-red-500 text-white' : 'bg-gray-200']"
+            class="p-2 rounded hover:underline cursor-pointer"
             v-for="device in group.devices"
             :key="device.serialnumber">
             <router-link :to="'/dashboard/devices?device=' + device.serialnumber">

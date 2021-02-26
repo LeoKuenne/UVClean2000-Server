@@ -58,7 +58,7 @@ class UVCleanServer extends EventEmitter {
       this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
       // Register MQTT actions
-      DeviceStateChanged(this.database, this.io, this.client);
+      DeviceStateChanged.register(this.database, this.io, this.client);
 
       this.client.on('connect', async () => {
         logger.info(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);

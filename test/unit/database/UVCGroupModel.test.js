@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const UVCGroupModel = require('../../../server/databaseAdapters/mongoDB/models/group.js').uvcGroupModel;
+const UVCGroupModel = require('../../../server/dataModels/UVCGroup').uvcGroupModel;
 
 const group = {
   name: 'Group 1',

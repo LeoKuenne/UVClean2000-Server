@@ -11,6 +11,10 @@ const levels = {
   silly: 6,
 };
 
+const myFormat = format.printf(({
+  level, message, metadata, timestamp,
+}) => `${timestamp} [${metadata.service}] ${level}: ${message}`);
+
 const d = new Date().toISOString().replace(/[.:-]/gm, '');
 
 const logger = winston.createLogger({
@@ -29,14 +33,33 @@ const logger = winston.createLogger({
   ],
   rejectionHandlers: [
     new winston.transports.File({ filename: 'logs/rejections.log' }),
-    new winston.transports.Console(),
+    new winston.transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        format.errors({ stack: true }),
+        format.splat(),
+        myFormat,
+      ),
+    }),
+  ],
+  exceptionHandlers: [
+    new winston.transports.File({ filename: 'logs/rejections.log' }),
+    new winston.transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        format.errors({ stack: true }),
+        format.splat(),
+        myFormat,
+      ),
+    }),
   ],
 });
-
-const myFormat = format.printf(({
-  level, message, metadata, timestamp,
-}) => `${timestamp} [${metadata.service}] ${level}: ${message}`);
-
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     level: 'debug',

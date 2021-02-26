@@ -68,6 +68,7 @@ describe('Express Route testing', () => {
         devices: [],
         id: `${group._id}`,
         name: `Test ${i}`,
+        alarmState: false,
       });
     }
 
