@@ -93,6 +93,7 @@ module.exports = class ExpressServer {
           res.sendStatus(404);
           return;
       }
+      console.log(db);
 
       res.json(db);
     });

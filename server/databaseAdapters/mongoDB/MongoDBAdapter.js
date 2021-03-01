@@ -567,7 +567,7 @@ module.exports = class MongoDBAdapter {
         }
         return undefined;
 
-      default: T;
+      default:
         return undefined;
     }
   }
