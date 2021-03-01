@@ -212,7 +212,11 @@ export default {
         return;
       }
       console.log(newState);
-      this.$root.$data.socket.emit('group_changeState', newState);
+      this.$root.$data.socket.emit('group_changeState', {
+        id: newState.id,
+        prop: newState.prop,
+        newValue: `${newState.newValue}`,
+      });
     },
   },
   data() {

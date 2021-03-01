@@ -34,7 +34,9 @@ describe('Express Route testing', () => {
   it('GET /devices', async (done) => {
     const devices = [];
     for (let i = 0; i < 10; i += 1) {
+      const dev = await database.addDevice({ serialnumber: `${i}`, name: `Test ${i}` });
       devices.push({
+        id: dev._id.toString(),
         serialnumber: `${i}`,
         name: `Test ${i}`,
         group: {},
@@ -50,7 +52,6 @@ describe('Express Route testing', () => {
         tacho: { tacho: 0 },
         currentAirVolume: { volume: 0 },
       });
-      await database.addDevice({ serialnumber: `${i}`, name: `Test ${i}` });
     }
 
     const res = await request.get('/devices');
@@ -69,6 +70,12 @@ describe('Express Route testing', () => {
         id: `${group._id}`,
         name: `Test ${i}`,
         alarmState: false,
+        engineLevel: 0,
+        engineLevelDevicesWithOtherState: [],
+        engineState: false,
+        engineStateDevicesWithOtherState: [],
+        eventMode: false,
+        eventModeDevicesWithOtherState: [],
       });
     }
 

@@ -1,8 +1,28 @@
 const EventEmitter = require('events');
-const { register } = require('../../server/controlModules/MQTTEvents/DeviceStateChanged');
+const { register, updateGroup } = require('../../server/controlModules/MQTTEvents/DeviceStateChanged');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
 let database;
+
+expect.extend({
+  toContainObject(received, argument) {
+    const pass = this.equals(received,
+      expect.arrayContaining([
+        expect.objectContaining(argument),
+      ]));
+
+    if (pass) {
+      return {
+        message: () => (`expected ${this.utils.printReceived(received)} not to contain object ${this.utils.printExpected(argument)}`),
+        pass: true,
+      };
+    }
+    return {
+      message: () => (`expected ${this.utils.printReceived(received)} to contain object ${this.utils.printExpected(argument)}`),
+      pass: false,
+    };
+  },
+});
 
 beforeAll(async () => {
   database = new MongoDBAdapter(global.__MONGO_URI__.replace('mongodb://', ''), '');
@@ -130,21 +150,21 @@ describe('DeviceStateChanged MQTT Module', () => {
     }],
   ])('Parses %s with %s accordingly and updates alarmState in Group', async (topic, message, alarmResult, result, done) => {
     const mqtt = new EventEmitter();
-
     const io = new EventEmitter();
+    let group_deviceAlarmProp = null;
 
     await database.addDevice({
       name: 'Test Gerat',
       serialnumber: '0002145702154',
     });
 
-    register(database, io, mqtt);
-
     const group = await database.addGroup({
       name: 'Test Group',
     });
 
-    await database.addDeviceToGroup('0002145702154', `${group._id}`);
+    await database.addDeviceToGroup('0002145702154', group._id.toString());
+
+    register(database, io, mqtt);
 
     mqtt.emit('message', `UVClean/0002145702154/stateChanged/${topic}`, message);
 
@@ -153,16 +173,17 @@ describe('DeviceStateChanged MQTT Module', () => {
     });
 
     io.on('group_deviceAlarm', (prop) => {
-      expect(prop).toEqual({
+      group_deviceAlarmProp = prop;
+    });
+
+    io.on('device_stateChanged', (prop) => {
+      expect(prop).toEqual(result);
+      expect(group_deviceAlarmProp).toEqual({
         alarmValue: alarmResult.alarmValue,
         serialnumber: alarmResult.serialnumber,
         group: group._id.toString(),
       });
       done();
-    });
-
-    io.on('device_stateChanged', (prop) => {
-      expect(prop).toEqual(result);
     });
   });
 });
@@ -197,6 +218,7 @@ describe('Iterating over different states', () => {
   afterEach(() => {
     io.removeAllListeners('device_alarm');
     io.removeAllListeners('group_deviceAlarm');
+    jest.clearAllMocks();
   });
 
   it.each([
@@ -273,5 +295,76 @@ describe('Iterating over different states', () => {
       }
       done();
     });
+  });
+});
+
+describe('Group function integration test', () => {
+  beforeEach(async () => {
+    await database.clearCollection('uvcdevices');
+    await database.clearCollection('uvcgroups');
+  });
+
+  it.each([
+    ['engineState', true, false, true, 1],
+    ['engineState', false, true, true, 1],
+    ['engineState', false, false, false, 0],
+    ['engineState', true, true, true, 0],
+    ['engineState', false, false, true, 2],
+    ['engineState', true, true, false, 2],
+  ])('function setDevicesWithWrongState checks for propertie %s if (device 1 propertie is %s, '
+     + 'device 2 propertie is %s, group propertie is %s) the device list should be %i long',
+  async (prop, device1State, device2State, groupState, deviceListLength, done) => {
+    const io = new EventEmitter();
+
+    const dev1 = await database.addDevice({
+      name: 'Test Device 1',
+      serialnumber: '1',
+      engineState: Boolean(device1State),
+    });
+
+    const dev2 = await database.addDevice({
+      name: 'Test Device 2',
+      serialnumber: '2',
+      engineState: Boolean(device2State),
+    });
+
+    const group = await database.addGroup({
+      name: 'Test Group',
+      engineState: groupState,
+    });
+
+    await database.addDeviceToGroup('1', group._id.toString());
+    await database.addDeviceToGroup('2', group._id.toString());
+
+    io.on('group_stateChanged', async (options) => {
+      const grp = await database.getGroup(group._id.toString());
+      expect(grp[prop]).toBe(groupState);
+      expect(grp[`${prop}DevicesWithOtherState`].length).toBe(deviceListLength);
+
+      if (device1State !== groupState) {
+        expect(grp[`${prop}DevicesWithOtherState`]).toContainObject({
+          serialnumber: dev1.serialnumber,
+          name: dev1.name,
+          _id: dev1._id,
+        });
+      }
+
+      if (device2State !== groupState) {
+        expect(grp[`${prop}DevicesWithOtherState`]).toContainObject({
+          serialnumber: dev2.serialnumber,
+          name: dev2.name,
+          _id: dev2._id,
+        });
+      }
+
+      expect(options).toEqual({
+        id: group._id.toString(),
+        prop: `${prop}DevicesWithOtherState`,
+        newValue: grp[`${prop}DevicesWithOtherState`],
+      });
+      done();
+    });
+
+    await updateGroup(group._id.toString(), prop, database, io);
   });
 });

@@ -58,12 +58,12 @@
         <label for="s_engine_level">Engine Level</label>
         <select name="engine_level"
           id="s_engine_level"
+          :value="device.engineLevel"
           @change="$emit('changeState', {
             serialnumber: device.serialnumber,
             prop: 'engineLevel',
             newValue: $event.target.value
           })">
-          <option value="0">0</option>
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
@@ -237,26 +237,26 @@ export default {
     },
     state: {
       get() {
-        return this.device.engineState ? 'An' : 'Aus';
+        return this.device.engineState ? 'On' : 'Off';
       },
       set() {
-        return this.device.engineState ? 'An' : 'Aus';
+        return this.device.engineState ? 'On' : 'Off';
       },
     },
     eventMode: {
       get() {
-        return this.device.eventMode ? 'An' : 'Aus';
+        return this.device.eventMode ? 'On' : 'Off';
       },
       set() {
-        return this.device.eventMode ? 'An' : 'Aus';
+        return this.device.eventMode ? 'On' : 'Off';
       },
     },
     identifyMode: {
       get() {
-        return this.device.identifyMode ? 'An' : 'Aus';
+        return this.device.identifyMode ? 'On' : 'Off';
       },
       set() {
-        return this.device.identifyMode ? 'An' : 'Aus';
+        return this.device.identifyMode ? 'On' : 'Off';
       },
     },
   },

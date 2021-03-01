@@ -30,10 +30,18 @@ describe('UVCGroup Model Test', () => {
 
     expect(savedGroup._id).toBeDefined();
     expect(savedGroup.name).toBe(group.name);
+    expect(savedGroup.devices).toBeDefined();
+    expect(savedGroup.alarmState).toBe(false);
+    expect(savedGroup.engineState).toBe(false);
+    expect(savedGroup.engineStateDevicesWithOtherState).toBeDefined();
+    expect(savedGroup.eventMode).toBe(false);
+    expect(savedGroup.eventModeDevicesWithOtherState).toBeDefined();
+    expect(savedGroup.engineLevel).toBe(0);
+    expect(savedGroup.engineLevelDevicesWithOtherState).toBeDefined();
   });
 
   it('insert group successfully, but the field not defined in schema should be undefined', async () => {
-    group.undefinedField = '';
+    group.undefinedField = '213';
     const groupWithInvalidField = new UVCGroupModel(group);
     const savedGroupWithInvalidField = await groupWithInvalidField.save();
     expect(savedGroupWithInvalidField._id).toBeDefined();

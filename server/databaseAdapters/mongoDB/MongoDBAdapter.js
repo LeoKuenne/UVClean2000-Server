@@ -71,7 +71,7 @@ module.exports = class MongoDBAdapter {
   /**
    * Adds a Device to the MongoDB 'devices' database. Throws an error if the validation fails.
    * @param {Object} device Deviceobject that must have the properties serialnumber and name
-   * @returns {mongoose.Document<any>} The saved mongoose document
+   * @returns {Promise<mongoose.Document<any>>} The saved mongoose document
    */
   async addDevice(device) {
     if (device.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
@@ -103,7 +103,8 @@ module.exports = class MongoDBAdapter {
 
     if (device === null || device === undefined) throw new Error('Device does not exists');
 
-    const d = {
+    return {
+      id: device._id,
       serialnumber: device.serialnumber,
       name: device.name,
       group: (device.group) ? device.group : { },
@@ -119,7 +120,6 @@ module.exports = class MongoDBAdapter {
       tacho: (device.tacho) ? device.tacho : { tacho: 0 },
       currentAirVolume: (device.currentAirVolume) ? device.currentAirVolume : { volume: 0 },
     };
-    return d;
   }
 
   /**
@@ -140,6 +140,7 @@ module.exports = class MongoDBAdapter {
     let devices = [];
     db.map((device) => {
       const d = {
+        id: device._id,
         serialnumber: device.serialnumber,
         name: device.name,
         group: (device.group) ? device.group : { },
@@ -566,7 +567,7 @@ module.exports = class MongoDBAdapter {
         }
         return undefined;
 
-      default:
+      default: T;
         return undefined;
     }
   }
@@ -597,8 +598,12 @@ module.exports = class MongoDBAdapter {
     logger.info(`Getting group ${groupID}`);
 
     const groupData = await UVCGroupModel.findOne({ _id: groupID })
-      .populate('devices', 'serialnumber name alarmState')
-      .exec().catch((e) => {
+      .populate('devices')
+      .populate('engineStateDevicesWithOtherState', 'serialnumber name')
+      .populate('eventModeDevicesWithOtherState', 'serialnumber name')
+      .populate('engineLevelDevicesWithOtherState', 'serialnumber name')
+      .exec()
+      .catch((e) => {
         throw e;
       });
 
@@ -611,9 +616,39 @@ module.exports = class MongoDBAdapter {
       name: groupData.name,
       devices: groupData.devices,
       alarmState: groupData.alarmState,
+      engineState: groupData.engineState,
+      engineLevel: groupData.engineLevel,
+      eventMode: groupData.eventMode,
+      engineStateDevicesWithOtherState: groupData.engineStateDevicesWithOtherState,
+      eventModeDevicesWithOtherState: groupData.eventModeDevicesWithOtherState,
+      engineLevelDevicesWithOtherState: groupData.engineLevelDevicesWithOtherState,
     };
 
     return group;
+  }
+
+  /**
+   * Gets all devices with all properties in the group
+   * @param {string} groupID The group id
+   */
+  async getDevicesInGroup(groupID) {
+    if (typeof groupID !== 'string') {
+      throw new Error('GroupID has to be a string');
+    }
+
+    logger.info(`Getting group ${groupID}`);
+
+    const groupData = await UVCGroupModel.findOne({ _id: groupID })
+      .populate('devices')
+      .exec().catch((e) => {
+        throw e;
+      });
+
+    if (groupData === null) {
+      throw new Error('Group does not exists');
+    }
+
+    return groupData.devices;
   }
 
   /**
@@ -621,7 +656,10 @@ module.exports = class MongoDBAdapter {
    */
   async getGroups() {
     const groupData = await UVCGroupModel.find()
-      .populate('devices', 'serialnumber name alarmState')
+      .populate('devices')
+      .populate('engineStateDevicesWithOtherState', 'serialnumber name')
+      .populate('eventModeDevicesWithOtherState', 'serialnumber name')
+      .populate('engineLevelDevicesWithOtherState', 'serialnumber name')
       .exec();
 
     const groups = [];
@@ -631,6 +669,12 @@ module.exports = class MongoDBAdapter {
         name: group.name,
         devices: group.devices,
         alarmState: group.alarmState,
+        engineState: group.engineState,
+        engineLevel: group.engineLevel,
+        eventMode: group.eventMode,
+        engineStateDevicesWithOtherState: group.engineStateDevicesWithOtherState,
+        eventModeDevicesWithOtherState: group.eventModeDevicesWithOtherState,
+        engineLevelDevicesWithOtherState: group.engineLevelDevicesWithOtherState,
       };
       groups.push(d);
       return group;
@@ -644,11 +688,14 @@ module.exports = class MongoDBAdapter {
    * @param {Object} group The object representing the group
    * @param {string} group.id The object representing the group
    * @param {string} [group.name] The new name of the group
+   * @param {string} [group.engineLevel] The new name of the group
+   * @param {string} [group.engineState] The new name of the group
+   * @param {string} [group.eventMode] The new name of the group
    */
   async updateGroup(group) {
     if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined.');
 
-    logger.info(`Deleting group ${group.id} with %o`, group);
+    logger.info(`Updating group ${group.id} with %o`, group);
 
     const docGroup = await UVCGroupModel.findOneAndUpdate(
       { _id: new ObjectId(group.id) },
@@ -780,6 +827,92 @@ module.exports = class MongoDBAdapter {
     });
 
     return docGroup;
+  }
+  /**
+   * Updates the list of the given propertie to the array of device serialnumbers
+   * @param {String} groupID The group id where the list should be updated
+   * @param {String} propertie The propertie of which the list should be updated
+   * @param {Array} serialnumbers An array of serialnumbers that should be set as the list
+   */
+
+  async updateGroupDevicesWithOtherState(groupID, propertie, serialnumbers) {
+    if (typeof propertie !== 'string') { throw new Error('Propertie must be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+
+    const objectIDs = [];
+    const prop = {};
+    const devicesInGroup = await this.getDevicesInGroup(groupID);
+
+    serialnumbers.forEach((serialnumber) => {
+      const deviceInGroup = devicesInGroup
+        .filter((dev) => dev.serialnumber === serialnumber);
+
+      if (deviceInGroup.length !== 1) throw new Error(`Device with serialnumber ${serialnumber} is not in the Group`);
+
+      objectIDs.push(new ObjectId(deviceInGroup[0].id));
+    });
+
+    async function updateGroup(updateProp) {
+      return UVCGroupModel.findOneAndUpdate({
+        _id: new ObjectId(groupID),
+      }, {
+        $set: updateProp,
+      }, { new: true }).exec().catch((e) => {
+        throw e;
+      });
+    }
+
+    switch (propertie) {
+      case 'engineState':
+        prop.engineStateDevicesWithOtherState = objectIDs;
+        return updateGroup(prop);
+      case 'engineLevel':
+        prop.engineLevelDevicesWithOtherState = objectIDs;
+        return updateGroup(prop);
+      case 'eventMode':
+        prop.eventModeDevicesWithOtherState = objectIDs;
+        return updateGroup(prop);
+      default:
+        throw new Error(`Can not update devices with other state list of propertie ${propertie}`);
+    }
+  }
+
+  async pushDeviceToEngineStateList(groupID, serialnumber) {
+    if (typeof serialnumber !== 'string') { throw new Error('serialnumber must be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+
+    const devices = await this.getDevicesInGroup(groupID);
+    const device = devices.filter((dev) => dev.serialnumber === serialnumber);
+    if (device.length !== 1) throw new Error('Device is not in the Group');
+
+    return UVCGroupModel.findOneAndUpdate({
+      _id: new ObjectId(groupID),
+    }, {
+      $addToSet: {
+        engineStateDevicesWithOtherState: new ObjectId(device[0].id),
+      },
+    }, { new: true }).exec().catch((e) => {
+      throw e;
+    });
+  }
+
+  async pullDeviceFromEngineStateList(groupID, serialnumber) {
+    if (typeof serialnumber !== 'string') { throw new Error('serialnumber must be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+
+    const devices = await this.getDevicesInGroup(groupID);
+    const device = devices.filter((dev) => dev.serialnumber === serialnumber);
+    if (device.length !== 1) throw new Error('Device is not in the Group');
+
+    return UVCGroupModel.findOneAndUpdate({
+      _id: new ObjectId(groupID),
+    }, {
+      $pull: {
+        engineStateDevicesWithOtherState: new ObjectId(device[0].id),
+      },
+    }, { new: true }).exec().catch((e) => {
+      throw e;
+    });
   }
 
   /**

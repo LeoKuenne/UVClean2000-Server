@@ -98,7 +98,7 @@ new Vue({
     });
 
     socket.on('device_stateChanged', (props) => {
-      // console.log('Event: device_stateChanged', props);
+      console.log('Event: device_stateChanged', props);
 
       this.$dataStore.devices.filter((device) => {
         if (device.serialnumber === props.serialnumber) {
@@ -166,22 +166,45 @@ new Vue({
     socket.on('group_stateChanged', (props) => {
       console.log('Event: group_stateChanged', props);
 
-      const g = this.$dataStore.groups.filter((group) => {
+      this.$dataStore.groups.filter((group) => {
         if (group.id === props.id) {
-          const dev = group;
+          const grp = group;
           switch (props.prop) {
             case 'name':
-              dev.name = `${props.newValue}`;
+              grp[props.prop] = `${props.newValue}`;
+              break;
+            case 'engineState':
+              grp[props.prop] = (`${props.newValue}` === 'true');
+              break;
+            case 'engineStateDevicesWithOtherState':
+              grp.engineStateDevicesWithOtherState = props.newValue;
+              break;
+            case 'eventMode':
+              grp[props.prop] = (`${props.newValue}` === 'true');
+              break;
+            case 'eventModeDevicesWithOtherState':
+              grp.eventModeDevicesWithOtherState = props.newValue;
+              break;
+            case 'engineLevel':
+              grp[props.prop] = parseInt(props.newValue, 10);
+              break;
+            case 'engineLevelDevicesWithOtherState':
+              grp.engineLevelDevicesWithOtherState = props.newValue;
+              break;
+            case 'identifyMode':
+              grp[props.prop] = (`${props.newValue}` === 'true');
+              break;
+            case 'identifyModeDevicesWithOtherState':
+              grp.identifyModeDevicesWithOtherState = props.newValue;
               break;
             default:
               console.log(`Can not parse stateChanged message with prop ${props.prop}`);
               break;
           }
-          return dev;
+          return grp;
         }
         return false;
       });
-      console.log('Group that changed:', g);
     });
   },
   methods: {

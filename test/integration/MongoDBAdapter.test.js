@@ -52,6 +52,64 @@ describe('MongoDBAdapter Functions', () => {
       expect(addedDevice.name).toBe(device.name);
     });
 
+    it.each([
+      ['engineState', true],
+      ['engineLevel', 1],
+      ['eventMode', true],
+      ['alarmState', true],
+      ['engineState', false],
+      ['engineLevel', 2],
+      ['eventMode', false],
+      ['alarmState', false],
+    ])('addDevice adds a device with propertie %s and value %s correct and returns the object', async (prop, value) => {
+      const device = {
+        serialnumber: 'MongoDBAdap1',
+        name: 'Test Device 1',
+      };
+      device[prop] = value;
+
+      const addedDevice = await database.addDevice(device);
+      expect(addedDevice.serialnumber).toBe(device.serialnumber);
+      expect(addedDevice.name).toBe(device.name);
+      expect(addedDevice[prop]).toBe(value);
+    });
+
+    it.each([
+      [{ prop: 'engineState', value: true }, { prop: 'engineState', value: false }],
+      [{ prop: 'engineLevel', value: 1 }, { prop: 'engineLevel', value: 0 }],
+      [{ prop: 'eventMode', value: false }, { prop: 'eventMode', value: true }],
+      [{ prop: 'alarmState', value: true }, { prop: 'alarmState', value: true }],
+      [{ prop: 'engineState', value: true }, { prop: 'engineState', value: false }],
+      [{ prop: 'engineLevel', value: 3 }, { prop: 'engineLevel', value: 2 }],
+      [{ prop: 'eventMode', value: true }, { prop: 'eventMode', value: false }],
+      [{ prop: 'alarmState', value: false }, { prop: 'alarmState', value: true }],
+    ])('addDevice adds two devices with device 1 to have %o and device 2 to have %o correct', async (device1, device2) => {
+      const dev1 = {
+        serialnumber: 'MongoDBAdap1',
+        name: 'Test Device 1',
+      };
+      dev1[device1.prop] = device1.value;
+
+      const dev2 = {
+        serialnumber: 'MongoDBAdap2',
+        name: 'Test Device 2',
+      };
+      dev2[device2.prop] = device2.value;
+
+      await database.addDevice(dev1);
+      await database.addDevice(dev2);
+
+      let addedDevice = await database.getDevice(dev1.serialnumber);
+      expect(addedDevice.serialnumber).toBe(dev1.serialnumber);
+      expect(addedDevice.name).toBe(dev1.name);
+      expect(addedDevice[device1.prop]).toBe(device1.value);
+
+      addedDevice = await database.getDevice(dev2.serialnumber);
+      expect(addedDevice.serialnumber).toBe(dev2.serialnumber);
+      expect(addedDevice.name).toBe(dev2.name);
+      expect(addedDevice[device2.prop]).toBe(device2.value);
+    });
+
     it('addDevice throws an error if validation fails', async () => {
       const device = {
         name: 'Test Device 1',
@@ -70,6 +128,7 @@ describe('MongoDBAdapter Functions', () => {
 
       await database.addDevice(device);
       const returnedDevice = await database.getDevice(device.serialnumber);
+      expect(returnedDevice.id).toBeDefined();
       expect(returnedDevice.serialnumber).toBe(device.serialnumber);
       expect(returnedDevice.name).toBe(device.name);
       expect(returnedDevice.group).toStrictEqual({});
@@ -125,6 +184,7 @@ describe('MongoDBAdapter Functions', () => {
       });
 
       for (let i = 0; i < dbData.length; i += 1) {
+        expect(dbData[i].id).toBeDefined();
         expect(dbData[i].serialnumber).toBe(`MongoDBAdapter_Test_${i + 1}`);
         expect(dbData[i].name).toBe(`Test Device ${i + 1}`);
         expect(dbData[i].group).toStrictEqual({});
@@ -1615,6 +1675,11 @@ describe('MongoDBAdapter Functions', () => {
       expect(returnedGroup.name).toBe(group.name);
       expect(returnedGroup.devices.length).toBe(0);
       expect(returnedGroup.alarmState).toBe(false);
+      expect(returnedGroup.engineStateDevicesWithOtherState).toBeDefined();
+      expect(returnedGroup.eventMode).toBe(false);
+      expect(returnedGroup.eventModeDevicesWithOtherState).toBeDefined();
+      expect(returnedGroup.engineLevel).toBe(0);
+      expect(returnedGroup.engineLevelDevicesWithOtherState).toBeDefined();
     });
 
     it('getGroup throws error if name is not string', async () => {
@@ -1646,7 +1711,57 @@ describe('MongoDBAdapter Functions', () => {
         expect(dbData[i].name).toBe(`Test Group ${i + 1}`);
         expect(dbData[i].devices.length).toBe(0);
         expect(dbData[i].alarmState).toBe(false);
+        expect(dbData[i].engineStateDevicesWithOtherState).toBeDefined();
+        expect(dbData[i].eventMode).toBe(false);
+        expect(dbData[i].eventModeDevicesWithOtherState).toBeDefined();
+        expect(dbData[i].engineLevel).toBe(0);
+        expect(dbData[i].engineLevelDevicesWithOtherState).toBeDefined();
       }
+    });
+
+    it('getDevicesInGroup throws error if name is not string', async () => {
+      await database.getDevicesInGroup(null).catch((err) => {
+        expect(err.toString()).toBe('Error: GroupID has to be a string');
+      });
+    });
+
+    it('getDevicesInGroup throws error if group is not avalible', async () => {
+      await database.getDevicesInGroup('602e5dde6a51ff41b0625057').catch((err) => {
+        expect(err.toString()).toBe('Error: Group does not exists');
+      });
+    });
+
+    it('getDevicesInGroup gets all devices in the group', async () => {
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      for (let i = 0; i < 10; i += 1) {
+        await database.addDevice({
+          name: 'Test Device',
+          serialnumber: `${i}`,
+        });
+        await database.addDeviceToGroup(`${i}`, group._id.toString());
+      }
+
+      const grp = await database.getDevicesInGroup(group._id.toString());
+
+      grp.forEach((device) => {
+        expect(device.serialnumber).toBe(device.serialnumber);
+        expect(device.name).toBe(device.name);
+        expect(device.group.toString()).toMatch(group._id.toString());
+        expect(device.engineState).toBe(false);
+        expect(device.engineLevel).toBe(0);
+        expect(device.alarmState).toBe(false);
+        expect(device.currentFanState).toBeUndefined();
+        expect(device.currentBodyState).toBeUndefined();
+        expect(device.currentLampState.toString()).toMatch([].toString());
+        expect(device.currentLampValue.toString()).toMatch([].toString());
+        expect(device.identifyMode).toBe(false);
+        expect(device.eventMode).toBe(false);
+        expect(device.tacho).toBeUndefined();
+        expect(device.currentAirVolume).toBeUndefined();
+      });
     });
 
     it('updateGroup updates a group correct and returns the object', async () => {
@@ -1661,6 +1776,20 @@ describe('MongoDBAdapter Functions', () => {
 
       const updatedGroup = await database.updateGroup(group);
       expect(updatedGroup.name).toBe(group.name);
+    });
+
+    it('updateGroup updates a group with value as undefined and returns the object', async () => {
+      const docGroup = await database.addGroup({
+        name: 'Test Group 1',
+      });
+
+      const group = {
+        id: `${docGroup._id}`,
+        engineState: undefined,
+      };
+
+      const updatedGroup = await database.updateGroup(group);
+      expect(updatedGroup.engineState).toBe(null);
     });
 
     it('updateGroup throws error if group is not available', async () => {
@@ -1759,6 +1888,40 @@ describe('MongoDBAdapter Functions', () => {
       expect(docDevice.group._id.toString()).toMatch(group.id);
     });
 
+    it.each([
+      ['engineState', true],
+      ['engineState', false],
+      ['eventMode', true],
+      ['eventMode', false],
+      ['engineLevel', 1],
+      ['engineLevel', 2],
+    ])('addDeviceToGroup adds an device to the group and keeps properties %s with value %s', async (prop, value) => {
+      const devObj = {
+        serialnumber: '000000000000000000000001',
+        name: 'TestDevice',
+      };
+      devObj[prop] = value;
+      const device = await database.addDevice(devObj);
+
+      let docDevice = await database.getDevice(`${device.serialnumber}`);
+      expect(docDevice[prop]).toBe(value);
+
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      await database.addDeviceToGroup(device.serialnumber, `${group.id}`);
+
+      const docGroup = await database.getGroup(`${group.id}`);
+      docDevice = await database.getDevice(`${device.serialnumber}`);
+
+      expect(docGroup.devices.length).toBe(1);
+      expect(docGroup.devices[0]._id.toString()).toMatch(device._id.toString());
+      expect(docDevice.group.name).toStrictEqual(group.name);
+      expect(docDevice.group._id.toString()).toMatch(group.id);
+      expect(docDevice[prop]).toStrictEqual(value);
+    });
+
     it('addDeviceToGroup removes device from the group its assigned to', async () => {
       const device = await database.addDevice({
         serialnumber: '000000000000000000000001',
@@ -1809,6 +1972,41 @@ describe('MongoDBAdapter Functions', () => {
         const docDevice = await database.getDevice(`${docGroup.devices[i].serialnumber}`);
         expect(docDevice.group.name).toStrictEqual(group.name);
         expect(docDevice.group._id.toString()).toMatch(group.id);
+      }
+    });
+
+    it.each([
+      ['engineState', true],
+      ['engineState', false],
+      ['eventMode', true],
+      ['eventMode', false],
+      ['engineLevel', 1],
+      ['engineLevel', 2],
+    ])('addDeviceToGroup adds an multiple devices to the group and keeps properties %s with value %s', async (prop, value) => {
+      const group = await database.addGroup({
+        name: 'Test Group',
+      });
+
+      const devices = [];
+      for (let i = 0; i < 10; i += 1) {
+        const o = {
+          serialnumber: `00000000000000000000000${i}`,
+          name: `TestDevice ${i}`,
+        };
+        o[prop] = value;
+        devices.push(o);
+        const docDevice = await database.addDevice(devices[i]);
+        await database.addDeviceToGroup(docDevice.serialnumber, `${group._id}`);
+      }
+
+      const docGroup = await database.getGroup(`${group._id}`);
+      expect(docGroup.devices.length).toBe(10);
+      for (let i = 0; i < 10; i += 1) {
+        expect(docGroup.devices[i].toString()).toMatch(devices[i].serialnumber);
+        const docDevice = await database.getDevice(`${docGroup.devices[i].serialnumber}`);
+        expect(docDevice.group.name).toStrictEqual(group.name);
+        expect(docDevice.group._id.toString()).toMatch(group.id);
+        expect(docDevice[prop]).toBe(value);
       }
     });
 
@@ -1948,6 +2146,135 @@ describe('MongoDBAdapter Functions', () => {
           expect(err.toString()).toMatch('Error: Group does not exists');
           done();
         });
+      });
+    });
+
+    describe('Group lists that contain the devices that have not the appropiate state', () => {
+      beforeEach(async () => {
+        await database.clearCollection('uvcgroups');
+        await database.clearCollection('uvcdevices');
+      });
+
+      it.each([
+        'engineState',
+        'engineLevel',
+        'eventMode',
+      ])('updateGroupDevicesWithOtherState updates the correct list when prop is %s', async (prop) => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        const devices = [];
+        const serialnumbers = [];
+        for (let i = 0; i < 10; i += 1) {
+          serialnumbers.push(`00000000000000000000000${i}`);
+          devices.push({
+            serialnumber: `00000000000000000000000${i}`,
+            name: `TestDevice ${i}`,
+          });
+          const docDevice = await database.addDevice(devices[i]);
+          await database.addDeviceToGroup(docDevice.serialnumber, group._id.toString());
+        }
+
+        await database.updateGroupDevicesWithOtherState(group._id.toString(), prop, serialnumbers);
+
+        const docGroup = await database.getGroup(group._id.toString());
+        expect(docGroup[`${prop}DevicesWithOtherState`].length).toBe(devices.length);
+        for (let i = 0; i < devices.length; i += 1) {
+          expect(docGroup[`${prop}DevicesWithOtherState`][i].serialnumber)
+            .toBe(devices[i].serialnumber);
+        }
+      });
+
+      it('updateGroupDevicesWithOtherState throws an error if some serialnumbers do not are in the group', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        const serialnumbers = ['000000000000000000000001'];
+
+        await database.updateGroupDevicesWithOtherState(group._id.toString(), '', serialnumbers)
+          .catch((e) => {
+            expect(e.toString()).toMatch('Device with serialnumber 000000000000000000000001 is not in the Group');
+          });
+      });
+
+      it('pushDeviceToEngineStateList pushes the device to the list', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        const devices = [];
+        for (let i = 0; i < 10; i += 1) {
+          devices.push({
+            serialnumber: `00000000000000000000000${i}`,
+            name: `TestDevice ${i}`,
+          });
+          const docDevice = await database.addDevice(devices[i]);
+          await database.addDeviceToGroup(docDevice.serialnumber, group._id.toString());
+          await database.pushDeviceToEngineStateList(group._id.toString(), docDevice.serialnumber);
+        }
+
+        const docGroup = await database.getGroup(group._id.toString());
+        expect(docGroup.engineStateDevicesWithOtherState.length).toBe(devices.length);
+        for (let i = 0; i < devices.length; i += 1) {
+          expect(docGroup.engineStateDevicesWithOtherState[i].serialnumber)
+            .toBe(devices[i].serialnumber);
+        }
+      });
+
+      it('pushDeviceToEngineStateList throws an error if the device does not exists', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        await database.pushDeviceToEngineStateList(group._id.toString(), '000000000000000000000001')
+          .catch((err) => {
+            expect(err.toString()).toMatch('Error: Device is not in the Group');
+          });
+      });
+
+      it('pullDeviceFromEngineStateList pushes the device to the list', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        const devices = [];
+        for (let i = 0; i < 10; i += 1) {
+          devices.push({
+            serialnumber: `00000000000000000000000${i}`,
+            name: `TestDevice ${i}`,
+          });
+          const docDevice = await database.addDevice(devices[i]);
+          await database.addDeviceToGroup(docDevice.serialnumber, group._id.toString());
+          await database.pushDeviceToEngineStateList(group._id.toString(), docDevice.serialnumber);
+        }
+
+        await database.pullDeviceFromEngineStateList(group._id.toString(), devices[5].serialnumber);
+        await database.pullDeviceFromEngineStateList(group._id.toString(), devices[6].serialnumber);
+
+        const docGroup = await database.getGroup(group._id.toString());
+        expect(docGroup.engineStateDevicesWithOtherState.length).toBe(devices.length - 2);
+        for (let i = 0; i < devices.length - 2; i += 1) {
+          if (i < 5) {
+            expect(docGroup.engineStateDevicesWithOtherState[i].serialnumber)
+              .toBe(devices[i].serialnumber);
+          } else {
+            expect(docGroup.engineStateDevicesWithOtherState[i].serialnumber)
+              .toBe(devices[i + 2].serialnumber);
+          }
+        }
+      });
+
+      it('pullDeviceFromEngineStateList throws an error if the device is not in the group', async () => {
+        const group = await database.addGroup({
+          name: 'Test Group',
+        });
+
+        await database.pullDeviceFromEngineStateList(group._id.toString(), '000000000000000000000001')
+          .catch((err) => {
+            expect(err.toString()).toMatch('Error: Device is not in the Group');
+          });
       });
     });
   });

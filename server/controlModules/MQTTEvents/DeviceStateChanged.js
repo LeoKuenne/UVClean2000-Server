@@ -4,6 +4,49 @@ const MainLogger = require('../../Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'DeviceStateChangedEvent' });
 
+async function getDevicesWithWrongState(groupID, prop, db) {
+  const group = await db.getGroup(groupID);
+  return group.devices.filter((dev) => dev[prop] !== group[prop]);
+}
+
+/**
+ * Updates the list of devices that do not have the same state of the given
+ * propertie that the group they belong to
+ * @param {Object} database Database object
+ * @param {String} groupID The group id of which the lists should be updated
+ * @param {String} prop The propertie of which the list should be updated
+ * @param {Array} devicesWrongState Array of serialnumbers of the devices
+ */
+async function updateGroupState(database, groupID, prop, devicesWrongState) {
+  switch (prop) {
+    case 'engineState':
+      return database.updateGroupDevicesWithOtherState(groupID, 'engineState', devicesWrongState);
+    case 'engineLevel':
+      return database.updateGroupDevicesWithOtherState(groupID, 'engineLevel', devicesWrongState);
+    case 'eventMode':
+      return database.updateGroupDevicesWithOtherState(groupID, 'eventMode', devicesWrongState);
+    default:
+      return undefined;
+  }
+}
+
+async function updateGroup(groupID, prop, db, io) {
+  const devicesWrongState = await getDevicesWithWrongState(groupID, prop, db);
+  const serialnumbers = [];
+  devicesWrongState.forEach((device) => {
+    serialnumbers.push(device.serialnumber);
+  });
+
+  await updateGroupState(db, groupID, prop, serialnumbers);
+  const group = await db.getGroup(groupID);
+
+  io.emit('group_stateChanged', {
+    id: groupID,
+    prop: `${prop}DevicesWithOtherState`,
+    newValue: group[`${prop}DevicesWithOtherState`],
+  });
+}
+
 function hasDeviceAlarm(databaseDevice, hasAlarm) {
   if (hasAlarm === true && databaseDevice.alarmState === false) {
     return true;
@@ -186,6 +229,9 @@ async function execute(db, io, mqtt, topic, message) {
 
   await checkAlarm(db, io, newState);
 
+  const device = await db.getDevice(newState.serialnumber);
+  if (device.group._id) { await updateGroup(device.group._id.toString(), newState.prop, db, io); }
+
   io.emit('device_stateChanged', newState);
 }
 
@@ -209,4 +255,7 @@ module.exports = {
   updateDatabase,
   execute,
   hasDeviceAlarm,
+  getDevicesWithWrongState,
+  updateGroup,
+  updateGroupState,
 };

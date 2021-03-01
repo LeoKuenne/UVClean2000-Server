@@ -3,17 +3,15 @@ const MainLogger = require('../../Logger.js').logger;
 const logger = MainLogger.child({ service: 'GroupChangeStateCommand' });
 
 async function execute(db, io, mqtt, message) {
-  logger.info('Event: group_add: %o', message);
-
-  if (message.serialnumber !== undefined && typeof message.serialnumber !== 'string') {
-    throw new Error('Serialnumber must be defined and of type string');
+  if (message.id === undefined || typeof message.id !== 'string') {
+    throw new Error('id must be defined and of type string');
   }
 
-  if (message.prop !== undefined && typeof message.prop !== 'string') {
+  if (message.prop === undefined || typeof message.prop !== 'string') {
     throw new Error('Prop must be defined and of type string');
   }
 
-  if (message.newValue !== undefined && typeof message.newValue !== 'string') {
+  if (message.newValue === undefined || typeof message.newValue !== 'string') {
     throw new Error('New value must be defined and of type string');
   }
 
@@ -23,15 +21,66 @@ async function execute(db, io, mqtt, message) {
     newValue: message.newValue,
   };
 
+  let group = null;
+
   switch (newState.prop) {
     case 'name':
-      await db.updateGroup({
+      group = await db.updateGroup({
         id: `${newState.id}`,
         name: newState.newValue,
       });
-
-      io.emit('group_stateChanged', newState);
-
+      if (group.name === newState.newValue) {
+        io.emit('group_stateChanged', {
+          id: newState.id,
+          prop: newState.prop,
+          newValue: newState.newValue,
+        });
+      }
+      break;
+    case 'engineState':
+      await db.updateGroup({
+        id: `${newState.id}`,
+        engineState: newState.newValue,
+      });
+      group = await db.getGroup(newState.id);
+      group.devices.forEach((device) => {
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineState`, newState.newValue);
+      });
+      io.emit('group_stateChanged', {
+        id: newState.id,
+        prop: newState.prop,
+        newValue: newState.newValue,
+      });
+      break;
+    case 'engineLevel':
+      await db.updateGroup({
+        id: `${newState.id}`,
+        engineLevel: newState.newValue,
+      });
+      group = await db.getGroup(newState.id);
+      group.devices.forEach((device) => {
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineLevel`, newState.newValue);
+      });
+      io.emit('group_stateChanged', {
+        id: newState.id,
+        prop: newState.prop,
+        newValue: newState.newValue,
+      });
+      break;
+    case 'eventMode':
+      await db.updateGroup({
+        id: `${newState.id}`,
+        eventMode: newState.newValue,
+      });
+      group = await db.getGroup(newState.id);
+      group.devices.forEach((device) => {
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/eventMode`, newState.newValue);
+      });
+      io.emit('group_stateChanged', {
+        id: newState.id,
+        prop: newState.prop,
+        newValue: newState.newValue,
+      });
       break;
 
     default:
