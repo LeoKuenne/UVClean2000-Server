@@ -18,7 +18,7 @@
     </div>
     <!-- flex flex-wrap item-center justify-center  -->
     <router-link to="devices"
-      class="cursor-default flex items-start"
+      class="cursor-default flex flex-wrap items-start"
       id="uvcdevicelist"
       @click="$route.query.device=''"
       tag="div">

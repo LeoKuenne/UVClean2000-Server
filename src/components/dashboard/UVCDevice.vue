@@ -28,10 +28,14 @@
         </div>
         <div v-if="showAlarmPopup"
           class="absolute w-full h-full flex items-center justify-center">
-          <div class="bg-gray-100 w-2/3 h-1/2 flex flex-col items-center justify-between
+          <div class="bg-gray-100 w-2/3 flex flex-col items-center justify-between
             rounded shadow border-2 border-red-500">
             <h1 class="m-5 text-red-500 font-bold text-xl">An alarm occured!</h1>
-            <span class="text-red-500 font-bold text-lg">{{ alarmPropertie }}</span>
+            <p
+              v-for="alarm in alarmPropertie" :key="alarm"
+              class="w-full text-red-500 font-bold text-lg text-center whitespace-normal">
+              {{ alarm }}
+            </p>
             <button class="p-3 mb-8 text-gray-900 font-bold text-center bg-gray-200 transform
               hover:scale-105 duration-75"
               @click="$emit('acknowledgeAlarm', {
@@ -104,49 +108,49 @@
           <span class="text-right" v-if="device.tacho">{{device.tacho.tacho}} R/min</span>
 
           <div class="col-span-2">
-              <div class="flex justify-between">
-                <span class="font-semibold">Lamp values (V)</span>
-                <button
-                  class="bg-transparent text-color hover:bg-transparent py-0 m-0 hover:transform
-                    hover:scale-105 transition-all"
-                  @click="showLampValues = !showLampValues">
-                  <svg v-if="!showLampValues"
-                    xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
-                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133
-                      13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168
-                      2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83
-                      1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12
-                      0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
-                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7
-                      0 3.5 3.5 0 0 1-7 0z"/>
-                  </svg>
-                  <svg v-if="showLampValues"
-                    xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
-                    <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0
-                      0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168
-                      2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83
-                      1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
-                    <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829
-                      2.829l.822.822zm-2.943 1.299l.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5
-                      2.5 0 0 0 2.829 2.829z"/>
-                    <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172
-                      8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8
-                      12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3
-                      13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884l-12-12
-                      .708-.708 12 12-.708.708z"/>
-                  </svg>
-                </button>
-              </div>
-              <transition name="slide">
-                <div v-if="showLampValues" class="col-span-2  grid grid-cols-4">
-                  <div class="w-16"
-                    v-for="(lampValue, lamp) in device.currentLampValue"
-                    :key="lamp">
-                    {{lampValue.lamp}}: {{lampValue.value}},
-                  </div>
-                </div>
-              </transition>
+            <div class="flex justify-between">
+              <span class="font-semibold">Lamp values (V)</span>
+              <button
+                class="bg-transparent text-color hover:bg-transparent py-0 m-0 hover:transform
+                  hover:scale-105 transition-all"
+                @click="showLampValues = !showLampValues">
+                <svg v-if="!showLampValues"
+                  xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
+                  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133
+                    13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168
+                    2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83
+                    1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12
+                    0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                  <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7
+                    0 3.5 3.5 0 0 1-7 0z"/>
+                </svg>
+                <svg v-if="showLampValues"
+                  xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
+                  <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0
+                    0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168
+                    2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83
+                    1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
+                  <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829
+                    2.829l.822.822zm-2.943 1.299l.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5
+                    2.5 0 0 0 2.829 2.829z"/>
+                  <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172
+                    8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8
+                    12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3
+                    13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884l-12-12
+                    .708-.708 12 12-.708.708z"/>
+                </svg>
+              </button>
             </div>
+            <transition name="slide">
+              <div v-if="showLampValues" class="col-span-2  grid grid-cols-4">
+                <div class="w-16"
+                  v-for="(lampValue, lamp) in device.currentLampValue"
+                  :key="lamp">
+                  {{lampValue.lamp}}: {{lampValue.value}},
+                </div>
+              </div>
+            </transition>
+          </div>
           <div class="col-span-2 flex justify-between" v-if="showCurrentBodyStateSection">
             <span class="font-semibold">Body Temperature Alarm</span>
             <span class="text-right" v-if="device.currentBodyState">
@@ -243,6 +247,17 @@ export default {
     device: {
       deep: true,
       handler() {
+        this.showCurrentBodyStateSection = this.device.currentBodyState.state !== 'Ok';
+        this.showCurrentFanStateSection = this.device.currentFanState.state !== 'Ok';
+        this.currentLampStates = this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok');
+
+        this.alarmPropertie = [];
+        this.currentLampStates.forEach((states) => {
+          this.alarmPropertie.push(`Lamp: ${states.lamp}, State: ${states.state}`);
+        });
+        if (this.showCurrentFanStateSection) this.alarmPropertie.push('Fan States: Alarm');
+        if (this.showCurrentBodyStateSection) this.alarmPropertie.push('Body States: Alarm');
+
         if (this.showAlarmPopup === false && this.device.alarmState === true) {
           this.showAlarmPopup = true;
         }
@@ -252,35 +267,38 @@ export default {
       },
     },
   },
+  created() {
+    this.showCurrentBodyStateSection = this.device.currentBodyState.state !== 'Ok';
+    this.showCurrentFanStateSection = this.device.currentFanState.state !== 'Ok';
+    this.currentLampStates = this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok');
+
+    this.alarmPropertie = [];
+    this.currentLampStates.forEach((states) => {
+      this.alarmPropertie.push(`Lamp: ${states.lamp}, State: ${states.state}`);
+    });
+    if (this.showCurrentFanStateSection) this.alarmPropertie.push('Fan States: Alarm');
+    if (this.showCurrentBodyStateSection) this.alarmPropertie.push('Body States: Alarm');
+
+    if (this.showAlarmPopup === false && this.device.alarmState === true) {
+      this.showAlarmPopup = true;
+    }
+    if (this.showAlarmPopup === true && this.device.alarmState === false) {
+      this.showAlarmPopup = false;
+    }
+  },
   data() {
     return {
       showAlarmStates: true,
       showLampValues: true,
       hasDeviceAlarm: false,
       showAlarmPopup: false,
+      alarmPropertie: [],
+      showCurrentBodyStateSection: this.device.currentBodyState.state !== 'Ok',
+      showCurrentFanStateSection: this.device.currentFanState.state !== 'Ok',
+      currentLampStates: this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok'),
     };
   },
   computed: {
-    showCurrentBodyStateSection() {
-      return this.device.currentBodyState.state !== 'Ok';
-    },
-    showCurrentFanStateSection() {
-      return this.device.currentFanState.state !== 'Ok';
-    },
-    currentLampStates() {
-      return this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok');
-    },
-    alarmPropertie() {
-      let s = '';
-      if (this.currentLampStates.length !== 0) {
-        this.currentLampStates.forEach((states) => {
-          s += `Lamp States: ${states.lamp}  ${states.state}`;
-        });
-      }
-      if (!this.showCurrentFanStateSection) s += 'Fan States: Alarm';
-      if (!this.showCurrentBodyStateSection) s += 'Body States: Alarm';
-      return s;
-    },
     state: {
       get() {
         return this.device.engineState ? 'On' : 'Off';
