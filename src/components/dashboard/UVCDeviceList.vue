@@ -16,21 +16,24 @@
         Add UVClean Device
       </button>
     </div>
+    <!-- flex flex-wrap item-center justify-center  -->
     <router-link to="devices"
-      class="flex flex-row flex-wrap content-center justify-center cursor-default"
+      class="cursor-default flex items-start"
       id="uvcdevicelist"
-      @click="$route.query.device=''">
-        <UVCDevice
-          @edit="editDevice($event)"
-          @assignGroup="showGroupForm($event)"
-          @changeState="changeDeviceState($event)"
-          v-for="dev in $dataStore.devices"
-          :key="dev.serialnumber"
-          :device="dev"
-          :ref="'device' + dev.serialnumber"
-          :class="[(device === dev.serialnumber) ? 'transform scale-105': '']"
-          class="m-5 w-96 border-primary border shadow-lg duration-200">
-        </UVCDevice>
+      @click="$route.query.device=''"
+      tag="div">
+      <UVCDevice
+        @edit="editDevice($event)"
+        @assignGroup="showGroupForm($event)"
+        @changeState="changeDeviceState($event)"
+        @acknowledgeAlarm="acknowledgeAlarm($event)"
+        v-for="dev in $dataStore.devices"
+        :key="dev.serialnumber"
+        :device="dev"
+        :ref="'device' + dev.serialnumber"
+        :class="[(device === dev.serialnumber) ? 'transform scale-105': '']"
+        class="m-5 w-96 border-primary border shadow-lg duration-200 flex-1">
+      </UVCDevice>
     </router-link>
     <UVCForm
       :title="heading"
@@ -311,6 +314,14 @@ export default {
         serialnumber: newState.serialnumber,
         prop: `${newState.prop}`,
         newValue: `${newState.newValue}`,
+      });
+    },
+    /**
+     * Called when the acknowledge button in the alarm popup is pressed
+     */
+    acknowledgeAlarm(device) {
+      this.$root.$data.socket.emit('device_acknowledgeAlarm', {
+        serialnumber: device.serialnumber,
       });
     },
   },
