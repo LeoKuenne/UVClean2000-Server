@@ -58,6 +58,9 @@ describe('function updateDatabase', () => {
       serialnumber: '1', prop: 'currentLampState', newValue: 'Ok', lamp: '1',
     }, 'setLampState', { device: '1', lamp: '1', state: 'Ok' }],
     [{
+      serialnumber: '1', prop: 'currentLampState', newValue: 'Alarm', lamp: '1',
+    }, 'setLampState', { device: '1', lamp: '1', state: 'Alarm' }],
+    [{
       serialnumber: '1', prop: 'tacho', newValue: '1',
     }, 'addTacho', { device: '1', tacho: '1' }],
     [{
@@ -69,6 +72,12 @@ describe('function updateDatabase', () => {
     [{
       serialnumber: '1', prop: 'currentBodyState', newValue: 'Ok',
     }, 'addBodyState', { device: '1', state: 'Ok' }],
+    [{
+      serialnumber: '1', prop: 'currentFanState', newValue: 'Alarm',
+    }, 'addFanState', { device: '1', state: 'Alarm' }],
+    [{
+      serialnumber: '1', prop: 'currentBodyState', newValue: 'Alarm',
+    }, 'addBodyState', { device: '1', state: 'Alarm' }],
     [{
       serialnumber: '1', prop: 'name', newValue: 'Ok',
     }, 'updateDevice', { serialnumber: '1', name: 'Ok' }],
@@ -111,27 +120,45 @@ describe('function checkAlarm', () => {
   });
 
   it.each([
-    [true, false, false],
-    [false, true, true],
-    [false, false, null],
-    [true, true, null],
-  ])('deviceAlarmState is %s, deviceHasAlarm is %s, alarmValue should be %s', async (deviceAlarmState, deviceHasAlarm, alarmValue, done) => {
-    database.addDevice({
+    [true, false, false, 'lampState'],
+    [false, true, true, 'lampState'],
+    [false, false, null, 'lampState'],
+    [true, true, null, 'lampState'],
+    [true, false, false, 'bodyState'],
+    [false, true, true, 'bodyState'],
+    [false, false, null, 'bodyState'],
+    [true, true, null, 'bodyState'],
+    [true, false, false, 'fanState'],
+    [false, true, true, 'fanState'],
+    [false, false, null, 'fanState'],
+    [true, true, null, 'fanState'],
+  ])('deviceAlarmState is %s, deviceHasAlarm is %s, alarmValue should be %s, with propertie %s', async (deviceAlarmState, deviceHasAlarm, alarmValue, prop, done) => {
+    await database.addDevice({
       name: 'Test Device',
       serialnumber: '0002145702154',
     });
 
-    await database.setLampState({
-      device: '0002145702154', lamp: '1', state: (deviceHasAlarm) ? 'Alarm' : 'Ok',
-    });
-
-    await database.addBodyState({ device: '1', state: (deviceHasAlarm) ? 'Alarm' : 'Ok' });
-    await database.addFanState({ device: '1', state: (deviceHasAlarm) ? 'Alarm' : 'Ok' });
-
     await database.setDeviceAlarm('0002145702154', deviceAlarmState);
+    switch (prop) {
+      case 'lampState':
+        await database.setLampState({
+          device: '0002145702154', lamp: '1', state: (deviceHasAlarm) ? 'Alarm' : 'Ok',
+        });
+        break;
+      case 'bodyState':
+        await database.addBodyState({ device: '0002145702154', state: (deviceHasAlarm) ? 'Alarm' : 'Ok' });
+        break;
+      case 'fanState':
+        await database.addFanState({ device: '0002145702154', state: (deviceHasAlarm) ? 'Alarm' : 'Ok' });
+        break;
+
+      default:
+        break;
+    }
 
     const io = new EventEmitter();
     const alarm = jest.fn();
+
     if (alarmValue !== null) {
       io.on('device_alarm', (options) => {
         try {
@@ -190,8 +217,8 @@ describe('function checkAlarm', () => {
     for (i = 0; i < 12; i += 1) {
       switch (i % 3) {
         case 0: // Alarm
-          await database.setLampState({
-            device: '0002145702154', lamp: '1', state: 'Alarm',
+          await database.addFanState({
+            device: '0002145702154', state: 'Alarm',
           });
 
           await checkAlarm(database, io, { serialnumber: '0002145702154' });
@@ -201,15 +228,15 @@ describe('function checkAlarm', () => {
             device: '0002145702154', state: 'Alarm',
           });
 
-          await database.setLampState({
-            device: '0002145702154', lamp: '1', state: 'Ok',
+          await database.addFanState({
+            device: '0002145702154', state: 'Ok',
           });
           await checkAlarm(database, io, { serialnumber: '0002145702154' });
           expect(alarm).not.toHaveBeenCalled();
           break;
         case 2: // LampState out - no alarm
-          await database.setLampState({
-            device: '0002145702154', lamp: '1', state: (i % 2) ? 'Alarm' : 'Ok',
+          await database.addFanState({
+            device: '0002145702154', state: (i % 2) ? 'Alarm' : 'Ok',
           });
 
           await checkAlarm(database, io, { serialnumber: '0002145702154' });
@@ -276,6 +303,43 @@ describe('Iterating function checkAlarm', () => {
   ])('Device alarm check: For lamp %i sending alarm: %s expecting alarms: device: %s, group: %s', async (lamp, deviceHasAlarm, alarmResult, groupResult, done) => {
     await database.setLampState({
       device: '1', lamp, state: (deviceHasAlarm) ? 'Alarm' : 'Ok',
+    });
+
+    io.on('device_alarm', (options) => {
+      if (alarmResult === null) {
+        deviceAlarm();
+      } else {
+        try {
+          expect(options.serialnumber).toMatch('1');
+          expect(options.alarmValue).toBe(alarmResult);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    await checkAlarm(database, io, { serialnumber: '1' });
+
+    if (alarmResult === null) {
+      expect(deviceAlarm).not.toHaveBeenCalled();
+      done();
+    }
+  });
+
+  it.each([
+    [true, true, true],
+    [true, null, null],
+    [false, false, false],
+    [true, true, true],
+    [false, false, false],
+    [false, null, null],
+    [true, true, true],
+    [true, null, null],
+    [false, false, false],
+  ])('Device alarm check: For body state sending alarm: %s expecting alarms: device: %s, group: %s', async (deviceHasAlarm, alarmResult, groupResult, done) => {
+    await database.addBodyState({
+      device: '1', state: (deviceHasAlarm) ? 'Alarm' : 'Ok',
     });
 
     io.on('device_alarm', (options) => {

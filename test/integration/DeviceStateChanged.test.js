@@ -57,6 +57,18 @@ describe('DeviceStateChanged MQTT Module', () => {
     ['alarm/tempFan', 'Ok', {
       newValue: 'Ok', prop: 'currentFanState', serialnumber: '0002145702154',
     }],
+    ['alarm/1', 'Alarm', {
+      lamp: 1, newValue: 'Alarm', prop: 'currentLampState', serialnumber: '0002145702154',
+    }],
+    ['alarm/2', 'Alarm', {
+      lamp: 2, newValue: 'Alarm', prop: 'currentLampState', serialnumber: '0002145702154',
+    }],
+    ['alarm/tempBody', 'Alarm', {
+      newValue: 'Alarm', prop: 'currentBodyState', serialnumber: '0002145702154',
+    }],
+    ['alarm/tempFan', 'Alarm', {
+      newValue: 'Alarm', prop: 'currentFanState', serialnumber: '0002145702154',
+    }],
     ['engineState', true, {
       newValue: true, prop: 'engineState', serialnumber: '0002145702154',
     }],
@@ -98,15 +110,30 @@ describe('DeviceStateChanged MQTT Module', () => {
     }, {
       lamp: 1, newValue: 'Alarm', prop: 'currentLampState', serialnumber: '0002145702154',
     }],
+    ['alarm/1', 'Ok', {
+      serialnumber: '0002145702154', alarmValue: false,
+    }, {
+      lamp: 1, newValue: 'Ok', prop: 'currentLampState', serialnumber: '0002145702154',
+    }],
     ['alarm/tempBody', 'Alarm', {
       serialnumber: '0002145702154', alarmValue: true,
     }, {
       newValue: 'Alarm', prop: 'currentBodyState', serialnumber: '0002145702154',
     }],
+    ['alarm/tempBody', 'Ok', {
+      serialnumber: '0002145702154', alarmValue: false,
+    }, {
+      newValue: 'Ok', prop: 'currentBodyState', serialnumber: '0002145702154',
+    }],
     ['alarm/tempFan', 'Alarm', {
       serialnumber: '0002145702154', alarmValue: true,
     }, {
       newValue: 'Alarm', prop: 'currentFanState', serialnumber: '0002145702154',
+    }],
+    ['alarm/tempFan', 'Ok', {
+      serialnumber: '0002145702154', alarmValue: false,
+    }, {
+      newValue: 'Ok', prop: 'currentFanState', serialnumber: '0002145702154',
     }],
   ])('Parses %s with %s accordingly and updates alarmState', async (topic, message, alarmResult, deviceResult, done) => {
     const mqtt = new EventEmitter();
@@ -118,10 +145,37 @@ describe('DeviceStateChanged MQTT Module', () => {
       serialnumber: '0002145702154',
     });
 
+    switch (topic) {
+      case 'alarm/1':
+        await database.setLampState({
+          device: '0002145702154',
+          lamp: 1,
+          state: (message === 'Ok') ? 'Alarm' : 'Ok',
+        });
+        break;
+      case 'alarm/tempBody':
+        await database.addBodyState({
+          device: '0002145702154',
+          state: (message === 'Ok') ? 'Alarm' : 'Ok',
+        });
+        break;
+      case 'alarm/tempFan':
+        await database.addFanState({
+          device: '0002145702154',
+          state: (message === 'Ok') ? 'Alarm' : 'Ok',
+        });
+        break;
+
+      default:
+        break;
+    }
+    const oldDevice = await database.setDeviceAlarm('0002145702154', (message === 'Ok'));
+
     io.on('device_alarm', async (prop) => {
       expect(prop).toEqual(alarmResult);
       const d = await database.getDevice('0002145702154');
       expect(d.alarmState).toBe(alarmResult.alarmValue);
+      expect(oldDevice.alarmState).not.toBe(alarmResult.alarmValue);
       done();
     });
 
@@ -130,7 +184,7 @@ describe('DeviceStateChanged MQTT Module', () => {
     });
 
     mqtt.emit('message', `UVClean/0002145702154/stateChanged/${topic}`, message);
-  });
+  }, 1000);
 
   it.each([
     ['alarm/1', 'Alarm', {
@@ -138,15 +192,30 @@ describe('DeviceStateChanged MQTT Module', () => {
     }, {
       lamp: 1, newValue: 'Alarm', prop: 'currentLampState', serialnumber: '0002145702154',
     }],
+    ['alarm/1', 'Ok', {
+      serialnumber: '0002145702154', alarmValue: false,
+    }, {
+      lamp: 1, newValue: 'Ok', prop: 'currentLampState', serialnumber: '0002145702154',
+    }],
     ['alarm/tempBody', 'Alarm', {
       serialnumber: '0002145702154', alarmValue: true,
     }, {
       newValue: 'Alarm', prop: 'currentBodyState', serialnumber: '0002145702154',
     }],
+    ['alarm/tempBody', 'Ok', {
+      serialnumber: '0002145702154', alarmValue: false,
+    }, {
+      newValue: 'Ok', prop: 'currentBodyState', serialnumber: '0002145702154',
+    }],
     ['alarm/tempFan', 'Alarm', {
       serialnumber: '0002145702154', alarmValue: true,
     }, {
       newValue: 'Alarm', prop: 'currentFanState', serialnumber: '0002145702154',
+    }],
+    ['alarm/tempFan', 'Ok', {
+      serialnumber: '0002145702154', alarmValue: false,
+    }, {
+      newValue: 'Ok', prop: 'currentFanState', serialnumber: '0002145702154',
     }],
   ])('Parses %s with %s accordingly and updates alarmState in Group', async (topic, message, alarmResult, result, done) => {
     const mqtt = new EventEmitter();
@@ -158,11 +227,15 @@ describe('DeviceStateChanged MQTT Module', () => {
       serialnumber: '0002145702154',
     });
 
+    const oldDevice = await database.setDeviceAlarm('0002145702154', (message === 'Ok'));
+
     const group = await database.addGroup({
       name: 'Test Group',
     });
 
     await database.addDeviceToGroup('0002145702154', group._id.toString());
+
+    const oldGroup = await database.setGroupAlarm(group._id.toString(), (message === 'Ok'));
 
     register(database, io, mqtt);
 
@@ -231,6 +304,25 @@ describe('Iterating over different states', () => {
     ['alarm/1', 'Ok', null],
     ['alarm/2', 'Ok', false],
     ['alarm/1', 'Alarm', true],
+    ['alarm/1', 'Ok', false],
+    ['alarm/tempBody', 'Alarm', true],
+    ['alarm/tempBody', 'Ok', false],
+    ['alarm/tempFan', 'Alarm', true],
+    ['alarm/tempFan', 'Ok', false],
+    ['alarm/tempBody', 'Alarm', true],
+    ['alarm/tempBody', 'Ok', false],
+    ['alarm/tempFan', 'Alarm', true],
+    ['alarm/tempFan', 'Ok', false],
+    ['alarm/tempBody', 'Ok', null],
+    ['alarm/tempBody', 'Alarm', true],
+    ['alarm/tempBody', 'Alarm', null],
+    ['alarm/tempFan', 'Alarm', null],
+    ['alarm/tempBody', 'Alarm', null],
+    ['alarm/tempFan', 'Alarm', null],
+    ['alarm/tempBody', 'Ok', null],
+    ['alarm/tempFan', 'Ok', false],
+    ['alarm/tempBody', 'Ok', null],
+    ['alarm/tempFan', 'Ok', null],
   ])('Device AlarmState: Setting topic %s to %s, expected devicealarm %s', (topic, message, deviceResult, done) => {
     io.on('device_alarm', (option) => {
       if (deviceResult === null) {
@@ -270,6 +362,18 @@ describe('Iterating over different states', () => {
     ['1', 'alarm/2', 'Ok', null],
     ['2', 'alarm/1', 'Ok', null],
     ['2', 'alarm/2', 'Ok', false],
+    ['1', 'alarm/tempBody', 'Alarm', true],
+    ['1', 'alarm/tempBody', 'Ok', false],
+    ['2', 'alarm/tempBody', 'Ok', null],
+    ['2', 'alarm/tempBody', 'Alarm', true],
+    ['1', 'alarm/tempBody', 'Alarm', null],
+    ['1', 'alarm/tempFan', 'Alarm', null],
+    ['2', 'alarm/tempBody', 'Alarm', null],
+    ['2', 'alarm/tempFan', 'Alarm', null],
+    ['1', 'alarm/tempBody', 'Ok', null],
+    ['1', 'alarm/tempFan', 'Ok', null],
+    ['2', 'alarm/tempBody', 'Ok', null],
+    ['2', 'alarm/tempFan', 'Ok', false],
   ])('Group AlarmState: Setting device %s, topic %s to %s, expected groupalarm %s', (device, topic, message, groupResult, done) => {
     io.on('group_deviceAlarm', (option) => {
       if (groupResult === null) {

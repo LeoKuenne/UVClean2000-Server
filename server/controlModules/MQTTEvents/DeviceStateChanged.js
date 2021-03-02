@@ -77,6 +77,7 @@ async function updateGroup(groupID, prop, db, io) {
 }
 
 function hasDeviceAlarm(databaseDevice, hasAlarm) {
+  console.log(hasAlarm, databaseDevice.alarmState);
   if (hasAlarm === true && databaseDevice.alarmState === false) {
     return true;
   }
@@ -250,7 +251,7 @@ async function execute(db, io, mqtt, topic, message) {
     newValue: parsed.value,
   };
 
-  if (parsed.alarm !== undefined || parsed.lamp !== undefined) {
+  if (parsed.lamp !== undefined) {
     newState.lamp = parsed.lamp;
   }
 

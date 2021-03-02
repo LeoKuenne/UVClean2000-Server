@@ -438,17 +438,19 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docFanState.save().catch((e) => {
+      logger.error(e);
       throw e;
     });
 
-    UVCDeviceModel.updateOne({
+    await UVCDeviceModel.updateOne({
       serialnumber: fanState.device,
     }, {
       $set: {
         currentFanState: docFanState._id,
       },
-    }, (e) => {
-      if (e !== null) { throw e; }
+    }).catch((e) => {
+      logger.error(e);
+      throw e;
     });
 
     return docFanState;
@@ -461,7 +463,7 @@ module.exports = class MongoDBAdapter {
    * @param {Date} [toDate] The Date before the documents should be selected
    */
   async getFanStates(serialnumber, fromDate, toDate) {
-    const query = FanStateModel.find({ device: serialnumber }, 'device state date');
+    const query = await FanStateModel.find({ device: serialnumber }, 'device state date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }
@@ -486,17 +488,19 @@ module.exports = class MongoDBAdapter {
     if (err !== undefined) throw err;
 
     await docBodyState.save().catch((e) => {
-      if (e) { throw e; }
+      logger.error(e);
+      throw e;
     });
 
-    UVCDeviceModel.updateOne({
+    await UVCDeviceModel.updateOne({
       serialnumber: bodyState.device,
     }, {
       $set: {
         currentBodyState: docBodyState._id,
       },
-    }, (e) => {
-      if (e !== null) { throw e; }
+    }).catch((e) => {
+      logger.error(e);
+      throw e;
     });
 
     return docBodyState;
@@ -509,7 +513,7 @@ module.exports = class MongoDBAdapter {
    * @param {Date} [toDate] The Date before the documents should be selected
    */
   async getBodyStates(serialnumber, fromDate, toDate) {
-    const query = BodyStateModel.find({ device: serialnumber }, 'device state date');
+    const query = await BodyStateModel.find({ device: serialnumber }, 'device state date');
     if (fromDate !== undefined && fromDate instanceof Date) {
       query.gte('date', fromDate);
     }
@@ -966,6 +970,8 @@ module.exports = class MongoDBAdapter {
       const group = await this.getGroup(`${d.group}`);
       await this.setGroupAlarm(`${d.group}`, UVCGroup.checkAlarmState(group));
     }
+
+    return d;
   }
 
   /**
