@@ -14,9 +14,9 @@
             </router-link>
           </div>
           <dropdownMenu
-            class="text-primary"
+            class="text-primary z-10"
             :showIcon="true"
-            :menuItems="[ 'Edit', 'View chart', 'Add to Group', 'Reset' ]"
+            :menuItems="[ 'Edit', 'View chart', 'Add to Group', 'Reset', 'Acknowledge' ]"
             @itemClicked="menuItemClicked($event)">
           </dropdownMenu>
         </div>
@@ -253,6 +253,13 @@ export default {
           break;
         case 'Reset':
           this.$emit('reset', this.device);
+          break;
+        case 'Acknowledge':
+          this.$emit('acknowledgeAlarm', {
+            serialnumber: this.device.serialnumber,
+            prop: 'acknowledge',
+          });
+          this.showAlarmPopup = false;
           break;
         default:
           console.log(event);
