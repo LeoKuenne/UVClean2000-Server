@@ -37,14 +37,43 @@ async function updateGroup(groupID, prop, db, io) {
     serialnumbers.push(device.serialnumber);
   });
 
-  await updateGroupState(db, groupID, prop, serialnumbers);
-  const group = await db.getGroup(groupID);
+  let group = null;
 
-  io.emit('group_stateChanged', {
-    id: groupID,
-    prop: `${prop}DevicesWithOtherState`,
-    newValue: group[`${prop}DevicesWithOtherState`],
-  });
+  switch (prop) {
+    case 'engineState':
+      await updateGroupState(db, groupID, prop, serialnumbers);
+      group = await db.getGroup(groupID);
+
+      io.emit('group_stateChanged', {
+        id: groupID,
+        prop: `${prop}DevicesWithOtherState`,
+        newValue: group[`${prop}DevicesWithOtherState`],
+      });
+      break;
+    case 'engineLevel':
+      await updateGroupState(db, groupID, prop, serialnumbers);
+      group = await db.getGroup(groupID);
+
+      io.emit('group_stateChanged', {
+        id: groupID,
+        prop: `${prop}DevicesWithOtherState`,
+        newValue: group[`${prop}DevicesWithOtherState`],
+      });
+      break;
+    case 'eventMode':
+      await updateGroupState(db, groupID, prop, serialnumbers);
+      group = await db.getGroup(groupID);
+
+      io.emit('group_stateChanged', {
+        id: groupID,
+        prop: `${prop}DevicesWithOtherState`,
+        newValue: group[`${prop}DevicesWithOtherState`],
+      });
+      break;
+
+    default:
+      break;
+  }
 }
 
 function hasDeviceAlarm(databaseDevice, hasAlarm) {
