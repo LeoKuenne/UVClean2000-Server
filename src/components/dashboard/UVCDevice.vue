@@ -252,7 +252,9 @@ export default {
           this.$emit('assignGroup', this.device);
           break;
         case 'Reset':
-          this.$emit('reset', this.device);
+          this.$emit('reset', {
+            serialnumber: this.device.serialnumber,
+          });
           break;
         case 'Acknowledge':
           this.$emit('acknowledgeAlarm', {

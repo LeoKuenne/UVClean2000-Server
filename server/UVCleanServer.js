@@ -14,6 +14,8 @@ const DeleteGroup = require('./controlModules/SocketIOCommands/DeleteGroup');
 const GroupChangeState = require('./controlModules/SocketIOCommands/GroupChangeState');
 const AddDeviceToGroup = require('./controlModules/SocketIOCommands/AddDeviceToGroup');
 const RemoveDeviceFromGroup = require('./controlModules/SocketIOCommands/RemoveDeviceFromGroup');
+const ResetDevice = require('./controlModules/SocketIOCommands/ResetDevice');
+const AcknowledgeDeviceAlarm = require('./controlModules/SocketIOCommands/AcknowledgeDeviceAlarm');
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
@@ -79,6 +81,8 @@ class UVCleanServer extends EventEmitter {
         AddDevice(this.database, this.io, this.client, socket);
         DeleteDevice(this.database, this.io, this.client, socket);
         DeviceChangeState(this.database, this.io, this.client, socket);
+        ResetDevice(this.database, this.io, this.client, socket);
+        AcknowledgeDeviceAlarm(this.database, this.io, this.client, socket);
         AddGroup(this.database, this.io, this.client, socket);
         DeleteGroup(this.database, this.io, this.client, socket);
         GroupChangeState(this.database, this.io, this.client, socket);

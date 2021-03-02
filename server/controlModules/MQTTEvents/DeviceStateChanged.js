@@ -77,7 +77,6 @@ async function updateGroup(groupID, prop, db, io) {
 }
 
 function hasDeviceAlarm(databaseDevice, hasAlarm) {
-  console.log(hasAlarm, databaseDevice.alarmState);
   if (hasAlarm === true && databaseDevice.alarmState === false) {
     return true;
   }

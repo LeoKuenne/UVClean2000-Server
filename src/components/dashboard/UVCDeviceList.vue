@@ -27,6 +27,7 @@
         @assignGroup="showGroupForm($event)"
         @changeState="changeDeviceState($event)"
         @acknowledgeAlarm="acknowledgeAlarm($event)"
+        @reset="resetDevice($event)"
         v-for="dev in $dataStore.devices"
         :key="dev.serialnumber"
         :device="dev"
@@ -317,10 +318,18 @@ export default {
       });
     },
     /**
-     * Called when the acknowledge button in the alarm popup is pressed
+     * Called when the acknowledge button in the alarm popup or in the menu is pressed
      */
     acknowledgeAlarm(device) {
       this.$root.$data.socket.emit('device_acknowledgeAlarm', {
+        serialnumber: device.serialnumber,
+      });
+    },
+    /**
+     * Called when the reset menuitem in the menu is pressed
+     */
+    resetDevice(device) {
+      this.$root.$data.socket.emit('device_reset', {
         serialnumber: device.serialnumber,
       });
     },
