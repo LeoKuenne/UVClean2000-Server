@@ -543,6 +543,9 @@ module.exports = class MongoDBAdapter {
             to: dataLatest[0].date,
           };
         }
+        if (dataLatest.length === 0 && dataOldest.length === 0) {
+          throw new Error('No data available.');
+        }
         return undefined;
       case 'lampValues':
         dataLatest = await LampValueModel.find({ device: serialnumber })
@@ -555,6 +558,9 @@ module.exports = class MongoDBAdapter {
             to: dataLatest[0].date,
           };
         }
+        if (dataLatest.length === 0 && dataOldest.length === 0) {
+          throw new Error('No data available.');
+        }
         return undefined;
       case 'tacho':
         dataLatest = await TachoModel.find({ device: serialnumber }).sort({ date: -1 }).limit(1);
@@ -565,10 +571,13 @@ module.exports = class MongoDBAdapter {
             to: dataLatest[0].date,
           };
         }
+        if (dataLatest.length === 0 && dataOldest.length === 0) {
+          throw new Error('No data available.');
+        }
         return undefined;
 
       default:
-        return undefined;
+        throw new Error(`Can not get duration of propertie ${propertie}`);
     }
   }
 
@@ -681,6 +690,19 @@ module.exports = class MongoDBAdapter {
     });
 
     return groups;
+  }
+
+  async getGroupIDs() {
+    const groupData = await UVCGroupModel.find()
+      .exec();
+
+    const groupIDs = [];
+    groupData.map((grp) => {
+      groupIDs.push(grp._id);
+      return grp;
+    });
+
+    return groupIDs;
   }
 
   /**

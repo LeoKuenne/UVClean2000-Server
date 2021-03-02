@@ -10,7 +10,7 @@
       </div>
       <button
         class="bg-primary p-2 text-white shadow"
-        @click="showSettingPanel = true">
+        @click="showSettingPanel = true; loaded = true;">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-5 w-5" viewBox="0 0 16 16">
           <path fill-rule="evenodd"
           d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5
@@ -22,8 +22,9 @@
     </div>
     <div v-if="showSettingPanel"
       class="fixed top-0 left-0 h-screen w-screen
-      bg-black bg-opacity-50 flex justify-center items-center">
-      <div class="absolute flex flex-col p-5 bg-secondary space-y-5">
+      bg-black bg-opacity-50 flex justify-center items-center"
+      @click="outsideSettingPanelClicked">
+      <div class="absolute flex flex-col p-5 bg-secondary space-y-5" @click.stop>
         <div class="flex justify-between items-center">
           <h1 class="font-bold text-xl">Datavisualization</h1>
           <button class="bg-transparent hover:bg-transparent p-0 m-0"
@@ -36,21 +37,23 @@
             </svg>
           </button>
         </div>
+        <span class="text-red-500 font-bold"
+          :class="[(errorMessage !== '') ? 'visible' : 'hidden']">{{errorMessage}}</span>
         <div class="w-full">
-          <label for="device">Choose the device:</label>
-          <select name="device"
-            id="device"
+          <label for="group">Choose the group:</label>
+          <select name="group"
+            id="group"
             class="text-black w-full p-2 rounded border border-primary"
-            v-model="selectedDevice"
+            v-model="selectedGroup"
             @change="showPropertie = true">
-            <option v-for="device in devices"
-              :key="device"
-              v-bind:value="device">
-              {{ device }}
+            <option v-for="group in groups"
+              :key="group.serialnumber"
+              :value="group">
+              {{ group.name }}
             </option>
           </select>
         </div>
-        <div :class="[showPropertie || (selectedDevice !== undefined) ? 'visible' : 'invisible' ] ">
+        <div :class="[showPropertie || (selectedGroup !== undefined) ? 'visible' : 'invisible' ] ">
           <label for="propertie">Choose the propertie:</label>
           <select name="propertie"
             id="propertie"
@@ -58,7 +61,6 @@
             v-model="selectedPropertie"
             @change="getDateDuration">
             <option value="airVolume">Air Volume</option>
-            <option value="lampValues">Lamp Values</option>
             <option value="tacho">Tachos</option>
           </select>
         </div>
@@ -102,7 +104,8 @@
         <div></div>
       </div>
       <chart v-if="loaded"
-      :chart-data="datacollection"
+      :showAllCharts="showAllCharts"
+      :chartData="datacollection"
       :options="options"
       :style="chartStyles"
       class="p-16"></chart>
@@ -113,7 +116,6 @@
 <script>
 import { Datetime } from 'vue-datetime';
 import '../css/datetime.css';
-import Vue from 'vue';
 import Chart from '../components/diagram/Chart.vue';
 
 const { DateTime } = require('luxon');
@@ -123,7 +125,7 @@ export default {
     Chart,
     datetime: Datetime,
   },
-  props: ['device', 'propertie', 'from', 'to'],
+  props: ['group', 'propertie', 'from', 'to'],
   data() {
     return {
       loaded: true,
@@ -132,26 +134,38 @@ export default {
       showToggleAllCharts: false,
       showSettingPanel: true,
       showAllCharts: true,
-      selectedDevice: this.device,
+      selectedGroup: this.group,
       selectedPropertie: '',
       selectedDateFrom: '',
       selectedDateTo: '',
-      devices: [],
+      errorMessage: '',
+      groups: [],
       canRefresh: false,
       disabledDates: {
 
       },
-      datacollection: {},
+      datacollection: {
+        datasets: [],
+      },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           xAxes: [{
+            // stacked: true,
             type: 'time',
-            distribution: 'series',
+            distribution: 'linear',
             time: {
-              minUnit: 'minute',
+              tooltipFormat: 'dd.MM.yyyy H:mm:ss',
+              // tooltipFormat: 'DD.MM.YY HH:mm:ss.SSS',
+              minUnit: 'second',
+              unit: 'minute',
               displayFormats: {
+                // millisecond: 'DD.MM.YY HH:mm:ss.SSS',
+                // second: 'DD.MM.YY HH:mm:ss.SSS',
+                // minute: 'DD.MM.YY HH:mm:ss.SSS',
+                millisecond: 'dd.MM.yyyy H:mm:ss',
+                second: 'dd.MM.yyyy H:mm:ss',
                 minute: 'dd.MM.yyyy H:mm:ss',
               },
             },
@@ -160,18 +174,40 @@ export default {
             //   },
             // },
             ticks: {
-              autoSkip: false,
               maxRotation: 90,
               minRotation: 90,
             },
           }],
           yAxes: [{
+            stacked: true,
             ticks: {
               callback(value) {
                 return `${value}`;
               },
             },
           }],
+        },
+        tooltips: {
+          mode: 'label',
+          callbacks: {
+            label(tooltipItems, data) {
+              const device = data.datasets[tooltipItems.datasetIndex].label;
+              const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index];
+
+              let total = 0;
+              for (let i = 0; i < data.datasets.length; i += 1) {
+                if (!data.datasets[i].hidden
+                  && data.datasets[i].data.length < tooltipItems.index) {
+                  total += data.datasets[i].data[tooltipItems.index].y;
+                }
+              }
+
+              if (tooltipItems.datasetIndex !== data.datasets.length - 1) {
+                return `${device}: ${value.y}`;
+              }
+              return [`${device}: ${value.y}`, `Total: ${total}`];
+            },
+          },
         },
       },
     };
@@ -206,18 +242,15 @@ export default {
   },
   methods: {
     toggleAllCharts() {
-      for (let i = 0; i < this.datacollection.datasets.length; i += 1) {
-        Vue.set(this.datacollection.datasets[i], 'hidden', this.showAllCharts);
-      }
       this.showAllCharts = !this.showAllCharts;
     },
     outsideSettingPanelClicked() {
       this.showSettingPanel = false;
     },
     async fetchData() {
-      await this.getDevices();
+      await this.getGroups();
 
-      if (this.device === undefined) return;
+      if (this.group === undefined) return;
       if (this.propertie === undefined) return;
       if (this.from === undefined) return;
       if (this.to === undefined) return;
@@ -226,46 +259,40 @@ export default {
       this.showSettingPanel = false;
 
       let data = null;
-      this.selectedDevice = this.device;
+      // eslint-disable-next-line prefer-destructuring
+      this.selectedGroup = this.groups[0];
 
       this.selectedPropertie = this.propertie;
       await this.getDateDuration();
 
       this.selectedDateFrom = this.from;
       this.selectedDateTo = this.to;
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`).then((response) => response.json())
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/group?group=${this.selectedGroup.id}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`)
         .then((response) => {
+          if (response.status === 404) {
+            throw new Error('No data avalaible');
+          }
+          return response.json();
+        }).then((response) => {
           data = response;
+        }).catch((err) => {
+          this.errorMessage = err;
         });
 
-      const lamps = [];
+      if (data === undefined) {
+        this.showSettingPanel = true;
+        this.loaded = true;
+        return;
+      }
+
+      this.datacollection.datasets.length = 0;
 
       switch (this.propertie) {
         case 'airVolume':
-          this.datacollection.datasets = [
-            {
-              label: this.device,
-              backgroundColor: '#00666F',
-              borderColor: '#00666F',
-              borderWidth: 1,
-              data: [],
-              fill: false,
-            },
-          ];
-
-          data.forEach((event) => {
-            this.datacollection.datasets[0].data.push({
-              t: DateTime.fromISO(event.date),
-              y: event.volume,
-            });
-          });
-          break;
-        case 'lampValues':
-
-          for (let i = 0; i < 16; i += 1) {
-            const color = `rgba(0,${50 + (((255 - 50) / 16) * i)},${80 + (((255 - 80) / 16) * i)})`;
-            lamps.push({
-              label: `${this.device} | Lamp ${i + 1}`,
+          for (let i = 0; i < data.length; i += 1) {
+            const color = `rgba(0,${50 + (((255 - 50) / data.length) * i)},${80 + (((255 - 80) / data.length) * i)})`;
+            this.datacollection.datasets.push({
+              label: `${this.selectedGroup.name} | ${data[i][0].device}`,
               backgroundColor: color,
               borderColor: color,
               borderWidth: 1,
@@ -273,35 +300,35 @@ export default {
               fill: false,
               hidden: true,
             });
-          }
-          data.forEach((event) => {
-            lamps[event.lamp - 1].data.push({
-              t: DateTime.fromISO(event.date),
-              y: event.value,
+            data[i].forEach((event) => {
+              this.datacollection.datasets[i].data.push({
+                t: DateTime.fromISO(event.date),
+                // t: new Date(event.date),
+                y: event.volume,
+              });
             });
-          });
-
-          this.datacollection.datasets = lamps;
+          }
 
           break;
         case 'tacho':
-          this.datacollection.datasets = [
-            {
-              label: this.device,
-              backgroundColor: '#00666F',
-              borderColor: '#00666F',
+          for (let i = 0; i < data.length; i += 1) {
+            const color = `rgba(0,${50 + (((255 - 50) / data.length) * i)},${80 + (((255 - 80) / data.length) * i)})`;
+            this.datacollection.datasets.push({
+              label: `${this.selectedGroup.name} | ${data[i][0].device}`,
+              backgroundColor: color,
+              borderColor: color,
               borderWidth: 1,
               data: [],
               fill: false,
-            },
-          ];
-
-          data.forEach((event) => {
-            this.datacollection.datasets[0].data.push({
-              t: DateTime.fromISO(event.date),
-              y: event.tacho,
+              hidden: true,
             });
-          });
+            data[i].forEach((event) => {
+              this.datacollection.datasets[i].data.push({
+                t: DateTime.fromISO(event.date),
+                y: event.tacho,
+              });
+            });
+          }
           break;
 
         default:
@@ -313,24 +340,30 @@ export default {
     },
     async refreshChart() {
       await this.$router.push({
-        path: 'chart',
+        name: 'GroupChart',
         query: {
-          device: this.selectedDevice,
+          group: this.selectedGroup.id,
           propertie: this.selectedPropertie,
           from: this.selectedDateFrom,
           to: this.selectedDateTo,
         },
       });
     },
-    async getDevices() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/serialnumbers`).then((response) => response.json())
+    async getGroups() {
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
         .then((data) => {
-          this.devices = data;
+          this.groups = data;
         });
     },
     async getDateDuration() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`).then((response) => response.json())
-        .then((data) => {
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/timestamps?group=${this.selectedGroup.id}&propertie=${this.selectedPropertie}`)
+        .then((response) => {
+          if (response.status === 404) {
+            throw new Error('No data avalaible');
+          }
+          this.errorMessage = '';
+          return response.json();
+        }).then((data) => {
           this.disabledDates = {
             from: data.from,
             to: data.to,
@@ -339,6 +372,9 @@ export default {
           this.selectedDateFrom = data.from;
           this.selectedDateTo = data.to;
           this.showDatepicker = true;
+        }).catch((err) => {
+          this.errorMessage = err;
+          this.showDatepicker = false;
         });
     },
   },

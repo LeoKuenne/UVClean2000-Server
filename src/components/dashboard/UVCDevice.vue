@@ -15,6 +15,7 @@
           </div>
           <dropdownMenu
             class="text-primary"
+            :showIcon="true"
             :menuItems="[ 'Edit', 'View chart', 'Add to Group', 'Reset' ]"
             @itemClicked="menuItemClicked($event)">
           </dropdownMenu>

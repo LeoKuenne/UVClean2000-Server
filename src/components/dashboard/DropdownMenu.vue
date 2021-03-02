@@ -3,18 +3,19 @@
       @click="dropdownMenuClicked"
       v-click-outside="dropdownOutsideClicked">
     <button
-      class="w-6 h-6 hover:transform hover:scale-105 transition-all">
-      <svg v-show="!showDropdown"
+      class="w-full h-full hover:transform hover:scale-105 transition-all">
+      <svg v-show="showIcon && !showDropdown"
         xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6 text-white" viewBox="0 0 16 16">
         <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3
         0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
       </svg>
-      <svg v-show="showDropdown"
+      <svg v-show="showIcon && showDropdown"
         xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6 text-white" viewBox="0 0 16 16">
         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1
           .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646
           2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
       </svg>
+      <slot></slot>
     </button>
     <div class="relative">
       <div
@@ -36,7 +37,7 @@ import Vue from 'vue';
 
 export default {
   name: 'DropdownMenu',
-  props: ['menuItems'],
+  props: ['menuItems', 'showIcon'],
   methods: {
     dropdownMenuClicked() {
       this.showDropdown = !this.showDropdown;

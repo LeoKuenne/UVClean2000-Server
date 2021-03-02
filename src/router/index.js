@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import DashboardComponent from '../views/Dashboard.vue';
-import ChartComponent from '../views/ChartWrapper.vue';
+import DeviceChart from '../views/DeviceChart.vue';
+import GroupChart from '../views/GroupChart.vue';
 import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
 import UVCGroupList from '../components/dashboard/UVCGroupList.vue';
 
@@ -35,9 +36,17 @@ const routes = [
     // },
   },
   {
-    path: '/chart',
-    name: 'Chart',
-    component: ChartComponent,
+    path: '/chart/device',
+    name: 'DeviceChart',
+    component: DeviceChart,
+    props(route) {
+      return route.query || {};
+    },
+  },
+  {
+    path: '/chart/group',
+    name: 'GroupChart',
+    component: GroupChart,
     props(route) {
       return route.query || {};
     },

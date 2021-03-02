@@ -27,20 +27,26 @@
           </g>
         </svg>
       </router-link>
-        <div>
-          <router-link :to="{path: '/dashboard' }"
-           class="bg-transparent hover:bg-transparent text-color px-5 text-base align-baseline">
-            Dashboard
-          </router-link>
-          <router-link :to="{path: '/chart' }"
-           class="bg-transparent hover:bg-transparent text-color px-5 text-base align-baseline">
-            Charts
-          </router-link>
-          <router-link :to="{path: '' }"
-           class="bg-transparent hover:bg-transparent text-color px-5 text-base align-baseline">
-            Settings
-          </router-link>
+      <div class="relative flex">
+        <router-link :to="{path: '/dashboard' }"
+          class="text-color px-5 text-base align-baseline">
+          Dashboard
+        </router-link>
+        <div
+          class="text-color px-5 text-base align-baseline">
+          <dropdown-menu
+            class="text-primary z-10"
+            :showIcon="false"
+            :menuItems="[ 'Device', 'Group']"
+            @itemClicked="menuItemClicked($event)">
+          Charts
+          </dropdown-menu>
         </div>
+        <router-link :to="{path: '' }"
+          class="text-color px-5 text-base align-baseline">
+          Settings
+        </router-link>
+      </div>
     </header>
     <transition name="fade" mode="out-in">
       <router-view class="" style="height: 90%;"></router-view>
@@ -49,9 +55,11 @@
 </template>
 
 <script>
+import DropdownMenu from './components/dashboard/DropdownMenu.vue';
 import './css/styles.css';
 
 export default {
+  components: { DropdownMenu },
   name: 'App',
   computed: {
     currentViewComponent() {
@@ -63,6 +71,18 @@ export default {
     },
   },
   methods: {
+    menuItemClicked(menuItem) {
+      switch (menuItem) {
+        case 'Device':
+          this.$router.push({ path: '/chart/device' });
+          break;
+        case 'Group':
+          this.$router.push({ path: '/chart/group' });
+          break;
+        default:
+          break;
+      }
+    },
   },
   created() {
 

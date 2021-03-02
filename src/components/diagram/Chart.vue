@@ -1,31 +1,27 @@
 <script>
-import { Line, mixins } from 'vue-chartjs';
+import { Line } from 'vue-chartjs';
 import 'chartjs-adapter-luxon';
-
-const { reactiveProp } = mixins;
 
 export default {
   extends: Line,
-  mixins: [reactiveProp],
-  props: ['options', 'cdata'],
+  props: ['chartData', 'options', 'showAllCharts'],
   mounted() {
     this.renderLineChart();
   },
-  computed: {
-    data() {
-      return this.chartData;
-    },
-  },
   methods: {
     renderLineChart() {
-      this.renderChart(this.data, this.options);
+      this.renderChart(this.chartData, this.options);
     },
   },
   watch: {
-    chartData() {
+    showAllCharts() {
+      // eslint-disable-next-line no-underscore-dangle
+      this.$data._chart.data.datasets.forEach((dataset) => {
+        // eslint-disable-next-line no-param-reassign
+        dataset.hidden = this.showAllCharts;
+      });
       // eslint-disable-next-line no-underscore-dangle
       this.$data._chart.update();
-      console.log('chartData mutated');
     },
   },
 };
