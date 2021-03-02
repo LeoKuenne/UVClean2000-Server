@@ -30,13 +30,13 @@
           class="absolute w-full h-full flex items-center justify-center">
           <div class="bg-gray-100 w-2/3 flex flex-col items-center justify-between
             rounded shadow border-2 border-red-500">
-            <h1 class="m-5 text-red-500 font-bold text-xl">An alarm occured!</h1>
+            <h1 class="m-5 text-red-500 font-bold text-xl">An alarm occurred!</h1>
             <p
               v-for="alarm in alarmPropertie" :key="alarm"
               class="w-full text-red-500 font-bold text-lg text-center whitespace-normal">
               {{ alarm }}
             </p>
-            <button class="p-3 mb-8 text-gray-900 font-bold text-center bg-gray-200 transform
+            <button class="p-3 m-5 text-gray-900 font-bold text-center bg-gray-200 transform
               hover:scale-105 duration-75"
               @click="$emit('acknowledgeAlarm', {
                 serialnumber: device.serialnumber,
@@ -45,6 +45,23 @@
               Acknowledge
             </button>
           </div>
+          <!-- <div class="bg-red-500 w-2/3 flex flex-col items-center justify-between
+            rounded shadow border-2 border-red-500">
+            <h1 class="m-5 text-white font-bold text-xl">An alarm occurred!</h1>
+            <p
+              v-for="alarm in alarmPropertie" :key="alarm"
+              class="w-full text-white font-bold text-lg text-center whitespace-normal">
+              {{ alarm }}
+            </p>
+            <button class="p-3 m-5 text-gray-900 font-bold text-center bg-gray-200 transform
+              hover:scale-105 duration-75"
+              @click="$emit('acknowledgeAlarm', {
+                serialnumber: device.serialnumber,
+                prop: 'acknowledge',
+              }); showAlarmPopup=false;">
+              Acknowledge
+            </button>
+          </div> Version 2 -->
         </div>
         <div class="p-2 grid grid-cols-2 space-y-2 items-center">
           <label for="b_device_state">Devie State</label>
