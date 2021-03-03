@@ -18,17 +18,19 @@
       <slot></slot>
     </button>
     <div class="relative" @click.stop>
-      <div
-        v-if="showDropdown"
-        class="absolute right-0 bg-white rounded overflow-hidden shadow
-          whitespace-nowrap text-right">
-        <button v-for="item in menuItems"
-          :key="item"
-          class="hover:bg-gray-200 w-full p-2 block text-right"
-          @click="$emit('itemClicked', item); showDropdown = false">
-          {{item}}
-        </button>
-      </div>
+      <transition name="slide">
+        <div
+          v-if="showDropdown"
+          class="absolute right-0 bg-white rounded overflow-hidden shadow
+            whitespace-nowrap text-right min-w-min">
+          <button v-for="item in menuItems"
+            :key="item"
+            class="hover:bg-gray-200 w-full p-2 block text-right"
+            @click="$emit('itemClicked', item); showDropdown = false">
+            {{item}}
+          </button>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -68,3 +70,21 @@ Vue.directive('click-outside', {
   },
 });
 </script>
+
+<style>
+.slide-enter-active,
+.slide-leave-active {
+  @apply duration-200;
+  @apply ease-in-out;
+}
+
+.slide-enter-to, .slide-leave {
+   max-height: 100px;
+   overflow: hidden;
+}
+
+.slide-enter, .slide-leave-to {
+   overflow: hidden;
+   max-height: 0;
+}
+</style>

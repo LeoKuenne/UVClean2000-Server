@@ -28,10 +28,16 @@
         </svg>
       </router-link>
       <div class="relative flex">
-        <router-link :to="{ name: 'dashboard' }"
+        <div
           class="text-color px-5 text-base align-baseline">
+          <dropdown-menu
+            class="text-primary z-10"
+            :showIcon="false"
+            :menuItems="[ 'Devices', 'Groups']"
+            @itemClicked="menuItemClicked($event)">
           Dashboard
-        </router-link>
+          </dropdown-menu>
+        </div>
         <div
           class="text-color px-5 text-base align-baseline">
           <dropdown-menu
@@ -78,6 +84,12 @@ export default {
           break;
         case 'Group':
           this.$router.push({ name: 'GroupChart' });
+          break;
+        case 'Devices':
+          this.$router.push({ name: 'devices' });
+          break;
+        case 'Groups':
+          this.$router.push({ name: 'groups' });
           break;
         default:
           break;
