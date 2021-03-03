@@ -1,6 +1,8 @@
 import Vue from 'vue';
+import VueToast from 'vue-toast-notification';
 import App from './App.vue';
 import router from './router/index';
+import 'vue-toast-notification/dist/theme-default.css';
 
 Vue.config.productionTip = false;
 
@@ -14,6 +16,7 @@ const store = Vue.observable({
 });
 
 Vue.prototype.$dataStore = store;
+Vue.use(VueToast);
 
 new Vue({
   render: (h) => h(App),
@@ -30,7 +33,11 @@ new Vue({
 
     socket.on('error', (error) => {
       console.error('error in backend', error);
-      // alert(error.message);
+      Vue.$toast.open({
+        type: 'error',
+        message: `Server Error: ${error.message}`,
+        duration: 5000,
+      });
     });
 
     socket.on('device_alarm', (alarmProp) => {

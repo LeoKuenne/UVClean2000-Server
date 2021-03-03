@@ -35,6 +35,7 @@
     "vue-dropdowns": "^1.1.2",
     "vue-gauge": "^1.0.3",
     "vue-router": "^3.5.1",
+    "vue-toast-notification": "^0.6.1",
     "vuejs-datepicker": "^1.6.2",
     "weekstart": "^1.0.1",
     "winston": "^3.3.3"
