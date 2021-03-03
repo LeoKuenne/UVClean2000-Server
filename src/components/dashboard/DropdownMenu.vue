@@ -17,17 +17,17 @@
       </svg>
       <slot></slot>
     </button>
-    <div class="relative">
+    <div class="relative" @click.stop>
       <div
         v-if="showDropdown"
         class="absolute right-0 bg-white rounded overflow-hidden shadow
           whitespace-nowrap text-right">
-        <div v-for="item in menuItems"
+        <button v-for="item in menuItems"
           :key="item"
-          class="hover:bg-gray-200 w-full p-2 block"
-          @click="$emit('itemClicked', item)">
+          class="hover:bg-gray-200 w-full p-2 block text-right"
+          @click="$emit('itemClicked', item); showDropdown = false">
           {{item}}
-        </div>
+        </button>
       </div>
     </div>
   </div>

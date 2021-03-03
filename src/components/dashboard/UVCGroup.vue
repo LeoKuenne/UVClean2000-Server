@@ -128,7 +128,7 @@ export default {
           this.$emit('edit', this.group);
           break;
         case 'View chart':
-          this.$router.push({ path: 'chart', query: { group: this.group.serialnumber } });
+          this.$router.push({ name: 'GroupChart', query: { group: this.group.serialnumber } });
           break;
         default:
           break;

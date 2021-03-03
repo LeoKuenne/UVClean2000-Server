@@ -1,8 +1,9 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import DashboardComponent from '../views/Dashboard.vue';
-import DeviceChart from '../views/DeviceChart.vue';
-import GroupChart from '../views/GroupChart.vue';
+import DashboardView from '../views/Dashboard.vue';
+import ChartView from '../views/Chart.vue';
+import DeviceChart from '../components/diagram/DeviceChart.vue';
+import GroupChart from '../components/diagram/GroupChart.vue';
 import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
 import UVCGroupList from '../components/dashboard/UVCGroupList.vue';
 
@@ -11,12 +12,12 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: '/dashboard',
-    name: 'Dashboard',
-    component: DashboardComponent,
+    name: 'dashboard',
+    component: DashboardView,
     children: [
       {
         name: 'devices',
-        path: '/dashboard/devices',
+        path: 'devices',
         component: UVCDeviceList,
         props(route) {
           return route.query || {};
@@ -24,7 +25,7 @@ const routes = [
       },
       {
         name: 'groups',
-        path: '/dashboard/groups',
+        path: 'groups',
         component: UVCGroupList,
         props(route) {
           return route.query || {};
@@ -36,20 +37,27 @@ const routes = [
     // },
   },
   {
-    path: '/chart/device',
-    name: 'DeviceChart',
-    component: DeviceChart,
-    props(route) {
-      return route.query || {};
-    },
-  },
-  {
-    path: '/chart/group',
-    name: 'GroupChart',
-    component: GroupChart,
-    props(route) {
-      return route.query || {};
-    },
+    path: '/chart',
+    name: 'chart',
+    component: ChartView,
+    children: [
+      {
+        path: 'device',
+        name: 'DeviceChart',
+        component: DeviceChart,
+        props(route) {
+          return route.query || {};
+        },
+      },
+      {
+        path: 'group',
+        name: 'GroupChart',
+        component: GroupChart,
+        props(route) {
+          return route.query || {};
+        },
+      },
+    ],
   },
 ];
 

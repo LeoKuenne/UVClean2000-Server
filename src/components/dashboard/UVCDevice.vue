@@ -1,5 +1,6 @@
 <template>
-  <router-link :to="'devices?device=' + device.serialnumber" class="cursor-default" tag="div">
+  <router-link :to="{ name: 'devices', query: { device: this.device.serialnumber } }"
+    class="cursor-default" tag="div">
     <div class="">
       <div :class="[ device.alarmState ? 'bg-red-500' : 'bg-primary' ]"
         class="p-2 items-center text-white">
@@ -7,7 +8,7 @@
           <div>
             <h3 class="text-md font-bold">{{device.name}}</h3>
             <h4 class="text-sm text-gray-200">SN: {{device.serialnumber}}</h4>
-            <router-link :to="'/dashboard/groups?group=' + device.group._id"
+            <router-link :to="{ name: 'groups', query: { group: this.device.group._id } }"
               class="text-sm text-gray-200 hover:underline"
               v-if="device.group.name !== undefined">
               Group: {{device.group.name}}
@@ -116,13 +117,31 @@
 
           <h4 class="text-lg pt-5 font-bold col-span-2">Statistics:</h4>
 
-          <span class="font-semibold">Current Volume</span>
-          <span class="text-right" v-if="device.currentAirVolume">
-            {{device.currentAirVolume.volume}} L/M^3
-          </span>
+          <router-link tag="div" :to="{
+            name: 'DeviceChart',
+            query: {
+              device: this.device.serialnumber,
+              propertie: 'airVolume',
+              }
+            }"
+            class="col-span-2 flex justify-between cursor-pointer">
+            <span class="font-semibold">Current Volume</span>
+            <span class="text-right" v-if="device.currentAirVolume">
+              {{device.currentAirVolume.volume}} L/M^3
+            </span>
+          </router-link>
 
-          <span class="font-semibold">Rotation speed</span>
-          <span class="text-right" v-if="device.tacho">{{device.tacho.tacho}} R/min</span>
+          <router-link tag="div" :to="{
+            name: 'DeviceChart',
+            query: {
+              device: this.device.serialnumber,
+              propertie: 'tacho',
+              }
+            }"
+            class="col-span-2 flex justify-between cursor-pointer">
+            <span class="font-semibold">Rotation speed</span>
+            <span class="text-right" v-if="device.tacho">{{device.tacho.tacho}} R/min</span>
+          </router-link>
 
           <div class="col-span-2">
             <div class="flex justify-between">
@@ -240,13 +259,16 @@ export default {
     dropdownMenu: DropdownMenu,
   },
   methods: {
-    menuItemClicked(event) {
+    async menuItemClicked(event) {
       switch (event) {
         case 'Edit':
           this.$emit('edit', this.device);
           break;
         case 'View chart':
-          this.$router.push({ path: '/chart', query: { device: this.device.serialnumber } });
+          await this.$router.push({ name: 'DeviceChart', query: { device: this.device.serialnumber } })
+            .catch((failure) => {
+              console.log(failure);
+            });
           break;
         case 'Add to Group':
           this.$emit('assignGroup', this.device);

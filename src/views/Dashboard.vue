@@ -1,7 +1,7 @@
 <template>
   <div class="flex text-color">
     <Sidebar
-      class="w-1/6"
+      class="min-w-1/6"
       @showDevices="showDevices"
       @showGroups="showGroups">
     </Sidebar>

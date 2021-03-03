@@ -18,10 +18,10 @@
     </div>
     <!-- flex flex-wrap item-center justify-center  -->
     <router-link to="devices"
-      class="cursor-default flex flex-wrap items-start"
+      class="cursor-default flex flex-wrap items-start justify-center"
       id="uvcdevicelist"
-      @click="$route.query.device=''"
-      tag="div">
+      tag="div"
+      @click="$route.query.device=''">
       <UVCDevice
         @edit="editDevice($event)"
         @assignGroup="showGroupForm($event)"
@@ -33,7 +33,7 @@
         :device="dev"
         :ref="'device' + dev.serialnumber"
         :class="[(device === dev.serialnumber) ? 'transform scale-105': '']"
-        class="m-5 w-96 border-primary border shadow-lg duration-200 flex-1">
+        class="m-5 flex-shrink-0 w-96 border-primary border shadow-lg duration-200">
       </UVCDevice>
     </router-link>
     <UVCForm
@@ -214,11 +214,6 @@ export default {
      * Called when the assign button of the group form is clicked
      */
     assignDeviceToGroup() {
-      console.log({
-        device: this.formDevice.serialnumber,
-        group: this.formSelectedGroup,
-      });
-
       if (this.formSelectedGroup === '') {
         this.errorMessage = 'You have to select a group to assign the device to.';
         return;
@@ -231,11 +226,6 @@ export default {
       this.showGroupAssignmentForm = false;
     },
     removeGroupAssignment() {
-      console.log({
-        device: this.formDevice.serialnumber,
-        group: this.formDevice.group,
-      });
-
       this.$root.$data.socket.emit('group_deviceDelete', {
         device: this.formDevice.serialnumber,
         group: this.formSelectedGroup,
@@ -306,10 +296,9 @@ export default {
       if (newState.serialnumber === undefined
         || newState.prop === undefined
         || newState.newValue === undefined) {
-        console.log('New State can not be parsed', newState);
+        console.error('New State can not be parsed', newState);
         return;
       }
-      console.log(newState);
 
       this.$root.$data.socket.emit('device_changeState', {
         serialnumber: newState.serialnumber,
