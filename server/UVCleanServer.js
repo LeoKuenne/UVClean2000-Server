@@ -57,7 +57,7 @@ class UVCleanServer extends EventEmitter {
 
       this.on('error', (e) => {
         logger.error('%o', e);
-        this.io.emit('error', { message: e.message });
+        this.io.emit('error', { message: `${e.service}: ${e.error.message}` });
       });
 
       // New Webbrowser connected to server

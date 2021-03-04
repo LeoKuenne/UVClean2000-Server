@@ -20,6 +20,7 @@
       class="flex flex-row flex-wrap content-center justify-center cursor-default">
       <UVCGroup
         @edit="editGroup($event)"
+        @addDevices="assignDeviceToGroup($event)"
         @changeState="changeGroupState($event)"
         v-for="grp in $dataStore.groups"
         :key="grp.id"
@@ -72,28 +73,50 @@
         </div>
       </div>
     </UVCForm>
-    <!-- <UVCForm
-      :title="'Group Assignment'"
-      :show="showGroupAssignmentForm"
+    <UVCForm
+      :title="headingAddDevice"
+      :show="showAddDeviceForm"
       :errorMessage="errorMessage"
-      @mounted="fetchGroups"
-      @close="closeGroupForm">
-    </UVCForm> -->
-    <!-- <div
-      v-show="showEditForm"
-      class="fixed top-0 left-0 h-full w-full
-      bg-black bg-opacity-50 flex justify-center items-center"
-      >
-      <FormUVCGroup
-        @close="showEditForm = false"
-        @update="updateGroup($event)"
-        @delete="deleteGroup($event)"
-        @add="addGroup($event)"
-        :editGroup="formGroup"
-        :isEdit="isFormEdit"
-        class="absolute w-1/2 bg-gray-100 rounded p-5 border-2 border-gray-400 shadow-lg">
-      </FormUVCGroup>
-    </div> -->
+      @close="closeAddDeviceForm">
+      <h2>Group: {{ formGroup.name }}</h2>
+      <div class="p-2 bg-white border border-gray-400 rounded">
+        <div class="space-x-2"
+          v-for="device in $root.$dataStore.devices"
+          :key="device.serialnumber">
+          <input
+            type="checkbox"
+            :id="'setDevice' + device.serialnumber"
+            :value="device.serialnumber"
+            :checked="device.group.name === formGroup.name"
+            v-model="checkedDevices">
+          <label class="select-none"
+           :for="'setDevice' + device.serialnumber">
+            {{device.name}}
+          </label>
+          <label class="italic select-none" v-if="device.group.name"
+            :for="'setDevice' + device.serialnumber">
+            ({{device.group.name}})
+          </label>
+        </div>
+      </div>
+      <div class="">
+        <div class="float-right space-x-2">
+          <button
+            :class="[(checkedDevices.length !== 0) ? 'visible' : 'hidden']"
+            class="font-semibold p-2 hover:transform hover:scale-105 transition-all
+            bg-primary text-white"
+            @click="setDevices">
+            Add
+          </button>
+          <button
+            @click="closeAddDeviceForm"
+            class="font-semibold p-2 hover:transform hover:scale-105 transition-all">
+            Close
+          </button>
+        </div>
+      </div>
+
+    </UVCForm>
   </div>
 </template>
 <script>
@@ -114,6 +137,9 @@ export default {
     heading() {
       return this.isFormEdit ? 'Update Group' : 'Add Group';
     },
+    headingAddDevice() {
+      return this.isFormEdit ? 'Update Group' : 'Add Devices to Group';
+    },
   },
   watch: {
     group() {
@@ -130,6 +156,12 @@ export default {
     });
   },
   methods: {
+    /**
+     * Called when the close button is pressed on the addDevice form
+     */
+    closeAddDeviceForm() {
+      this.showAddDeviceForm = false;
+    },
     /**
      * Called if the group is selected in the query
      */
@@ -171,9 +203,33 @@ export default {
       this.errorMessage = '';
     },
     /**
+     *
+     */
+    setDevices() {
+      if (this.formGroup.name === '' || this.formGroup.name.match(/[^0-9A-Za-z+ ]/gm) !== null) {
+        this.errorMessage = 'Name has to be vaild.';
+        return;
+      }
+      this.$root.$data.socket.emit('group_setDevices', {
+        name: this.formGroup.name,
+        devices: this.checkedDevices,
+      });
+      this.showAddDeviceForm = false;
+    },
+    /**
      * Called when the assign button of the group form is clicked
      */
-    assignDeviceToGroup() {
+    assignDeviceToGroup(group) {
+      this.formGroup = {
+        name: group.name,
+        id: group.id,
+      };
+      this.checkedDevices = [];
+      group.devices.map((device) => {
+        this.checkedDevices.push(device.serialnumber);
+        return device;
+      });
+      this.showAddDeviceForm = true;
     },
     editGroup(group) {
       this.formGroup = {
@@ -221,6 +277,8 @@ export default {
   },
   data() {
     return {
+      showAddDeviceForm: false,
+      checkedDevices: [],
       showEditForm: false,
       isFormEdit: false,
       errorMessage: '',

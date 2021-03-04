@@ -99,6 +99,7 @@
       <div class="items-center">
         <div class="float-left">
           <button
+            v-if="formDevice.group.name"
             @click="removeGroupAssignment"
             class="font-semibold p-2 text-red-500
             hover:transform hover:scale-105 transition-all">

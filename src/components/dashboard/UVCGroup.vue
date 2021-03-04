@@ -12,7 +12,7 @@
           <dropdownMenu
             class="text-primary"
             :showIcon="true"
-            :menuItems="[ 'Edit', 'View chart' ]"
+            :menuItems="[ 'Edit', 'View chart', 'Add Devices' ]"
             @itemClicked="menuItemClicked($event)">
           </dropdownMenu>
         </div>
@@ -129,6 +129,9 @@ export default {
           break;
         case 'View chart':
           this.$router.push({ name: 'GroupChart', query: { group: this.group.serialnumber } });
+          break;
+        case 'Add Devices':
+          this.$emit('addDevices', this.group);
           break;
         default:
           break;
