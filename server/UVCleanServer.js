@@ -28,13 +28,7 @@ class UVCleanServer extends EventEmitter {
     this.database = new MongoDBAdapter(`${this.config.database.mongoDB.uri}:${this.config.database.mongoDB.port}`,
       this.config.database.mongoDB.database);
 
-    this.express = new ExpressServer(this.config.http, this.database);
-    this.io = socketio(this.express.httpServer, {
-      cors: {
-        origin: `http://${config.http.cors}`,
-        methods: ['GET', 'POST'],
-      },
-    });
+    this.express = new ExpressServer(this, this.config.http, this.database);
   }
 
   async stopServer() {
@@ -52,25 +46,18 @@ class UVCleanServer extends EventEmitter {
   async startServer() {
     logger.info({ level: 'info', message: 'Starting server' });
     try {
-      await this.database.connect();
-
       this.express.startExpressServer();
 
-      logger.info(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
-      this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+      this.io = socketio(this.express.httpServer, {
+        cors: {
+          origin: `http://${this.config.http.cors}`,
+          methods: ['GET', 'POST'],
+        },
+      });
 
-      // Register MQTT actions
-      DeviceStateChanged.register(this.database, this.io, this.client);
-
-      this.client.on('connect', async () => {
-        logger.info(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
-
-        // Subscribe to all devices that already exists
-        const db = await this.database.getDevices();
-        db.forEach((device) => {
-          logger.info(`Subscribing to UVClean/${device.serialnumber}/#`);
-          this.client.subscribe(`UVClean/${device.serialnumber}/#`);
-        });
+      this.on('error', (e) => {
+        logger.error('%o', e);
+        this.io.emit('error', { message: e.message });
       });
 
       // New Webbrowser connected to server
@@ -78,16 +65,16 @@ class UVCleanServer extends EventEmitter {
         logger.info('A dashboard connected');
         logger.info(`Registering SocketIO Modules for socket ${socket.request.connection.remoteAddress}`);
 
-        AddDevice(this.database, this.io, this.client, socket);
-        DeleteDevice(this.database, this.io, this.client, socket);
-        DeviceChangeState(this.database, this.io, this.client, socket);
-        ResetDevice(this.database, this.io, this.client, socket);
-        AcknowledgeDeviceAlarm(this.database, this.io, this.client, socket);
-        AddGroup(this.database, this.io, this.client, socket);
-        DeleteGroup(this.database, this.io, this.client, socket);
-        GroupChangeState(this.database, this.io, this.client, socket);
-        AddDeviceToGroup(this.database, this.io, this.client, socket);
-        RemoveDeviceFromGroup(this.database, this.io, this.client, socket);
+        AddDevice(this, this.database, this.io, this.client, socket);
+        DeleteDevice(this, this.database, this.io, this.client, socket);
+        DeviceChangeState(this, this.database, this.io, this.client, socket);
+        ResetDevice(this, this.database, this.io, this.client, socket);
+        AcknowledgeDeviceAlarm(this, this.database, this.io, this.client, socket);
+        AddGroup(this, this.database, this.io, this.client, socket);
+        DeleteGroup(this, this.database, this.io, this.client, socket);
+        GroupChangeState(this, this.database, this.io, this.client, socket);
+        AddDeviceToGroup(this, this.database, this.io, this.client, socket);
+        RemoveDeviceFromGroup(this, this.database, this.io, this.client, socket);
 
         // Debug any messages that are coming from the frontend
         socket.onAny((event, ...args) => {
@@ -98,13 +85,63 @@ class UVCleanServer extends EventEmitter {
           logger.info('A dashboard disconnected');
         });
       });
+
+      this.database.on('open', async () => {
+        logger.info('Emitting info event on socket io for database connected');
+        this.io.emit('databaseConnected');
+        try {
+          if (this.client.connected) {
+            const db = await this.database.getDevices();
+            db.forEach((device) => {
+              logger.info(`Subscribing to UVClean/${device.serialnumber}/#`);
+              this.client.subscribe(`UVClean/${device.serialnumber}/#`);
+            });
+          }
+        } catch (error) {
+          this.emit('error', { service: 'UVCleanServer', error });
+        }
+      });
+
+      this.database.on('disconnected', () => {
+        logger.info('Emitting warn event on socket io for database disconnected');
+        this.io.emit('warn', { message: 'Database disconnected' });
+      });
+
+      logger.info(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+      this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+
+      // Register MQTT actions
+      DeviceStateChanged.register(this, this.database, this.io, this.client);
+
+      this.client.on('connect', async () => {
+        logger.info(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+        this.io.emit('info', { message: 'MQTT Client connected' });
+        try {
+          // Subscribe to all devices that already exists if the database is connected
+          if (this.database.isConnected()) {
+            const db = await this.database.getDevices();
+            db.forEach((device) => {
+              logger.info(`Subscribing to UVClean/${device.serialnumber}/#`);
+              this.client.subscribe(`UVClean/${device.serialnumber}/#`);
+            });
+          }
+        } catch (error) {
+          this.emit('error', { service: 'UVCleanServer', error });
+        }
+      });
+
+      this.client.on('offline', async () => {
+        logger.info(`Disconnected from: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+        this.io.emit('warn', { message: 'MQTT Client disconnected' });
+      });
+
+      await this.database.connect();
     } catch (e) {
       if (e instanceof MongooseError) {
-        logger.error('The MongoDB server is not reachable.', e.message);
+        this.emit('error', { service: 'UVCleanServer', error: e });
       } else {
         logger.error(e);
       }
-      this.stopServer();
     }
   }
 }

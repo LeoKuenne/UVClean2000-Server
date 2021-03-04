@@ -264,16 +264,14 @@ async function execute(db, io, mqtt, topic, message) {
   io.emit('device_stateChanged', newState);
 }
 
-function register(db, io, mqtt) {
+function register(server, db, io, mqtt) {
   logger.info('Registering socketIO module');
   mqtt.on('message', async (topic, message) => {
     if (topic.split('/')[2] !== 'stateChanged') return;
     try {
       await execute(db, io, mqtt, topic, message);
     } catch (e) {
-      logger.error(e);
-      console.error(e);
-      io.emit('error', { message: e.message });
+      server.emit('error', { service: 'DeviceStateChangedEvent', error: e });
     }
   });
 }

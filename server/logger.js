@@ -1,5 +1,5 @@
-const { format } = require('winston');
 const winston = require('winston');
+const { format } = require('winston');
 
 const levels = {
   error: 0,
@@ -14,8 +14,6 @@ const levels = {
 const myFormat = format.printf(({
   level, message, metadata, timestamp,
 }) => `${timestamp} [${metadata.service}] ${level}: ${message}`);
-
-const d = new Date().toISOString().replace(/[.:-]/gm, '');
 
 const logger = winston.createLogger({
   format: format.combine(

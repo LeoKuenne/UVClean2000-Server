@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-underscore-dangle */
 const supertest = require('supertest');
+const { EventEmitter } = require('events');
 const ExpressServer = require('../../server/ExpressServer');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
@@ -8,13 +9,19 @@ let request = null;
 
 let expressServer = null;
 let database = null;
+let server = null;
 
 beforeAll(async () => {
+  server = new EventEmitter();
   database = new MongoDBAdapter(global.__MONGO_URI__.replace('mongodb://', ''), '');
   await database.connect();
-  expressServer = new ExpressServer({
-    port: 80,
-  }, database);
+  expressServer = new ExpressServer(
+    server,
+    {
+      port: 80,
+    },
+    database,
+  );
   expressServer.startExpressServer();
   request = supertest(expressServer.app);
 });

@@ -6,7 +6,7 @@ const MainLogger = require('./Logger.js').logger;
 const logger = MainLogger.child({ service: 'ExpressServer' });
 
 module.exports = class ExpressServer {
-  constructor(config, database) {
+  constructor(server, config, database) {
     this.config = config;
     this.database = database;
 
@@ -18,27 +18,43 @@ module.exports = class ExpressServer {
     this.app.use(express.static(`${__dirname}/dashboard/static`));
 
     this.app.get('/devices', async (req, res) => {
-      const db = await this.database.getDevices();
-
-      res.json(db);
+      try {
+        const db = await this.database.getDevices();
+        res.json(db);
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        res.sendStatus(500);
+      }
     });
 
     this.app.get('/groups', async (req, res) => {
-      const db = await this.database.getGroups();
-
-      res.json(db);
+      try {
+        const db = await this.database.getGroups();
+        res.json(db);
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        res.sendStatus(500);
+      }
     });
 
     this.app.get('/groupids', async (req, res) => {
-      const db = await this.database.getGroupIDs();
-
-      res.json(db);
+      try {
+        const db = await this.database.getGroupIDs();
+        res.json(db);
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        res.sendStatus(500);
+      }
     });
 
     this.app.get('/serialnumbers', async (req, res) => {
-      const db = await this.database.getSerialnumbers();
-
-      res.json(db);
+      try {
+        const db = await this.database.getSerialnumbers();
+        res.json(db);
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        res.sendStatus(500);
+      }
     });
 
     this.app.get('/device', async (req, res) => {
@@ -49,25 +65,30 @@ module.exports = class ExpressServer {
 
       let db = '';
 
-      switch (propertie) {
-        case 'airVolume':
-          db = await this.database.getAirVolume(serialnumber,
-            (from === undefined || from === '') ? undefined : new Date(from),
-            (to === undefined || to === '') ? undefined : new Date(to));
-          break;
-        case 'lampValues':
-          db = await this.database.getLampValues(serialnumber, undefined,
-            (from === undefined || from === '') ? undefined : new Date(from),
-            (to === undefined || to === '') ? undefined : new Date(to));
-          break;
-        case 'tacho':
-          db = await this.database.getTachos(serialnumber,
-            (from === undefined || from === '') ? undefined : new Date(from),
-            (to === undefined || to === '') ? undefined : new Date(to));
-          break;
-        default:
-          res.sendStatus(404);
-          return;
+      try {
+        switch (propertie) {
+          case 'airVolume':
+            db = await this.database.getAirVolume(serialnumber,
+              (from === undefined || from === '') ? undefined : new Date(from),
+              (to === undefined || to === '') ? undefined : new Date(to));
+            break;
+          case 'lampValues':
+            db = await this.database.getLampValues(serialnumber, undefined,
+              (from === undefined || from === '') ? undefined : new Date(from),
+              (to === undefined || to === '') ? undefined : new Date(to));
+            break;
+          case 'tacho':
+            db = await this.database.getTachos(serialnumber,
+              (from === undefined || from === '') ? undefined : new Date(from),
+              (to === undefined || to === '') ? undefined : new Date(to));
+            break;
+          default:
+            res.sendStatus(404);
+            return;
+        }
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        res.sendStatus(500);
       }
 
       res.json(db);
@@ -102,7 +123,7 @@ module.exports = class ExpressServer {
 
         res.json(db);
       } catch (error) {
-        logger.error(error);
+        server.emit('error', { service: 'ExpressServer', error });
         res.sendStatus(500);
       }
     });
@@ -158,7 +179,7 @@ module.exports = class ExpressServer {
           res.json(durations);
         }
       } catch (error) {
-        logger.error(error);
+        server.emit('error', { service: 'ExpressServer', error });
         if (error.message === 'No data available.') { res.sendStatus(404); return; }
         res.sendStatus(500, error);
       }
@@ -174,7 +195,9 @@ module.exports = class ExpressServer {
   stopExpressServer() {
     if (this.httpServer.listening) {
       this.httpServer.close((err) => {
-        if (err !== undefined) console.error(err);
+        if (err !== undefined) {
+          logger.error(err);
+        }
       });
     }
   }

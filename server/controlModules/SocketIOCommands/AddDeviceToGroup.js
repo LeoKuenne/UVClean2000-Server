@@ -18,14 +18,13 @@ async function execute(db, io, mqtt, message) {
   io.emit('group_deviceAdded');
 }
 
-module.exports = function register(db, io, mqtt, ioSocket) {
+module.exports = function register(server, db, io, mqtt, ioSocket) {
   logger.info('Registering socketIO module');
   ioSocket.on('group_addDevice', async (message) => {
     try {
       await execute(db, io, mqtt, message);
     } catch (e) {
-      logger.error(e);
-      io.emit('error', { message: e.message });
+      server.emit('error', { service: 'AddDeviceToGroupCommand', error: e });
     }
   });
 };

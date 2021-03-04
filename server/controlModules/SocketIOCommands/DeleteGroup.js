@@ -1,6 +1,6 @@
 const MainLogger = require('../../Logger.js').logger;
 
-const logger = MainLogger.child({ service: 'AddGroupCommand' });
+const logger = MainLogger.child({ service: 'DeleteGroupCommand' });
 
 async function execute(db, io, mqtt, message) {
   logger.info('Event: group_delete: %o', message);
@@ -23,14 +23,13 @@ async function execute(db, io, mqtt, message) {
   });
 }
 
-module.exports = function register(db, io, mqtt, ioSocket) {
+module.exports = function register(server, db, io, mqtt, ioSocket) {
   logger.info('Registering socketIO module');
   ioSocket.on('group_delete', async (message) => {
     try {
       await execute(db, io, mqtt, message);
     } catch (e) {
-      logger.error(e);
-      io.emit('error', { message: e.message });
+      server.emit('error', { service: 'DeleteGroupCommand', error: e });
     }
   });
 };

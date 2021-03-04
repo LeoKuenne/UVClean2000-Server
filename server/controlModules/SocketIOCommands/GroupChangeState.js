@@ -88,14 +88,13 @@ async function execute(db, io, mqtt, message) {
   }
 }
 
-module.exports = function register(db, io, mqtt, ioSocket) {
+module.exports = function register(server, db, io, mqtt, ioSocket) {
   logger.info('Registering socketIO module');
   ioSocket.on('group_changeState', async (message) => {
     try {
       await execute(db, io, mqtt, message);
     } catch (e) {
-      logger.error(e);
-      io.emit('error', { message: e.message });
+      server.emit('error', { service: 'GroupChangeStateCommand', error: e });
     }
   });
 };

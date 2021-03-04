@@ -29,13 +29,29 @@ new Vue({
       socket.emit('leave', this.username);
     };
 
-    await this.fetchDataFromServer();
-
     socket.on('error', (error) => {
       console.error('error in backend', error);
       Vue.$toast.open({
         type: 'error',
         message: `Server Error: ${error.message}`,
+        duration: 5000,
+      });
+    });
+
+    socket.on('info', (info) => {
+      console.log('info in backend', info);
+      Vue.$toast.open({
+        type: 'info',
+        message: `Server Info: ${info.message}`,
+        duration: 5000,
+      });
+    });
+
+    socket.on('warn', (warn) => {
+      console.log('warn in backend', warn);
+      Vue.$toast.open({
+        type: 'warning',
+        message: `Server Warn: ${warn.message}`,
         duration: 5000,
       });
     });
@@ -49,6 +65,16 @@ new Vue({
         }
         return device;
       });
+    });
+
+    socket.on('databaseConnected', () => {
+      console.log('info in backend: database is connected');
+      Vue.$toast.open({
+        type: 'info',
+        message: 'Server Info: Database is connected',
+        duration: 5000,
+      });
+      this.fetchDataFromServer();
     });
 
     socket.on('group_deviceAlarm', (alarmProp) => {
@@ -213,17 +239,40 @@ new Vue({
         return false;
       });
     });
+
+    try {
+      await this.fetchDataFromServer();
+    } catch (error) {
+      console.error('error in backend', error);
+      Vue.$toast.open({
+        type: 'error',
+        message: `Server Error: ${error.message}`,
+        duration: 5000,
+      });
+    }
   },
   methods: {
     async fetchDataFromServer() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/devices`).then((response) => response.json())
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/devices`)
+        .then((response) => {
+          if (response.status === 500) {
+            throw new Error('Database not connected or database error');
+          }
+          return response.json();
+        })
         .then((data) => {
           console.log(data);
           this.$dataStore.devices = data;
           console.log(this.$dataStore);
         });
 
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
+      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`)
+        .then((response) => {
+          if (response.status === 500) {
+            throw new Error('Database not connected or database error');
+          }
+          return response.json();
+        })
         .then((data) => {
           console.log(data);
           this.$dataStore.groups = data;

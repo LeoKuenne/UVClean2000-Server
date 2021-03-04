@@ -81,7 +81,6 @@
       :title="'Group Assignment'"
       :show="showGroupAssignmentForm"
       :errorMessage="errorMessage"
-      @mounted="fetchGroups"
       @close="closeGroupForm">
       <h2><span class="font-bold">Device:</span> {{formDevice.name}}</h2>
       <div class="w-full flex items-center space-x-2">
@@ -90,7 +89,7 @@
           v-model="formSelectedGroup"
           id="device"
           class="text-black w-full p-2 rounded border border-primary">
-          <option v-for="group in formGroups"
+          <option v-for="group in $root.$dataStore.groups"
             :key="group.id"
             :value="group.id">
             {{group.name}}
@@ -166,15 +165,6 @@ export default {
       if (element && element[0]) {
         element[0].$el.scrollIntoView({ behavior: 'smooth' });
       }
-    },
-    /**
-     * Called by the group assignment form when its mounted
-     */
-    async fetchGroups() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
-        .then((response) => {
-          this.formGroups = response;
-        });
     },
     /**
      * Called by a device when it's wants to be edited

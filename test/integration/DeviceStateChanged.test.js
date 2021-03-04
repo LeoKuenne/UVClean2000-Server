@@ -86,7 +86,7 @@ describe('DeviceStateChanged MQTT Module', () => {
     }],
   ])('Parses %s with %s accordingly', async (topic, message, result, done) => {
     const mqtt = new EventEmitter();
-
+    const server = new EventEmitter();
     const io = new EventEmitter();
 
     await database.addDevice({
@@ -94,7 +94,7 @@ describe('DeviceStateChanged MQTT Module', () => {
       serialnumber: '0002145702154',
     });
 
-    register(database, io, mqtt);
+    register(server, database, io, mqtt);
 
     io.on('device_stateChanged', (prop) => {
       expect(prop).toEqual(result);
@@ -138,7 +138,8 @@ describe('DeviceStateChanged MQTT Module', () => {
   ])('Parses %s with %s accordingly and updates alarmState', async (topic, message, alarmResult, deviceResult, done) => {
     const mqtt = new EventEmitter();
     const io = new EventEmitter();
-    register(database, io, mqtt);
+    const server = new EventEmitter();
+    register(server, database, io, mqtt);
 
     await database.addDevice({
       name: 'Test Gerat',
@@ -220,6 +221,7 @@ describe('DeviceStateChanged MQTT Module', () => {
   ])('Parses %s with %s accordingly and updates alarmState in Group', async (topic, message, alarmResult, result, done) => {
     const mqtt = new EventEmitter();
     const io = new EventEmitter();
+    const server = new EventEmitter();
     let group_deviceAlarmProp = null;
 
     await database.addDevice({
@@ -237,7 +239,7 @@ describe('DeviceStateChanged MQTT Module', () => {
 
     const oldGroup = await database.setGroupAlarm(group._id.toString(), (message === 'Ok'));
 
-    register(database, io, mqtt);
+    register(server, database, io, mqtt);
 
     mqtt.emit('message', `UVClean/0002145702154/stateChanged/${topic}`, message);
 
@@ -264,12 +266,13 @@ describe('DeviceStateChanged MQTT Module', () => {
 describe('Iterating over different states', () => {
   const mqtt = new EventEmitter();
   const io = new EventEmitter();
+  const server = new EventEmitter();
   let group = null;
   const deviceAlarm = jest.fn();
   const groupAlarm = jest.fn();
 
   beforeAll(async () => {
-    register(database, io, mqtt);
+    register(server, database, io, mqtt);
     await database.addDevice({
       name: 'Test Gerat',
       serialnumber: '1',

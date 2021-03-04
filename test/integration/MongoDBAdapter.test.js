@@ -1571,13 +1571,18 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
-    it('Returns undefined if no currentAirVolume Document for that device exists', async () => {
+    it('Returns undefined if no currentAirVolume Document for that device exists', async (done) => {
       await database.addDevice({
         name: 'Test Device',
         serialnumber: '000000000000000000000001',
       });
-      const latestDuration = await database.getDurationOfAvailableData('1', 'currentAirVolume');
-      expect(latestDuration).toBeUndefined();
+
+      try {
+        await database.getDurationOfAvailableData('1', 'currentAirVolume');
+      } catch (error) {
+        expect(error).toEqual(new Error('No data available.'));
+        done();
+      }
     });
 
     it('Returns the latest lampValues Date', async () => {
@@ -1601,13 +1606,18 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
-    it('Returns undefined if no lampValues Document for that device exists', async () => {
+    it('Returns undefined if no lampValues Document for that device exists', async (done) => {
       await database.addDevice({
         name: 'Test Device',
         serialnumber: '000000000000000000000001',
       });
-      const latestDuration = await database.getDurationOfAvailableData('1', 'lampValues');
-      expect(latestDuration).toBeUndefined();
+
+      try {
+        await database.getDurationOfAvailableData('1', 'lampValues');
+      } catch (error) {
+        expect(error).toEqual(new Error('No data available.'));
+        done();
+      }
     });
 
     it('Returns the latest tacho Date', async () => {
@@ -1630,13 +1640,17 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
-    it('Returns undefined if no tacho Document for that device exists', async () => {
+    it('Returns undefined if no tacho Document for that device exists', async (done) => {
       await database.addDevice({
         name: 'Test Device',
         serialnumber: '000000000000000000000001',
       });
-      const latestDuration = await database.getDurationOfAvailableData('1', 'tacho');
-      expect(latestDuration).toBeUndefined();
+      try {
+        await database.getDurationOfAvailableData('1', 'tacho');
+      } catch (error) {
+        expect(error).toEqual(new Error('No data available.'));
+        done();
+      }
     });
   });
 
