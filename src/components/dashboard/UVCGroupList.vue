@@ -74,10 +74,10 @@
       </div>
     </UVCForm>
     <UVCForm
-      :title="headingAddDevice"
-      :show="showAddDeviceForm"
+      :title="'Set Devices in Group'"
+      :show="showSetDeviceForm"
       :errorMessage="errorMessage"
-      @close="closeAddDeviceForm">
+      @close="closeSetDeviceForm">
       <h2>Group: {{ formGroup.name }}</h2>
       <div class="p-2 bg-white border border-gray-400 rounded">
         <div class="space-x-2"
@@ -106,10 +106,10 @@
             class="font-semibold p-2 hover:transform hover:scale-105 transition-all
             bg-primary text-white"
             @click="setDevices">
-            Add
+            Set
           </button>
           <button
-            @click="closeAddDeviceForm"
+            @click="closeSetDeviceForm"
             class="font-semibold p-2 hover:transform hover:scale-105 transition-all">
             Close
           </button>
@@ -137,9 +137,6 @@ export default {
     heading() {
       return this.isFormEdit ? 'Update Group' : 'Add Group';
     },
-    headingAddDevice() {
-      return this.isFormEdit ? 'Update Group' : 'Add Devices to Group';
-    },
   },
   watch: {
     group() {
@@ -159,8 +156,8 @@ export default {
     /**
      * Called when the close button is pressed on the addDevice form
      */
-    closeAddDeviceForm() {
-      this.showAddDeviceForm = false;
+    closeSetDeviceForm() {
+      this.showSetDeviceForm = false;
     },
     /**
      * Called if the group is selected in the query
@@ -214,7 +211,7 @@ export default {
         name: this.formGroup.name,
         devices: this.checkedDevices,
       });
-      this.showAddDeviceForm = false;
+      this.showSetDeviceForm = false;
     },
     /**
      * Called when the assign button of the group form is clicked
@@ -229,7 +226,7 @@ export default {
         this.checkedDevices.push(device.serialnumber);
         return device;
       });
-      this.showAddDeviceForm = true;
+      this.showSetDeviceForm = true;
     },
     editGroup(group) {
       this.formGroup = {
@@ -277,7 +274,7 @@ export default {
   },
   data() {
     return {
-      showAddDeviceForm: false,
+      showSetDeviceForm: false,
       checkedDevices: [],
       showEditForm: false,
       isFormEdit: false,
