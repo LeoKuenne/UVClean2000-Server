@@ -20,7 +20,7 @@
       class="flex flex-row flex-wrap content-center justify-center cursor-default">
       <UVCGroup
         @edit="editGroup($event)"
-        @addDevices="assignDeviceToGroup($event)"
+        @setDevices="setDevicesInGroup($event)"
         @changeState="changeGroupState($event)"
         v-for="grp in $dataStore.groups"
         :key="grp.id"
@@ -102,7 +102,6 @@
       <div class="">
         <div class="float-right space-x-2">
           <button
-            :class="[(checkedDevices.length !== 0) ? 'visible' : 'hidden']"
             class="font-semibold p-2 hover:transform hover:scale-105 transition-all
             bg-primary text-white"
             @click="setDevices">
@@ -208,7 +207,7 @@ export default {
         return;
       }
       this.$root.$data.socket.emit('group_setDevices', {
-        name: this.formGroup.name,
+        group: this.formGroup.id,
         devices: this.checkedDevices,
       });
       this.showSetDeviceForm = false;
@@ -216,7 +215,7 @@ export default {
     /**
      * Called when the assign button of the group form is clicked
      */
-    assignDeviceToGroup(group) {
+    setDevicesInGroup(group) {
       this.formGroup = {
         name: group.name,
         id: group.id,

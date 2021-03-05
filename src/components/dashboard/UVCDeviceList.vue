@@ -325,6 +325,7 @@ export default {
       formDevice: {
         name: '',
         serialnumber: '',
+        group: '',
       },
       groupAssignmentOptions: {
         device: {

@@ -19,7 +19,7 @@ describe('GroupChangeState Module', () => {
     await database.clearCollection('uvcgroups');
   });
 
-  it.only.each([
+  it.each([
     [{ prop: 'prop', newValue: 'newValue' }, 'id must be defined and of type string'],
     [{ id: 'id', newValue: 'newValue' }, 'Prop must be defined and of type string'],
     [{ prop: 'prop', id: 'id' }, 'New value must be defined and of type string'],
@@ -27,10 +27,12 @@ describe('GroupChangeState Module', () => {
     const io = new EventEmitter();
     const ioSocket = new EventEmitter();
     const mqtt = new EventEmitter();
-    register(database, io, mqtt, ioSocket);
-    io.on('error', (e) => {
+    const server = new EventEmitter();
+
+    register(server, database, io, mqtt, ioSocket);
+    server.on('error', (e) => {
       try {
-        expect(e.message).toMatch(error);
+        expect(e.error.message).toMatch(error);
         done();
       } catch (err) {
         done(err);
@@ -39,13 +41,14 @@ describe('GroupChangeState Module', () => {
     ioSocket.emit('group_changeState', prop);
   });
 
-  it.only('changeState with prop name changes name', async (done) => {
+  it('changeState with prop name changes name', async (done) => {
     const io = new EventEmitter();
     const ioSocket = new EventEmitter();
     const mqtt = new EventEmitter();
+    const server = new EventEmitter();
 
     const group = await database.addGroup({ name: 'Test Group 1' });
-    register(database, io, mqtt, ioSocket);
+    register(server, database, io, mqtt, ioSocket);
 
     const prop = {
       id: group._id.toString(),
@@ -65,9 +68,10 @@ describe('GroupChangeState Module', () => {
     ioSocket.emit('group_changeState', prop);
   });
 
-  it.only('changeState with prop engineState emits changeState to all devices in the group', async (done) => {
+  it('changeState with prop engineState emits changeState to all devices in the group', async (done) => {
     const io = new EventEmitter();
     const ioSocket = new EventEmitter();
+    const server = new EventEmitter();
     let i = 1;
 
     const group = await database.addGroup({ name: 'Test Group 1' });
@@ -93,7 +97,7 @@ describe('GroupChangeState Module', () => {
     await database.addDeviceToGroup('1', `${group._id}`);
     await database.addDeviceToGroup('2', `${group._id}`);
 
-    register(database, io, mqtt, ioSocket);
+    register(server, database, io, mqtt, ioSocket);
 
     const prop = {
       id: group._id.toString(),
@@ -104,9 +108,10 @@ describe('GroupChangeState Module', () => {
     ioSocket.emit('group_changeState', prop);
   });
 
-  it.only('changeState with prop engineLevel emits changeState to all devices in the group', async (done) => {
+  it('changeState with prop engineLevel emits changeState to all devices in the group', async (done) => {
     const io = new EventEmitter();
     const ioSocket = new EventEmitter();
+    const server = new EventEmitter();
     let i = 1;
     const mqtt = {
       publish: async (topic, message) => {
@@ -131,7 +136,7 @@ describe('GroupChangeState Module', () => {
     await database.addDeviceToGroup('1', `${group._id}`);
     await database.addDeviceToGroup('2', `${group._id}`);
 
-    register(database, io, mqtt, ioSocket);
+    register(server, database, io, mqtt, ioSocket);
 
     const prop = {
       id: group._id.toString(),
@@ -142,13 +147,14 @@ describe('GroupChangeState Module', () => {
     ioSocket.emit('group_changeState', prop);
   });
 
-  it.only.each([
+  it.each([
     ['eventMode', true],
     ['engineState', true],
     ['engineLevel', 1],
   ])('changeState with prop %s and value %s emits changeState to all devices in the group', async (propertie, value, done) => {
     const io = new EventEmitter();
     const ioSocket = new EventEmitter();
+    const server = new EventEmitter();
     let i = 1;
     const mqtt = {
       publish: async (topic, message) => {
@@ -173,7 +179,7 @@ describe('GroupChangeState Module', () => {
     await database.addDeviceToGroup('1', group._id.toString());
     await database.addDeviceToGroup('2', group._id.toString());
 
-    register(database, io, mqtt, ioSocket);
+    register(server, database, io, mqtt, ioSocket);
 
     const prop = {
       id: group._id.toString(),
@@ -184,13 +190,14 @@ describe('GroupChangeState Module', () => {
     ioSocket.emit('group_changeState', prop);
   });
 
-  it.only.each([
+  it.each([
     ['eventMode', true],
     ['engineState', true],
     ['engineLevel', 1],
   ])('changeState with prop %s and value %s emits group_stateChanged event on socketio', async (propertie, value, done) => {
     const io = new EventEmitter();
     const ioSocket = new EventEmitter();
+    const server = new EventEmitter();
     const mqtt = {
       publish: jest.fn(),
     };
@@ -201,7 +208,7 @@ describe('GroupChangeState Module', () => {
     await database.addDeviceToGroup('1', group._id.toString());
     await database.addDeviceToGroup('2', group._id.toString());
 
-    register(database, io, mqtt, ioSocket);
+    register(server, database, io, mqtt, ioSocket);
 
     const prop = {
       id: group._id.toString(),

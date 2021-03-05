@@ -88,6 +88,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
 
     if (device.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
 
+    logger.info('Adding device %s', device.name);
+
     const docDevice = new UVCDeviceModel(device);
     const err = docDevice.validateSync();
     if (err !== undefined) throw err;
@@ -103,6 +105,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
     if (this.db === undefined) throw new Error('Database is not connected');
 
     if (typeof serialnumber !== 'string') { throw new Error('Serialnumber has to be a string'); }
+
+    logger.info('Getting device %s', serialnumber);
 
     const device = await UVCDeviceModel.findOne({
       serialnumber,
@@ -829,7 +833,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
     ).exec();
 
     if (docDevice === null) {
-      throw new Error('Device does not exists');
+      throw new Error(`Device ${deviceSerialnumber} does not exists`);
     }
 
     if (docDevice.group !== undefined) {

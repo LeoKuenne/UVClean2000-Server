@@ -1869,7 +1869,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('addDeviceToGroup throws an error if devices does not exists', async () => {
       await database.addDeviceToGroup('602e5dde6a51ff41b0625057', '602e5dde6a51ff41b0625057').catch((err) => {
-        expect(err.toString()).toBe('Error: Device does not exists');
+        expect(err.toString()).toBe('Error: Device 602e5dde6a51ff41b0625057 does not exists');
       });
     });
 
