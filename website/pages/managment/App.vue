@@ -62,7 +62,7 @@
 
 <script>
 import DropdownMenu from './components/dashboard/DropdownMenu.vue';
-import './css/styles.css';
+import '../../css/styles.css';
 
 export default {
   components: { DropdownMenu },

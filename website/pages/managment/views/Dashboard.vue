@@ -20,7 +20,6 @@
 </template>
 
 <script>
-import '../css/styles.css';
 import Sidebar from '../components/dashboard/Sidebar.vue';
 
 export default {
