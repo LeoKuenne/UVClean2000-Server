@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-await-in-loop */
+const UserModel = require('../../server/databaseAdapters/mongoDB/models/user.js');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
 let database;
@@ -2290,6 +2291,153 @@ describe('MongoDBAdapter Functions', () => {
             expect(err.toString()).toMatch('Error: Device is not in the Group');
           });
       });
+    });
+  });
+
+  describe.only('User functions', () => {
+    beforeEach(async () => {
+      await database.clearCollection('users');
+    });
+
+    it('AddUser adds user to database', async () => {
+      const user = {
+        username: 'Test User',
+        canEdit: false,
+      };
+      const newUser = await database.addUser(user);
+      const docUser = await UserModel.findOne({ username: user.username });
+      expect(docUser._id).toEqual(newUser._id);
+    });
+
+    it('Throws an error if the username is not definded', async (done) => {
+      try {
+        await database.addUser({ canEdit: false });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Username must be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('Throws an error if the username is not of type string', async (done) => {
+      try {
+        await database.addUser({ username: false });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Username must be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('Throws an error if the canEdit is not definded', async (done) => {
+      try {
+        await database.addUser({ username: 'Test' });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('canEdit must be defined and of type boolean');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('Throws an error if the canEdit is not of type boolean', async (done) => {
+      try {
+        await database.addUser({ username: 'Test', canEdit: 'true' });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('canEdit must be defined and of type boolean');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('GetUser gets user from database', async () => {
+      const user = {
+        username: 'Test User',
+        canEdit: false,
+      };
+      const newUser = await database.addUser(user);
+      const dbUser = await database.getUser(newUser._id.toString());
+      expect(dbUser.id).toEqual(newUser._id);
+      expect(dbUser.username).toEqual(newUser.username);
+      expect(dbUser.canEdit).toEqual(newUser.canEdit);
+    });
+
+    it('GetUser throws error if id is not defined', async (done) => {
+      try {
+        await database.getUser();
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('userid must be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('GetUser throws error if id is not a string', async (done) => {
+      try {
+        await database.getUser(false);
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('userid must be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('GetUser throws error if user does not exists', async (done) => {
+      try {
+        await database.getUser('602e5dde6a51ff41b0625057');
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('User does not exists');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('GetUsers gets all users from database', async () => {
+      const users = [];
+
+      for (let i = 0; i < 10; i += 1) {
+        users.push({
+          username: `Test User ${1}`,
+          canEdit: false,
+        });
+      }
+      await Promise.all(users.map(async (user) => {
+        await database.addUser(user);
+      }));
+
+      const dbUsers = await database.getUsers();
+      expect(dbUsers.length).toBe(users.length);
+      for (let i = 0; i < dbUsers.length; i += 1) {
+        const user = dbUsers[i];
+
+        expect(user.username).toEqual(users[i].username);
+        expect(user.canEdit).toEqual(users[i].canEdit);
+      }
+    });
+
+    it('GetUsers returns empty array if no users exists', async () => {
+      const dbUsers = await database.getUsers();
+      expect(dbUsers.length).toBe(0);
     });
   });
 });

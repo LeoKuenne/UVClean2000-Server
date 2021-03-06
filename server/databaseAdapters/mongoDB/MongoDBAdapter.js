@@ -10,6 +10,7 @@ const BodyStateModel = require('./models/bodyState');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroup = require('../../dataModels/UVCGroup');
 const MainLogger = require('../../Logger.js').logger;
+const UserModel = require('./models/user');
 
 const UVCGroupModel = UVCGroup.uvcGroupModel;
 
@@ -1084,5 +1085,65 @@ module.exports = class MongoDBAdapter extends EventEmitter {
     }
 
     return d.alarmState;
+  }
+
+  /**
+   * Adds an user with the given rights
+   * @param {Object} user The user object to add
+   * @param {String} user.username The Username of the tuser
+   * @param {Boolean} user.canEdit Right to edit all properties
+   */
+  async addUser(user) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    if (typeof user.username !== 'string') { throw new Error('Username must be defined and of type string'); }
+    if (typeof user.canEdit !== 'boolean') { throw new Error('canEdit must be defined and of type boolean'); }
+
+    const docUser = new UserModel(user);
+    const err = docUser.validateSync();
+    if (err !== undefined) throw err;
+    return docUser.save();
+  }
+
+  /**
+   * Gets an user with the given id
+   * @param {String} userid The user id to get
+   */
+  async getUser(userid) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    if (typeof userid !== 'string') { throw new Error('userid must be defined and of type string'); }
+
+    const docUser = await UserModel.findOne({
+      _id: userid,
+    });
+
+    if (docUser === null) {
+      throw new Error('User does not exists');
+    }
+
+    return {
+      id: docUser._id,
+      username: docUser.username,
+      canEdit: docUser.canEdit,
+    };
+  }
+
+  /**
+   * Get all users
+   */
+  async getUsers() {
+    if (this.db === undefined) throw new Error('Database is not connected');
+
+    const docUsers = await UserModel.find().exec();
+
+    const users = [];
+    docUsers.forEach((user) => {
+      users.push({
+        id: user._id,
+        username: user.username,
+        canEdit: user.canEdit,
+      });
+    });
+
+    return users;
   }
 };
