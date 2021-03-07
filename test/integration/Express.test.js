@@ -2,7 +2,9 @@
 /* eslint-disable no-underscore-dangle */
 const supertest = require('supertest');
 const { EventEmitter } = require('events');
-const ExpressServer = require('../../server/ExpressServer');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const ExpressServer = require('../../server/ExpressServer/ExpressServer');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
 let request = null;
@@ -36,9 +38,10 @@ describe('Express Route testing', () => {
     database.clearCollection('uvcdevices');
     database.clearCollection('uvcgroups');
     database.clearCollection('airvolumes');
+    database.clearCollection('users');
   });
 
-  it('GET /devices', async (done) => {
+  it('GET /api/devices', async (done) => {
     const devices = [];
     for (let i = 0; i < 10; i += 1) {
       const dev = await database.addDevice({ serialnumber: `${i}`, name: `Test ${i}` });
@@ -61,13 +64,13 @@ describe('Express Route testing', () => {
       });
     }
 
-    const res = await request.get('/devices');
+    const res = await request.get('/api/devices');
     expect(res.status).toBe(200);
     expect(res.body).toStrictEqual(devices);
     done();
   });
 
-  it('GET /groups', async (done) => {
+  it('GET /api/groups', async (done) => {
     const groups = [];
     for (let i = 0; i < 10; i += 1) {
       const group = await database.addGroup({ name: `Test ${i}` });
@@ -86,38 +89,38 @@ describe('Express Route testing', () => {
       });
     }
 
-    const res = await request.get('/groups');
+    const res = await request.get('/api/groups');
     expect(res.status).toBe(200);
     expect(res.body).toStrictEqual(groups);
     done();
   });
 
-  it('GET /serialnumbers', async (done) => {
+  it('GET /api/serialnumbers', async (done) => {
     const serialnumbers = [];
     for (let i = 0; i < 10; i += 1) {
       serialnumbers.push(`${i}`);
       await database.addDevice({ serialnumber: `${i}`, name: `Test ${i}` });
     }
 
-    const res = await request.get('/serialnumbers');
+    const res = await request.get('/api/serialnumbers');
     expect(res.status).toBe(200);
     expect(res.body).toStrictEqual(serialnumbers);
     done();
   });
 
-  it('GET /device responses with 404 if no propertie is queried', async (done) => {
+  it('GET /api/device responses with 404 if no propertie is queried', async (done) => {
     const device = {
       serialnumber: '1',
       name: 'Test 1',
     };
     await database.addDevice(device);
 
-    const res = await request.get('/device').query({ device: '1' });
+    const res = await request.get('/api/device').query({ device: '1' });
     expect(res.status).toBe(404);
     done();
   });
 
-  it('GET /device responses with all properties', async (done) => {
+  it('GET /api/device responses with all properties', async (done) => {
     const device = {
       serialnumber: '1',
       name: 'Test 1',
@@ -134,7 +137,7 @@ describe('Express Route testing', () => {
       await database.addAirVolume(volumes[i]);
     }
 
-    const res = await request.get('/device')
+    const res = await request.get('/api/device')
       .query({ device: '1' })
       .query({ propertie: 'airVolume' });
     expect(res.status).toBe(200);
@@ -146,7 +149,7 @@ describe('Express Route testing', () => {
     done();
   });
 
-  it('GET /timestamps responses with all', async (done) => {
+  it('GET /api/timestamps responses with all', async (done) => {
     const device = {
       serialnumber: '1',
       name: 'Test 1',
@@ -168,7 +171,7 @@ describe('Express Route testing', () => {
       }),
     );
 
-    const res = await request.get('/timestamps')
+    const res = await request.get('/api/timestamps')
       .query({ device: '1' })
       .query({ propertie: 'airVolume' });
     expect(res.status).toBe(200);
@@ -176,6 +179,89 @@ describe('Express Route testing', () => {
       from: new Date(0).toISOString(),
       to: new Date(9 * 10000).toISOString(),
     });
+    done();
+  });
+
+  it('POST /sign-up route responses with Status 201 and "Registerd!"', async (done) => {
+    const res = await request.post('/sign-up')
+      .set('Content-Type', 'application/json')
+      .send('{"username":"TestUsername", "password":"UsernamePassword", "password_repeat":"UsernamePassword"}');
+
+    expect(res.status).toBe(201);
+    expect(res.body.msg).toMatch('Registered!');
+
+    done();
+  });
+
+  it('POST /sign-up route creates user in database', async (done) => {
+    const res = await request.post('/sign-up')
+      .set('Content-Type', 'application/json')
+      .send('{"username":"TestUsername", "password":"UsernamePassword", "password_repeat":"UsernamePassword"}');
+    const user = await database.getUser('TestUsername');
+    const match = await bcrypt.compare('UsernamePassword', user.password);
+
+    expect(user.username).toMatch('TestUsername');
+    expect(match).toBe(true);
+
+    done();
+  });
+
+  it('POST /sign-up responses with 401 when user already exists', async (done) => {
+    await database.addUser({ username: 'TestUsername', password: 'UsernamePassword', canEdit: false });
+    const res = await request.post('/sign-up')
+      .set('Content-Type', 'application/json')
+      .send('{"username":"TestUsername", "password":"UsernamePassword", "password_repeat":"UsernamePassword"}');
+
+    expect(res.status).toBe(401);
+    expect(res.body.msg).toMatch('User already exists');
+
+    done();
+  });
+
+  it('POST /login route returns token for user', async (done) => {
+    const hash = await bcrypt.hash('UsernamePassword', 10);
+    const user = await database.addUser({ username: 'TestUsername', password: hash, canEdit: false });
+    const res = await request.post('/login')
+      .set('Content-Type', 'application/json')
+      .send('{"username":"TestUsername", "password":"UsernamePassword"}');
+
+    const decoded = jwt.verify(
+      res.body.token,
+      'SECRETKEY',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.msg).toMatch('Logged in!');
+    expect(res.body.user.id).toMatch(user._id.toString());
+    expect(decoded.username).toBe(user.username);
+    expect(decoded.userId).toMatch(user._id.toString());
+
+    done();
+  });
+
+  it('GET /ui route returns 401 if not logged in', async (done) => {
+    const res = await request.get('/ui');
+
+    expect(res.status).toBe(401);
+    expect(res.body.msg).toMatch('Your session is not valid');
+    done();
+  });
+
+  it('GET /ui route returns 301 if logged in', async (done) => {
+    const hash = await bcrypt.hash('UsernamePassword', 10);
+    const user = await database.addUser({ username: 'TestUsername', password: hash, canEdit: false });
+    const res = await request.post('/login')
+      .set('Content-Type', 'application/json')
+      .send('{"username":"TestUsername", "password":"UsernamePassword"}');
+
+    // const decoded = jwt.verify(
+    //   res.body.token,
+    //   'SECRETKEY',
+    // );
+
+    const ui = await request.get('/ui').set('Authorization', `Bearer ${res.body.token}`);
+    // console.log(ui);
+
+    expect(ui.status).toBe(301);
     done();
   });
 });
