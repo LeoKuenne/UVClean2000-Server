@@ -2294,7 +2294,7 @@ describe('MongoDBAdapter Functions', () => {
     });
   });
 
-  describe.only('User functions', () => {
+  describe('User functions', () => {
     beforeEach(async () => {
       await database.clearCollection('users');
     });
@@ -2395,7 +2395,7 @@ describe('MongoDBAdapter Functions', () => {
         canEdit: false,
       };
       const newUser = await database.addUser(user);
-      const dbUser = await database.getUser(newUser._id.toString());
+      const dbUser = await database.getUser(newUser.username);
       expect(dbUser.id).toEqual(newUser._id);
       expect(dbUser.username).toEqual(newUser.username);
       expect(dbUser.password).toEqual(newUser.password);

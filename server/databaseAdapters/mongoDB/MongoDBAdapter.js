@@ -1108,14 +1108,14 @@ module.exports = class MongoDBAdapter extends EventEmitter {
 
   /**
    * Gets an user with the given id
-   * @param {String} userid The user id to get
+   * @param {String} username The user id to get
    */
-  async getUser(userid) {
+  async getUser(username) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof userid !== 'string') { throw new Error('userid must be defined and of type string'); }
+    if (typeof username !== 'string') { throw new Error('userid must be defined and of type string'); }
 
     const docUser = await UserModel.findOne({
-      _id: userid,
+      username,
     });
 
     if (docUser === null) {
