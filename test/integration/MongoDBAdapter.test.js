@@ -2308,6 +2308,7 @@ describe('MongoDBAdapter Functions', () => {
       const newUser = await database.addUser(user);
       const docUser = await UserModel.findOne({ username: user.username });
       expect(docUser._id).toEqual(newUser._id);
+      expect(docUser.username).toEqual(newUser.username);
     });
 
     it('Throws an error if the username is not definded', async (done) => {
@@ -2461,7 +2462,6 @@ describe('MongoDBAdapter Functions', () => {
         const user = dbUsers[i];
 
         expect(user.username).toEqual(users[i].username);
-        expect(user.password).toEqual(users[i].password);
         expect(user.canEdit).toEqual(users[i].canEdit);
       }
     });

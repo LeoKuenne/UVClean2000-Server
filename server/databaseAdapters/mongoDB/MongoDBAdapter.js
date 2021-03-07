@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const EventEmitter = require('events');
 const { ObjectId } = require('mongoose').Types;
+const bcrypt = require('bcrypt');
 const AirVolumeModel = require('./models/airVolume');
 const AlarmStateModel = require('./models/alarmState');
 const LampValueModel = require('./models/lampValue');
@@ -1100,7 +1101,20 @@ module.exports = class MongoDBAdapter extends EventEmitter {
     if (typeof user.password !== 'string') { throw new Error('Password must be defined and of type string'); }
     if (typeof user.canEdit !== 'boolean') { throw new Error('canEdit must be defined and of type boolean'); }
 
-    const docUser = new UserModel(user);
+    try {
+      await this.getUser(user.username);
+      throw new Error('User already exists');
+    } catch (error) {
+      if (error.message !== 'User does not exists') throw error;
+    }
+
+    const hash = await bcrypt.hash(user.password, 10);
+
+    const docUser = new UserModel({
+      username: user.username,
+      password: hash,
+      canEdit: user.canEdit,
+    });
     const err = docUser.validateSync();
     if (err !== undefined) throw err;
     return docUser.save();
