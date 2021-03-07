@@ -3,6 +3,7 @@ const UserModel = require('../../../server/databaseAdapters/mongoDB/models/user'
 
 const user = {
   username: 'Username 1',
+  password: 'Test!',
   canEdit: true,
 };
 
@@ -31,6 +32,7 @@ describe('User Model Test', () => {
 
     expect(savedUser._id).toBeDefined();
     expect(savedUser.username).toBe(user.username);
+    expect(savedUser.password).toBe(user.password);
     expect(savedUser.canEdit).toBe(user.canEdit);
   });
 

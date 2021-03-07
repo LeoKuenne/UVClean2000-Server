@@ -1090,12 +1090,14 @@ module.exports = class MongoDBAdapter extends EventEmitter {
   /**
    * Adds an user with the given rights
    * @param {Object} user The user object to add
-   * @param {String} user.username The Username of the tuser
+   * @param {String} user.username The Username of the user
+   * @param {String} user.password The Username of the user
    * @param {Boolean} user.canEdit Right to edit all properties
    */
   async addUser(user) {
     if (this.db === undefined) throw new Error('Database is not connected');
     if (typeof user.username !== 'string') { throw new Error('Username must be defined and of type string'); }
+    if (typeof user.password !== 'string') { throw new Error('Password must be defined and of type string'); }
     if (typeof user.canEdit !== 'boolean') { throw new Error('canEdit must be defined and of type boolean'); }
 
     const docUser = new UserModel(user);
@@ -1123,6 +1125,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
     return {
       id: docUser._id,
       username: docUser.username,
+      password: docUser.password,
       canEdit: docUser.canEdit,
     };
   }
@@ -1140,6 +1143,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       users.push({
         id: user._id,
         username: user.username,
+        password: user.password,
         canEdit: user.canEdit,
       });
     });

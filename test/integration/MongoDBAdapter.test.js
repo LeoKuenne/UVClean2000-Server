@@ -2302,6 +2302,7 @@ describe('MongoDBAdapter Functions', () => {
     it('AddUser adds user to database', async () => {
       const user = {
         username: 'Test User',
+        password: 'Test',
         canEdit: false,
       };
       const newUser = await database.addUser(user);
@@ -2311,7 +2312,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('Throws an error if the username is not definded', async (done) => {
       try {
-        await database.addUser({ canEdit: false });
+        await database.addUser({ password: 'Test', canEdit: false });
       } catch (e) {
         try {
           expect(e.toString()).toMatch('Username must be defined and of type string');
@@ -2335,9 +2336,35 @@ describe('MongoDBAdapter Functions', () => {
       }
     });
 
-    it('Throws an error if the canEdit is not definded', async (done) => {
+    it('Throws an error if the password is not definded', async (done) => {
       try {
         await database.addUser({ username: 'Test' });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Password must be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('Throws an error if the password is not of type string', async (done) => {
+      try {
+        await database.addUser({ username: 'Test', password: false });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Password must be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('Throws an error if the canEdit is not definded', async (done) => {
+      try {
+        await database.addUser({ username: 'Test', password: 'Test' });
       } catch (e) {
         try {
           expect(e.toString()).toMatch('canEdit must be defined and of type boolean');
@@ -2350,7 +2377,7 @@ describe('MongoDBAdapter Functions', () => {
 
     it('Throws an error if the canEdit is not of type boolean', async (done) => {
       try {
-        await database.addUser({ username: 'Test', canEdit: 'true' });
+        await database.addUser({ username: 'Test', password: 'Test', canEdit: 'true' });
       } catch (e) {
         try {
           expect(e.toString()).toMatch('canEdit must be defined and of type boolean');
@@ -2364,12 +2391,14 @@ describe('MongoDBAdapter Functions', () => {
     it('GetUser gets user from database', async () => {
       const user = {
         username: 'Test User',
+        password: 'Test',
         canEdit: false,
       };
       const newUser = await database.addUser(user);
       const dbUser = await database.getUser(newUser._id.toString());
       expect(dbUser.id).toEqual(newUser._id);
       expect(dbUser.username).toEqual(newUser.username);
+      expect(dbUser.password).toEqual(newUser.password);
       expect(dbUser.canEdit).toEqual(newUser.canEdit);
     });
 
@@ -2418,6 +2447,7 @@ describe('MongoDBAdapter Functions', () => {
       for (let i = 0; i < 10; i += 1) {
         users.push({
           username: `Test User ${1}`,
+          password: `Test ${i}`,
           canEdit: false,
         });
       }
@@ -2431,6 +2461,7 @@ describe('MongoDBAdapter Functions', () => {
         const user = dbUsers[i];
 
         expect(user.username).toEqual(users[i].username);
+        expect(user.password).toEqual(users[i].password);
         expect(user.canEdit).toEqual(users[i].canEdit);
       }
     });
