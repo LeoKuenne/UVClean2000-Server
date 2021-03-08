@@ -27,8 +27,9 @@ module.exports = class ExpressServer {
 
     this.app.use(cookieParser());
 
-    this.app.use('/ui/login', express.static(`${__dirname}/ui/static/login.html`));
-    this.app.use('/ui', express.static(`${__dirname}/ui/static/`));
+    this.app.use('/ui/login', express.static(`${__dirname}/sites/login.html`));
+    this.app.use('/ui/managment', express.static(`${__dirname}/sites/managment.html`));
+    this.app.use('/static/', express.static(`${__dirname}/sites/static/`));
 
     this.app.post('/sign-up', userMiddleware.validateRegister, async (req, res, next) => {
       logger.info('Got valid request on sign-up route. Request: %o', req.body);

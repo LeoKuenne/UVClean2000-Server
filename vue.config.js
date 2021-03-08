@@ -7,7 +7,7 @@ module.exports = {
       headers: { 'Access-Control-Allow-Origin': '*' },
     },
   },
-  outputDir: 'server/ExpressServer/ui/',
+  outputDir: 'server/ExpressServer/sites/',
   assetsDir: 'static',
   indexPath: 'ui',
   // publicPath: '/',

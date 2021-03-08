@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import App from './App.vue';
 import router from './router/index';
 import 'vue-toast-notification/dist/theme-default.css';
-import './css/styles.css';
+import '../../css/styles.css';
 
 Vue.config.productionTip = false;
 
