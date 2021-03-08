@@ -1,7 +1,16 @@
-const path = require('path');
-
 module.exports = {
-  outputDir: 'website/dist',
+  configureWebpack: {
+    externals: {
+      moment: 'moment',
+    },
+    devServer: {
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    },
+  },
+  outputDir: 'server/ExpressServer/ui/',
+  assetsDir: 'static',
+  indexPath: 'ui',
+  // publicPath: '/',
   pages: {
     managment: {
       entry: 'website/pages/managment/main.js',

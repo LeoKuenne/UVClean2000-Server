@@ -198,10 +198,8 @@ describe('Express Route testing', () => {
       .set('Content-Type', 'application/json')
       .send('{"username":"TestUsername", "password":"UsernamePassword", "password_repeat":"UsernamePassword"}');
     const user = await database.getUser('TestUsername');
-    const match = await bcrypt.compare('UsernamePassword', user.password);
 
     expect(user.username).toMatch('TestUsername');
-    expect(match).toBe(true);
 
     done();
   });
@@ -212,15 +210,14 @@ describe('Express Route testing', () => {
       .set('Content-Type', 'application/json')
       .send('{"username":"TestUsername", "password":"UsernamePassword", "password_repeat":"UsernamePassword"}');
 
-    expect(res.status).toBe(401);
     expect(res.body.msg).toMatch('User already exists');
+    expect(res.status).toBe(401);
 
     done();
   });
 
   it('POST /login route returns token for user', async (done) => {
-    const hash = await bcrypt.hash('UsernamePassword', 10);
-    const user = await database.addUser({ username: 'TestUsername', password: hash, canEdit: false });
+    const user = await database.addUser({ username: 'TestUsername', password: 'UsernamePassword', canEdit: false });
     const res = await request.post('/login')
       .set('Content-Type', 'application/json')
       .send('{"username":"TestUsername", "password":"UsernamePassword"}');
@@ -247,8 +244,7 @@ describe('Express Route testing', () => {
   });
 
   it('GET /ui route returns 301 if logged in', async (done) => {
-    const hash = await bcrypt.hash('UsernamePassword', 10);
-    const user = await database.addUser({ username: 'TestUsername', password: hash, canEdit: false });
+    const user = await database.addUser({ username: 'TestUsername', password: 'UsernamePassword', canEdit: false });
     const res = await request.post('/login')
       .set('Content-Type', 'application/json')
       .send('{"username":"TestUsername", "password":"UsernamePassword"}');
