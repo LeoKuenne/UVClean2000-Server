@@ -2,6 +2,11 @@
   "env": "development",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
+    "user": [
+      {
+        "username": "admin"
+      }
+    ],
     "http": {
       "cors": "",
       "broker": "192.168.4.10",
@@ -24,6 +29,11 @@
   },
   "staging": {
     "desc": "Testing on server. Frontend build is running on localhost, Backend is running on server",
+    "user": [
+      {
+        "username": "admin"
+      }
+    ],
     "http": {
       "cors": "localhost:8080",
       "port": 3000,
@@ -45,6 +55,11 @@
   },
   "development": {
     "desc": "Development on localhost. Database and MQTT Broker is running on localhost",
+    "user": [
+      {
+        "username": "admin"
+      }
+    ],
     "http": {
       "cors": "localhost:8080",
       "port": 3000,

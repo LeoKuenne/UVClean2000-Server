@@ -2,7 +2,7 @@ const socketio = require('socket.io');
 const mqtt = require('mqtt');
 const EventEmitter = require('events');
 const MongooseError = require('mongoose').Error;
-const ExpressServer = require('./ExpressServer');
+const ExpressServer = require('./ExpressServer/ExpressServer');
 const MongoDBAdapter = require('./databaseAdapters/mongoDB/MongoDBAdapter');
 const MainLogger = require('./Logger.js').logger;
 const AddDevice = require('./controlModules/SocketIOCommands/AddDevice');
@@ -91,6 +91,24 @@ class UVCleanServer extends EventEmitter {
       this.database.on('open', async () => {
         logger.info('Emitting info event on socket io for database connected');
         this.io.emit('databaseConnected');
+        await Promise.all(this.config.user.map(async (user) => {
+          logger.info(`Checking User ${user.username} to exists in database.`);
+          try {
+            await this.database.getUser(user.username);
+            logger.info(`Checking User ${user.username} exists in database.`);
+          } catch (error) {
+            if (error.message === 'User does not exists') {
+              logger.info(`Adding User ${user.username} to database.`);
+              this.database.addUser({
+                username: user.username,
+                password: user.username,
+                canEdit: true,
+              });
+              return;
+            }
+            throw error;
+          }
+        }));
         try {
           if (this.client.connected) {
             const db = await this.database.getDevices();

@@ -3,6 +3,7 @@ const http = require('http');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const MainLogger = require('../Logger.js').logger;
 const userMiddleware = require('./middleware/user');
 
@@ -16,35 +17,35 @@ module.exports = class ExpressServer {
     this.app = express();
     this.httpServer = http.createServer(this.app);
 
-    this.app.use(cors());
+    this.app.use(cors({
+      origin: 'http://127.0.0.1:8080',
+      credentials: true,
+    }));
     this.app.use(express.json());
 
     const apiRouter = express.Router();
 
-    this.app.use('/ui', userMiddleware.isLoggedIn, express.static(`${__dirname}/ui`));
+    this.app.use(cookieParser());
+
+    this.app.use('/ui/login', express.static(`${__dirname}/ui/static/login.html`));
+    this.app.use('/ui', express.static(`${__dirname}/ui/static/`));
 
     this.app.post('/sign-up', userMiddleware.validateRegister, async (req, res, next) => {
+      logger.info('Got valid request on sign-up route. Request: %o', req.body);
       try {
-        try {
-          await this.database.getUser(req.body.username);
-          throw new Error('User already exists');
-        } catch (err) {
-          if (err.message !== 'User does not exists') throw err;
-        }
-
-        const hash = await bcrypt.hash(req.body.password, 10);
-
         await this.database.addUser({
           username: req.body.username,
-          password: hash,
+          password: req.body.password,
           canEdit: false,
         });
+        logger.info('Added User %s to database', req.body.username);
 
         return res.status(201).send({
           msg: 'Registered!',
         });
       } catch (error) {
         if (error.message === 'User already exists') {
+          logger.info('User %s already exists in database', req.body.username);
           return res.status(401).send({
             msg: error.message,
           });
@@ -57,25 +58,26 @@ module.exports = class ExpressServer {
     });
 
     this.app.post('/login', async (req, res, next) => {
+      logger.info('Got valid request on login route. Request: %o', req.body);
       try {
         const user = await this.database.getUser(req.body.username);
+        logger.info('User exists in database');
         const match = await bcrypt.compare(req.body.password, user.password);
 
         if (match) {
+          logger.info('Password matches with database entry');
           const token = jwt.sign({
             username: user.username,
             userId: user.id,
           },
           'SECRETKEY', {
-            expiresIn: '7d',
+            expiresIn: '1d',
           });
 
-          return res.status(200).send({
-            msg: 'Logged in!',
-            token,
-            user,
-          });
+          res.cookie('UVCleanSID', token, { httpOnly: true, domain: '127.0.0.1' });
+          return res.redirect('/ui/managment.html');
         }
+        logger.info('Password does not match with database entry');
         return res.status(401).send({
           msg: 'Username or password is incorrect!',
         });
