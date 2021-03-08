@@ -1,8 +1,10 @@
 import Vue from 'vue';
 import VueToast from 'vue-toast-notification';
+import io from 'socket.io-client';
 import App from './App.vue';
 import router from './router/index';
 import 'vue-toast-notification/dist/theme-default.css';
+import './css/styles.css';
 
 Vue.config.productionTip = false;
 

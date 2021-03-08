@@ -115,7 +115,7 @@
 
 <script>
 import { Datetime } from 'vue-datetime';
-import '../../../../css/datetime.css';
+import '../../css/datetime.css';
 import Chart from './Chart.vue';
 
 const { DateTime } = require('luxon');

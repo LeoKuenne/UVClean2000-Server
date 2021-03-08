@@ -1,6 +1,7 @@
 <template>
   <div>
     <form class="flex flex-col space-y-2">
+      <h1 class="font-bold text-lg text-center text-red-500" v-if="message">{{ message }}</h1>
       <input
         class="p-2 border border-gray-600 rounded"
         placeholder="Username"
@@ -37,36 +38,37 @@ export default {
     return {
       username: '',
       password: '',
+      message: '',
     };
   },
   methods: {
     handleSubmitAsGuest() {},
-    handleSubmit(e) {
+    async handleSubmit(e) {
       e.preventDefault();
       if (this.password.length > 0) {
-        this.$http.post('http://192.168.4.10:3000/login', {
-          username: this.username,
-          password: this.password,
-        })
-          .then((response) => {
-            const { isAdmin } = response.data.user;
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-            localStorage.setItem('jwt', response.data.token);
-
-            if (localStorage.getItem('jwt') != null) {
-              this.$emit('loggedIn');
-              if (this.$route.params.nextUrl != null) {
-                this.$router.push(this.$route.params.nextUrl);
-              } else if (isAdmin === 1) {
-                this.$router.push('admin');
-              } else {
-                this.$router.push('dashboard');
-              }
-            }
-          })
-          .catch((error) => {
-            console.error(error.response);
-          });
+        fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/login/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password,
+          }),
+          // redirect: 'follow',
+        }).then(async (response) => {
+          if (response.status === 401) {
+            const error = await response.json();
+            throw new Error(error.msg);
+          }
+          if (response.redirected) {
+            window.location.href = response.url;
+          }
+          return response;
+        }).catch((error) => {
+          this.message = error;
+        });
       }
     },
   },
