@@ -92,6 +92,5 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Hawk141198/UVClean2000-Server.git"
-  },
-  "sideEffects": true
+  }
 }

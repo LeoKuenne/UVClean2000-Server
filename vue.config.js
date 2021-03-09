@@ -1,4 +1,5 @@
 module.exports = {
+/*
   configureWebpack: {
     externals: {
       moment: 'moment',
@@ -7,6 +8,7 @@ module.exports = {
       headers: { 'Access-Control-Allow-Origin': '*' },
     },
   },
+  */
   outputDir: 'server/ExpressServer/sites/',
   assetsDir: 'static',
   indexPath: 'ui',
@@ -27,6 +29,7 @@ module.exports = {
       server: `${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}`,
     },
   },
+  css: { extract: true },
   // chainWebpack: (config) => {
   //   config
   //     .plugin('html')
