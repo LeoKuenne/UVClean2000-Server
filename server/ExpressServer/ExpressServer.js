@@ -18,7 +18,7 @@ module.exports = class ExpressServer {
     this.httpServer = http.createServer(this.app);
 
     this.app.use(cors({
-      origin: 'http://127.0.0.1:8080',
+      origin: 'http://127.0.0.1:3000',
       credentials: true,
     }));
     this.app.use(express.json());
@@ -28,7 +28,7 @@ module.exports = class ExpressServer {
     this.app.use(cookieParser());
 
     this.app.use('/ui/login', express.static(`${__dirname}/sites/login.html`));
-    this.app.use('/ui/managment', express.static(`${__dirname}/sites/managment.html`));
+    this.app.use('/ui/managment', userMiddleware.isLoggedIn, express.static(`${__dirname}/sites/managment.html`));
     this.app.use('/static/', express.static(`${__dirname}/sites/static/`));
 
     this.app.post('/sign-up', userMiddleware.validateRegister, async (req, res, next) => {
@@ -76,7 +76,7 @@ module.exports = class ExpressServer {
           });
 
           res.cookie('UVCleanSID', token, { httpOnly: true, domain: '127.0.0.1' });
-          return res.redirect('/ui/managment.html');
+          return res.redirect('/ui/managment');
         }
         logger.info('Password does not match with database entry');
         return res.status(401).send({
