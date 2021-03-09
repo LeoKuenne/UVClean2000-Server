@@ -33,7 +33,7 @@
           <dropdown-menu
             class="text-primary z-10"
             :showIcon="false"
-            :menuItems="[ 'Devices', 'Groups']"
+            :menuItems="[ { text: 'Devices', disabled: false },{ text: 'Groups', disabled: false }]"
             @itemClicked="menuItemClicked($event)">
           Dashboard
           </dropdown-menu>
@@ -43,13 +43,14 @@
           <dropdown-menu
             class="text-primary z-10"
             :showIcon="false"
-            :menuItems="[ 'Device', 'Group']"
+            :menuItems="[ { text: 'Device', disabled: false },{ text: 'Group', disabled: false }]"
             @itemClicked="menuItemClicked($event)">
           Charts
           </dropdown-menu>
         </div>
         <router-link :to="{ path: '' }"
-          class="text-color px-5 text-base align-baseline">
+          class="text-color px-5 text-base align-baseline"
+          v-if="$dataStore.user.canEdit === true">
           Settings
         </router-link>
       </div>

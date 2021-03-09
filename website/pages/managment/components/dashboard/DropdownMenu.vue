@@ -23,11 +23,11 @@
           v-if="showDropdown"
           class="absolute right-0 bg-white rounded overflow-hidden shadow
             whitespace-nowrap text-right min-w-min">
-          <button v-for="item in menuItems"
-            :key="item"
+          <button v-for="item in activeMenuItems"
+            :key="item.text"
             class="hover:bg-gray-200 w-full p-2 block text-right"
-            @click="$emit('itemClicked', item); showDropdown = false">
-            {{item}}
+            @click="$emit('itemClicked', item.text); showDropdown = false">
+            {{item.text}}
           </button>
         </div>
       </transition>
@@ -52,6 +52,11 @@ export default {
     return {
       showDropdown: false,
     };
+  },
+  computed: {
+    activeMenuItems() {
+      return this.menuItems.filter((item) => item.disabled === false);
+    },
   },
 };
 

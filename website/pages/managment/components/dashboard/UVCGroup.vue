@@ -12,7 +12,11 @@
           <dropdownMenu
             class="text-primary"
             :showIcon="true"
-            :menuItems="[ 'Edit', 'View chart', 'Set Devices' ]"
+            :menuItems="[
+              {text: 'Edit', disabled: this.$root.$dataStore.user.canEdit === false},
+              {text: 'View chart', disabled: false},
+              {text: 'Set Devices', disabled: this.$root.$dataStore.user.canEdit === false},
+            ]"
             @itemClicked="menuItemClicked($event)">
           </dropdownMenu>
         </div>
@@ -45,7 +49,8 @@
             id: group.id,
             prop: 'engineState',
             newValue: !group.engineState
-          })">
+          })"
+          :disabled="$dataStore.user.canEdit === false">
           {{state}}
         </button>
         <div class="col-span-2 px-2" v-if="group.engineStateDevicesWithOtherState.length !== 0">
@@ -75,7 +80,8 @@
             id: group.id,
             prop: 'eventMode',
             newValue: !group.eventMode
-          })">
+          })"
+          :disabled="$dataStore.user.canEdit === false">
           {{eventMode}}
         </button>
         <div class="col-span-2 px-2" v-if="group.eventModeDevicesWithOtherState.length !== 0">
@@ -101,7 +107,8 @@
             id: group.id,
             prop: 'engineLevel',
             newValue: $event.target.value
-          })">
+          })"
+          :disabled="$dataStore.user.canEdit === false">
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>

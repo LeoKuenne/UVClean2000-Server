@@ -17,7 +17,13 @@
           <dropdownMenu
             class="text-primary z-10"
             :showIcon="true"
-            :menuItems="[ 'Edit', 'View chart', 'Add to Group', 'Reset', 'Acknowledge' ]"
+            :menuItems="[
+              {text: 'Edit', disabled: this.$root.$dataStore.user.canEdit === false},
+              {text: 'View chart', disabled: false},
+              {text: 'Add to Group', disabled: this.$root.$dataStore.user.canEdit === false},
+              {text: 'Reset',  disabled: this.$root.$dataStore.user.canEdit === false},
+              {text: 'Acknowledge', disabled: this.$root.$dataStore.user.canEdit === false}
+            ]"
             @itemClicked="menuItemClicked($event)">
           </dropdownMenu>
         </div>
@@ -73,7 +79,8 @@
               serialnumber: device.serialnumber,
               prop: 'engineState',
               newValue: !device.engineState
-            })">
+            })"
+            :disabled="$dataStore.user.canEdit === false">
             {{state}}
           </button>
           <label for="b_eventmode">Eventmode</label>
@@ -84,7 +91,8 @@
               serialnumber: device.serialnumber,
               prop: 'eventMode',
               newValue: !device.eventMode
-            })">
+            })"
+            :disabled="$dataStore.user.canEdit === false">
             {{eventMode}}
           </button>
 
@@ -96,7 +104,8 @@
               serialnumber: device.serialnumber,
               prop: 'identifyMode',
               newValue: !device.identifyMode
-            })">
+            })"
+            :disabled="$dataStore.user.canEdit === false">
             {{identifyMode}}
           </button>
           <label for="s_engine_level">Engine Level</label>
@@ -107,7 +116,8 @@
               serialnumber: device.serialnumber,
               prop: 'engineLevel',
               newValue: $event.target.value
-            })">
+            })"
+            :disabled="$dataStore.user.canEdit === false">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>

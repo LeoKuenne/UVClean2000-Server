@@ -3,6 +3,7 @@
     <div class="flex items-center space-x-5">
       <h2 class="text-lg font-bold">Devices</h2>
       <button
+        v-if="$dataStore.user.canEdit"
         @click="showAddForm"
         class="flex text-left text-primary bg-white shadow items-center p-2
         hover:text-gray-600 hover:transform hover:scale-105
