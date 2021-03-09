@@ -10,8 +10,7 @@ module.exports = {
   },
   outputDir: 'server/ExpressServer/sites/',
   assetsDir: 'static',
-  indexPath: 'ui',
-  // publicPath: '/',
+  indexPath: '/ui/',
   pages: {
     managment: {
       entry: 'website/pages/managment/main.js',

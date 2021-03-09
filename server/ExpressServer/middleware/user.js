@@ -34,18 +34,20 @@ module.exports = {
     next();
   },
   isLoggedIn: (req, res, next) => {
-    logger.info('Validate user to be logged in with cookie %o', req.cookies);
+    logger.info('Validate user to be logged in with cookie %o and query %o', req.cookies, req.query);
     try {
       const token = req.cookies.UVCleanSID;
       const decoded = jwt.verify(
         token,
         'SECRETKEY',
       );
+      if (!req.query.user || req.query.user !== decoded.username) throw new Error('Query username does not match with cookie');
       logger.info('User is logged in. %o', decoded);
       req.userData = decoded;
       next();
     } catch (err) {
       logger.info('User is not logged in.');
+      logger.error(err);
       return res.status(401).send('<p>Your session is not valid</p>');
     }
   },

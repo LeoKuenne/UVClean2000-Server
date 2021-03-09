@@ -100,7 +100,7 @@ module.exports = class ExpressServer {
       if (!username) return res.sendStatus(404).send({ msg: 'No username provided' });
       try {
         const db = await this.database.getUser(username);
-        return res.json(db);
+        return res.json({ user: { username: db.username, canEdit: db.canEdit } });
       } catch (error) {
         server.emit('error', { service: 'ExpressServer', error });
         return res.sendStatus(500);

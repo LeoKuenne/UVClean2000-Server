@@ -50,6 +50,8 @@ new Vue({
       socket.emit('leave', this.username);
     };
 
+    console.log('Created: datastore:', this.$dataStore);
+
     socket.on('error', (error) => {
       console.error('error in backend', error);
       Vue.$toast.open({
