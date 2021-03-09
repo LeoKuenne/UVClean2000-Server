@@ -243,7 +243,7 @@ export default {
 
       this.selectedDateFrom = this.from;
       this.selectedDateTo = this.to;
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`)
+      await fetch(`/api/device?device=${this.selectedDevice}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`)
         .then((response) => {
           if (response.status === 404) {
             throw new Error('No data avalaible');
@@ -342,14 +342,14 @@ export default {
       });
     },
     async getDevices() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/serialnumbers`)
+      await fetch('/api/serialnumbers')
         .then((response) => response.json())
         .then((data) => {
           this.devices = data;
         });
     },
     async getDateDuration() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`)
+      await fetch(`/api/timestamps?device=${this.selectedDevice}&propertie=${this.selectedPropertie}`)
         .then((response) => {
           if (response.status === 404) {
             throw new Error('No data avalaible');

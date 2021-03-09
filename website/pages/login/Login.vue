@@ -24,7 +24,6 @@
       </button>
       <button
         class="transform duration-75 hover:scale-105"
-        type="submit"
         @click="handleSubmitAsGuest">
         Login as guest
       </button>
@@ -42,11 +41,35 @@ export default {
     };
   },
   methods: {
-    handleSubmitAsGuest() {},
+    handleSubmitAsGuest() {
+      fetch('/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: 'guest',
+          password: 'guest',
+        }),
+        // redirect: 'follow',
+      }).then(async (response) => {
+        if (response.status === 401) {
+          const error = await response.json();
+          throw new Error(error.msg);
+        }
+        if (response.redirected) {
+          window.location.href = response.url;
+        }
+        return response;
+      }).catch((error) => {
+        this.message = error;
+      });
+    },
     async handleSubmit(e) {
       e.preventDefault();
-      if (this.password.length > 0) {
-        fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/login/`, {
+      if (this.username.length > 0 && this.password.length > 0) {
+        fetch('/login/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,19 +79,20 @@ export default {
             username: this.username,
             password: this.password,
           }),
-          // redirect: 'follow',
-        }).then(async (response) => {
+        }).then((response) => response.json()).then((response) => {
           if (response.status === 401) {
-            const error = await response.json();
-            throw new Error(error.msg);
+            throw new Error(response.msg);
           }
-          if (response.redirected) {
+          console.log(response);
+          if (response.url) {
             window.location.href = response.url;
           }
           return response;
         }).catch((error) => {
           this.message = error;
         });
+      } else {
+        this.message = 'Please provide username and password';
       }
     },
   },

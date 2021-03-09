@@ -267,7 +267,7 @@ export default {
 
       this.selectedDateFrom = this.from;
       this.selectedDateTo = this.to;
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/group?group=${this.selectedGroup.id}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`)
+      await fetch(`/api/group?group=${this.selectedGroup.id}&propertie=${this.propertie}&from=${this.from}&to=${this.to}`)
         .then((response) => {
           if (response.status === 404) {
             throw new Error('No data avalaible');
@@ -350,13 +350,13 @@ export default {
       });
     },
     async getGroups() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`).then((response) => response.json())
+      await fetch('/api/groups').then((response) => response.json())
         .then((data) => {
           this.groups = data;
         });
     },
     async getDateDuration() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/timestamps?group=${this.selectedGroup.id}&propertie=${this.selectedPropertie}`)
+      await fetch(`/api/timestamps?group=${this.selectedGroup.id}&propertie=${this.selectedPropertie}`)
         .then((response) => {
           if (response.status === 404) {
             throw new Error('No data avalaible');

@@ -4,7 +4,12 @@
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
     "user": [
       {
-        "username": "admin"
+        "username": "admin",
+        "canEdit": "true"
+      },
+      
+      {
+        "username": "guest"
       }
     ],
     "http": {
@@ -12,8 +17,8 @@
       "broker": "192.168.4.10",
       "port": 3000,
       "secure": false,
-      "key": "./ssl/localhost_key.pem",
-      "cert": "./ssl/localhost_cert.pem"
+      "key": "./ssl/127.0.0.1_key.pem",
+      "cert": "./ssl/127.0.0.1_cert.pem"
     },
     "mqtt": {
       "broker": "192.168.4.10",
@@ -28,18 +33,23 @@
     }
   },
   "staging": {
-    "desc": "Testing on server. Frontend build is running on localhost, Backend is running on server",
+    "desc": "Testing on server. Frontend build is running on 127.0.0.1, Backend is running on server",
     "user": [
       {
-        "username": "admin"
+        "username": "admin",
+        "canEdit": "true"
+      },
+      
+      {
+        "username": "guest"
       }
     ],
     "http": {
-      "cors": "localhost:8080",
+      "cors": "127.0.0.1:8080",
       "port": 3000,
       "secure": false,
-      "key": "./ssl/localhost_key.pem",
-      "cert": "./ssl/localhost_cert.pem"
+      "key": "./ssl/127.0.0.1_key.pem",
+      "cert": "./ssl/127.0.0.1_cert.pem"
     },
     "mqtt": {
       "broker": "192.168.4.10",
@@ -54,26 +64,31 @@
     }
   },
   "development": {
-    "desc": "Development on localhost. Database and MQTT Broker is running on localhost",
+    "desc": "Development on 127.0.0.1. Database and MQTT Broker is running on 127.0.0.1",
     "user": [
       {
-        "username": "admin"
+        "username": "admin",
+        "canEdit": "true"
+      },
+      
+      {
+        "username": "guest"
       }
     ],
     "http": {
-      "cors": "localhost:8080",
+      "cors": "127.0.0.1:8080",
       "port": 3000,
       "secure": false,
-      "key": "./ssl/localhost_key.pem",
-      "cert": "./ssl/localhost_cert.pem"
+      "key": "./ssl/127.0.0.1_key.pem",
+      "cert": "./ssl/127.0.0.1_cert.pem"
     },
     "mqtt": {
-      "broker": "localhost",
+      "broker": "127.0.0.1",
       "port": 1883
     },
     "database": {
       "mongoDB": {
-        "uri": "localhost",
+        "uri": "127.0.0.1",
         "port": 27017,
         "database": "uvclean-server"
       }

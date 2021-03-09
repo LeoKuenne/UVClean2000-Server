@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const MainLogger = require('../../Logger.js').logger;
 
-const logger = MainLogger.child({ service: 'ExpressServer' });
+const logger = MainLogger.child({ service: 'UserMiddleware' });
 
 module.exports = {
   validateRegister: (req, res, next) => {

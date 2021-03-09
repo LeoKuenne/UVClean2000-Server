@@ -102,7 +102,7 @@ class UVCleanServer extends EventEmitter {
               this.database.addUser({
                 username: user.username,
                 password: user.username,
-                canEdit: true,
+                canEdit: (user.canEdit) ? user.canEdit : false,
               });
               return;
             }

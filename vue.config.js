@@ -1,14 +1,13 @@
 module.exports = {
-/*
   configureWebpack: {
     externals: {
       moment: 'moment',
     },
     devServer: {
       headers: { 'Access-Control-Allow-Origin': '*' },
+      proxy: 'http://127.0.0.1:3000/',
     },
   },
-  */
   outputDir: 'server/ExpressServer/sites/',
   assetsDir: 'static',
   indexPath: 'ui',

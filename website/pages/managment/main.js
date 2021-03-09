@@ -8,14 +8,33 @@ import '../../css/styles.css';
 
 Vue.config.productionTip = false;
 
-// eslint-disable-next-line no-undef
-const socket = io(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}`);
-
 const store = Vue.observable({
   devices: [],
   groups: [],
   user: '',
 });
+
+const urlParams = new URLSearchParams(window.location.search);
+if (!urlParams.has('user')) {
+  throw new Error('No user provided');
+}
+
+const user = urlParams.get('user');
+fetch(`/api/user?username=${user}`)
+  .then((response) => {
+    if (response.status !== 200) {
+      throw new Error(response.msg);
+    }
+    return response.json();
+  })
+  .then((response) => {
+    store.user = response.user;
+  }).catch((err) => {
+    console.error(err);
+  });
+
+// eslint-disable-next-line no-undef
+const socket = io(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}`);
 
 Vue.prototype.$dataStore = store;
 Vue.use(VueToast);
@@ -255,7 +274,7 @@ new Vue({
   },
   methods: {
     async fetchDataFromServer() {
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/devices`)
+      await fetch('/api/devices')
         .then((response) => {
           if (response.status === 500) {
             throw new Error('Database not connected or database error');
@@ -268,7 +287,7 @@ new Vue({
           console.log(this.$dataStore);
         });
 
-      await fetch(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}/groups`)
+      await fetch('/api/groups')
         .then((response) => {
           if (response.status === 500) {
             throw new Error('Database not connected or database error');

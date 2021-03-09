@@ -15,6 +15,9 @@ const routes = [
     path: '/dashboard',
     name: 'dashboard',
     component: DashboardView,
+    props(route) {
+      return route.query || {};
+    },
     children: [
       {
         name: 'devices',

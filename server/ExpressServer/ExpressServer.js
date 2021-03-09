@@ -18,7 +18,7 @@ module.exports = class ExpressServer {
     this.httpServer = http.createServer(this.app);
 
     this.app.use(cors({
-      origin: 'http://127.0.0.1:3000',
+      origin: 'http://127.0.0.1:8080',
       credentials: true,
     }));
     this.app.use(express.json());
@@ -76,7 +76,11 @@ module.exports = class ExpressServer {
           });
 
           res.cookie('UVCleanSID', token, { httpOnly: true, domain: '127.0.0.1' });
-          return res.redirect('/ui/managment');
+          logger.info('Responding with cookie "UVCleanSID", token, %o with user %o', { httpOnly: true, domain: '127.0.0.1' }, user);
+          return res.status(201).send({
+            user,
+            url: `/ui/managment?user=${user.username}`,
+          });
         }
         logger.info('Password does not match with database entry');
         return res.status(401).send({
@@ -87,6 +91,19 @@ module.exports = class ExpressServer {
           msg: error.message,
         });
         server.emit('error', { service: 'ExpressServer', error });
+      }
+    });
+
+    apiRouter.get('/user', async (req, res) => {
+      const { username } = req.query;
+      logger.info(`Got GET request on /user with username=${username}`);
+      if (!username) return res.sendStatus(404).send({ msg: 'No username provided' });
+      try {
+        const db = await this.database.getUser(username);
+        return res.json(db);
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        return res.sendStatus(500);
       }
     });
 
