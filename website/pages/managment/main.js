@@ -34,7 +34,7 @@ fetch(`/api/user?username=${user}`)
   });
 
 // eslint-disable-next-line no-undef
-const socket = io(`http://${process.env.VUE_APP_SERVER}:${process.env.VUE_APP_SERVER_PORT}`);
+const socket = io();
 
 Vue.prototype.$dataStore = store;
 Vue.use(VueToast);
