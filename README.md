@@ -45,8 +45,8 @@ socket.IO.on('group_addDevice') -> database.addDeviceToGroup(device, group) -> s
 mqtt sub -h 127.0.0.1 -t UVClean/# -v
 mqtt publish -h 127.0.0.1 -t UVClean/0002145702154/changeState/dummyData -m false
 
-mqtt sub -h 192.168.5.60 -t UVClean/# -v
-mqtt publish -h 192.168.5.60 -t UVClean/0002145702154/change_state/engineState -m false
+mqtt sub -h 192.168.4.10 -t UVClean/# -v
+mqtt publish -h 192.168.4.10 -t UVClean/0002145702154/change_state/engineState -m false
 
 Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/1 | 4.06
 Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/2 | 8.21

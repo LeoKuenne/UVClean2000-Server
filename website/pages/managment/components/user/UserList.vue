@@ -4,6 +4,7 @@
       <h2 class="text-lg font-bold">Users</h2>
       <button
         v-if="$dataStore.user.canEdit"
+        @click="showUserAddForm"
         class="flex text-left text-primary bg-white shadow items-center p-2
         hover:text-gray-600 hover:transform hover:scale-105
           hover:font-semibold transition-all">
@@ -19,22 +20,139 @@
     <user
       v-for="user in users" :key="user.username"
       :user="user"
+      @editUser="editUser($event)"
       >
     </user>
+    <UVCForm
+      :title="heading"
+      :show="showUserForm"
+      :errorMessage="errorMessage"
+      @close="closeUserForm">
+      <label for="form_username">Username</label>
+      <input id="form_username"
+        :value="formUser.username"
+        @input="formUser.username = $event.target.value"
+        type="text"
+        placeholder="Max Mustermann"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <label for="form_password">Password</label>
+      <input id="form_password"
+        v-model="formUser.password"
+        type="password"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <label for="form_passwordrepeat">Password repeat</label>
+      <input id="form_passwordrepeat"
+        v-model="formUser.passwordrepeat"
+        type="password"
+        class="rounded p-2 border-2 border-gray-500 mb-4">
+      <div class="flex items-center">
+        <label for="form_canEdit">Can edit:</label>
+        <input id="form_canEdit"
+          v-model="formUser.canEdit"
+          type="checkbox"
+          class="rounded ml-2 border-2 border-gray-500">
+      </div>
+      <div class="">
+        <button class="float-left p-2 font-semibold hover:transform hover:scale-105 transition-all
+          text-red-500"
+          v-show="isFormEdit"
+          @click="deleteUser(formUser.canEdit)">
+          Delete
+        </button>
+        <div class="float-right space-x-2">
+          <button class="font-semibold p-2 hover:transform hover:scale-105 transition-all
+            bg-primary text-white"
+            @click="(isFormEdit) ? updateUser(formUser) : addUser(formUser)">
+            {{okProp}}
+          </button>
+          <button class="font-semibold hover:transform hover:scale-105 transition-all"
+            @click="closeUserForm">
+            Close
+          </button>
+        </div>
+      </div>
+    </UVCForm>
   </div>
 </template>
 <script>
 import User from './User.vue';
+import UVCForm from '../UVCForm.vue';
 
 export default {
   name: 'UserList',
   components: {
     User,
+    UVCForm,
   },
   data() {
     return {
       users: [],
+      formUser: {},
+      isFormEdit: false,
+      showUserForm: false,
+      errorMessage: '',
     };
+  },
+  methods: {
+    editUser(user) {
+      this.formUser = {
+        username: user.username,
+        canEdit: true,
+      };
+      this.isFormEdit = true;
+      this.showUserForm = true;
+    },
+    showUserAddForm() {
+      this.formUser = {
+        username: '',
+        canEdit: false,
+      };
+      this.isFormEdit = false;
+      this.showUserForm = true;
+    },
+    closeUserForm() {
+      this.showUserForm = false;
+    },
+    deleteUser() {
+      this.$root.$data.socket.emit('user_delete', {
+        username: this.formUser.username,
+      });
+      this.showUserForm = false;
+    },
+    addUser(user) {
+      if (user.username === '' || user.username.match(/[^0-9A-Za-z+ ]/gm) !== null) {
+        this.errorMessage = `Username has to be vaild. Only numbers, letters and "+" are allowed.\n Invalid characters: ${user.username.match(/[^0-9A-Za-z+ ]/gm).join(',')}`;
+        return;
+      }
+
+      if (user.password !== user.passwordrepeat) {
+        this.errorMessage = 'Passwords do not match';
+        return;
+      }
+      this.$root.$data.socket.emit('user_add', {
+        username: user.username,
+        password: user.password,
+        canEdit: user.canEdit,
+      });
+      this.showUserForm = false;
+    },
+    updateUser() {
+      this.errorMessage = '';
+      this.$root.$data.socket.emit('user_update', {
+        username: this.formUser.username,
+        password: this.formUser.password,
+        canEdit: this.formUser.canEdit,
+      });
+      this.showUserForm = false;
+    },
+  },
+  computed: {
+    heading() {
+      return this.isFormEdit ? 'Edit User' : 'Add User';
+    },
+    okProp() {
+      return (this.isFormEdit) ? 'Update' : 'Add';
+    },
   },
   created() {
     fetch('/api/users')

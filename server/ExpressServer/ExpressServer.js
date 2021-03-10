@@ -102,7 +102,7 @@ module.exports = class ExpressServer {
       if (!username) return res.sendStatus(404).send({ msg: 'No username provided' });
       try {
         const db = await this.database.getUser(username);
-        return res.json({ user: { username: db.username, canEdit: db.canEdit } });
+        return res.json({ user: { id: db.id, username: db.username, canEdit: db.canEdit } });
       } catch (error) {
         server.emit('error', { service: 'ExpressServer', error });
         return res.sendStatus(500);
@@ -113,7 +113,16 @@ module.exports = class ExpressServer {
       logger.info('Got GET request on /users');
       try {
         const db = await this.database.getUsers();
-        return res.json(db);
+        const users = [];
+        db.map((user) => {
+          users.push({
+            username: user.username,
+            canEdit: user.canEdit,
+            id: user.id,
+          });
+          return user;
+        });
+        return res.json(users);
       } catch (error) {
         server.emit('error', { service: 'ExpressServer', error });
         return res.sendStatus(500);
