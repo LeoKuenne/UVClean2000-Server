@@ -8,6 +8,7 @@ const LampValueModel = require('./models/lampValue');
 const TachoModel = require('./models/tacho');
 const FanStateModel = require('./models/fanState');
 const BodyStateModel = require('./models/bodyState');
+const FanVoltageModel = require('./models/fanVoltage');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroup = require('../../dataModels/UVCGroup');
 const MainLogger = require('../../Logger.js').logger;
@@ -117,6 +118,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       .populate('tacho', 'date tacho')
       .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
+      .populate('currentFanVoltage', 'date voltage')
       .populate('currentLampValue', 'date lamp value')
       .populate('group', 'name')
       .exec();
@@ -131,6 +133,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       alarmState: device.alarmState,
+      currentFanVoltage: (device.currentFanVoltage) ? device.currentFanVoltage : { voltage: '' },
       currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
       currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
       currentLampState: device.currentLampState,
@@ -154,6 +157,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       .populate('tacho', 'date tacho')
       .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
+      .populate('currentFanVoltage', 'date voltage')
       .populate('currentLampValue', 'date lamp value')
       .exec();
 
@@ -168,6 +172,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
         engineState: device.engineState,
         engineLevel: device.engineLevel,
         alarmState: device.alarmState,
+        currentFanVoltage: (device.currentFanVoltage) ? device.currentFanVoltage : { voltage: '' },
         currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
         currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
         currentLampState: device.currentLampState,
@@ -562,6 +567,58 @@ module.exports = class MongoDBAdapter extends EventEmitter {
   }
 
   /**
+   * Adds a FanVoltage document to the database.
+   * @param {Object} fanVoltage The FanVoltage object with the device serialnumber of that device and
+   * the fanVoltage
+   * @param {string} fanVoltage.device the device serialnumber of that device
+   * @param {string} fanVoltage.voltage the alarm voltage
+   * @returns {Document<any>} Returns the FanVoltage Document
+   */
+  async addFanVoltage(fanVoltage) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    const docFanVoltage = new FanVoltageModel(fanVoltage);
+    const err = docFanVoltage.validateSync();
+    if (err !== undefined) throw err;
+
+    await docFanVoltage.save().catch((e) => {
+      logger.error(e);
+      throw e;
+    });
+
+    await UVCDeviceModel.updateOne({
+      serialnumber: fanVoltage.device,
+    }, {
+      $set: {
+        currentFanVoltage: docFanVoltage._id,
+      },
+    }).catch((e) => {
+      logger.error(e);
+      throw e;
+    });
+
+    return docFanVoltage;
+  }
+
+  /**
+   * Gets all FanVoltage documents of that device
+   * @param {String} serialnumber The device serialnumber of that device
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
+   */
+  async getFanVoltages(serialnumber, fromDate, toDate) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    const query = FanVoltageModel.find({ device: serialnumber }, 'device voltage date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
+  }
+
+  /**
    * Gets the first and last date where a document of the provided propertie can be found
    * @param {string} serialnumber The device serialnumber of that device
    * @param {string} propertie The propertie to get the duration of
@@ -607,6 +664,21 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       case 'tacho':
         dataLatest = await TachoModel.find({ device: serialnumber }).sort({ date: -1 }).limit(1);
         dataOldest = await TachoModel.find({ device: serialnumber }).sort({ date: 1 }).limit(1);
+        if (dataLatest.length === 1 && dataOldest.length === 1) {
+          return {
+            from: dataOldest[0].date,
+            to: dataLatest[0].date,
+          };
+        }
+        if (dataLatest.length === 0 && dataOldest.length === 0) {
+          throw new Error('No data available.');
+        }
+        return undefined;
+      case 'fanVoltage':
+        dataLatest = await FanVoltageModel.find({ device: serialnumber }).sort({ date: -1 })
+          .limit(1);
+        dataOldest = await FanVoltageModel.find({ device: serialnumber }).sort({ date: 1 })
+          .limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {
             from: dataOldest[0].date,

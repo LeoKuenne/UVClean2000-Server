@@ -194,6 +194,11 @@ module.exports = class ExpressServer {
               (from === undefined || from === '') ? undefined : new Date(from),
               (to === undefined || to === '') ? undefined : new Date(to));
             break;
+          case 'fanVoltage':
+            db = await this.database.getFanVoltages(serialnumber,
+              (from === undefined || from === '') ? undefined : new Date(from),
+              (to === undefined || to === '') ? undefined : new Date(to));
+            break;
           default:
             res.sendStatus(404);
             return;
@@ -201,6 +206,7 @@ module.exports = class ExpressServer {
       } catch (error) {
         server.emit('error', { service: 'ExpressServer', error });
         res.sendStatus(500);
+        return;
       }
 
       res.json(db);
@@ -261,6 +267,9 @@ module.exports = class ExpressServer {
           break;
         case 'tacho':
           prop = 'tacho';
+          break;
+        case 'fanVoltage':
+          prop = 'fanVoltage';
           break;
         default:
           res.sendStatus(404);

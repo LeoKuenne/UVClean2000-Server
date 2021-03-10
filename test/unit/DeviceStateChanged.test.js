@@ -14,7 +14,9 @@ describe('function mapMQTTTopicToDatabase', () => {
   it.each([
     ['UVClean/123/stateChanged/name', { serialnumber: '123', prop: 'name' }],
     ['UVClean/123/stateChanged/engineState', { serialnumber: '123', prop: 'engineState' }],
+    ['UVClean/123/stateChanged/fan', { serialnumber: '123', prop: 'currentFanVoltage' }],
     ['UVClean/123/stateChanged/engineLevel', { serialnumber: '123', prop: 'engineLevel' }],
+    ['UVClean/123/stateChanged/identify', { serialnumber: '123', prop: 'identifyMode' }],
     ['UVClean/123/stateChanged/identify', { serialnumber: '123', prop: 'identifyMode' }],
     ['UVClean/123/stateChanged/airVolume', { serialnumber: '123', prop: 'currentAirVolume' }],
     ['UVClean/123/stateChanged/tacho', { serialnumber: '123', prop: 'tacho' }],
@@ -90,6 +92,9 @@ describe('function updateDatabase', () => {
     [{
       serialnumber: '1', prop: 'identifyMode', newValue: true,
     }, 'updateDevice', { serialnumber: '1', identifyMode: true }],
+    [{
+      serialnumber: '1', prop: 'currentFanVoltage', newValue: 1,
+    }, 'addFanVoltage', { device: '1', voltage: 1 }],
   ])('NewState %o calls database %s method with %o', (newState, method, dbArgs) => {
     const db = {};
     db[method] = jest.fn();

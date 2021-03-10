@@ -1416,6 +1416,186 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
+    describe('FanVoltage functions', () => {
+      beforeEach(async () => {
+        await database.clearCollection('uvcdevices');
+        await database.clearCollection('fanvoltages');
+      });
+
+      it('addFanVoltage adds a FanVoltage Document correct and returns the object', async () => {
+        const fanVoltage = {
+          device: '000000000000000001111111',
+          voltage: 1,
+        };
+
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const addedFanVoltage = await database.addFanVoltage(fanVoltage);
+        expect(addedFanVoltage.device).toBe(fanVoltage.device);
+        expect(addedFanVoltage.voltage).toBe(fanVoltage.voltage);
+
+        const d = await database.getDevice(fanVoltage.device);
+        expect(d.currentFanVoltage.voltage).toStrictEqual(addedFanVoltage.voltage);
+      });
+
+      it('addFanVoltage throws an error if the validation fails', async () => {
+        const fanVoltage = {
+          voltage: 1,
+        };
+
+        await database.addFanVoltage(fanVoltage).catch((e) => {
+          expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
+        });
+      });
+
+      it('addFanVoltage throws an error if the device does not exists', async () => {
+        const fanVoltage = {
+          device: '000000000000000001111111',
+          voltage: 1,
+        };
+
+        await database.addFanVoltage(fanVoltage).catch((e) => {
+          expect(e.toString()).toBe('Error: Device does not exists');
+        });
+      });
+
+      it('getFanVoltages gets all FanVoltage of one device', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const fanVoltages = [];
+        for (let i = 1; i <= 10; i += 1) {
+          fanVoltages.push({
+            device: '000000000000000001111111',
+            voltage: i * 10,
+          });
+        }
+
+        await Promise.all(
+          fanVoltages.map(async (a) => {
+            await database.addFanVoltage(a);
+          }),
+        );
+
+        const docFanVoltages = await database.getFanVoltages('000000000000000001111111');
+
+        expect(docFanVoltages.length).toBe(fanVoltages.length);
+
+        for (let i = 0; i < docFanVoltages.length; i += 1) {
+          expect(docFanVoltages[i].device).toBe('000000000000000001111111');
+          expect(docFanVoltages[i].voltage).toBe(fanVoltages[i].voltage);
+        }
+      });
+
+      it('getFanVoltages gets all FanVoltage of one device before a specific date', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const fanVoltages = [];
+        for (let i = 1; i <= 10; i += 1) {
+          fanVoltages.push({
+            device: '000000000000000001111111',
+            voltage: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          fanVoltages.map(async (a) => {
+            await database.addFanVoltage(a);
+          }),
+        );
+
+        const docFanVoltages = await database.getFanVoltages('000000000000000001111111', new Date(3 * 10000));
+
+        expect(docFanVoltages.length).toBe(fanVoltages.length - 2);
+
+        for (let i = 0; i < docFanVoltages.length; i += 1) {
+          expect(docFanVoltages[i].device).toBe('000000000000000001111111');
+          expect(docFanVoltages[i].voltage).toBe(fanVoltages[i + 2].voltage);
+        }
+      });
+
+      it('getFanVoltages gets all FanVoltage of one device after a specific date', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const fanVoltages = [];
+        for (let i = 1; i <= 10; i += 1) {
+          fanVoltages.push({
+            device: '000000000000000001111111',
+            voltage: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          fanVoltages.map(async (a) => {
+            await database.addFanVoltage(a);
+          }),
+        );
+
+        const docFanVoltages = await database.getFanVoltages('000000000000000001111111', undefined, new Date(7 * 10000));
+
+        expect(docFanVoltages.length).toBe(fanVoltages.length - 3);
+
+        for (let i = 0; i < docFanVoltages.length; i += 1) {
+          expect(docFanVoltages[i].device).toBe('000000000000000001111111');
+          expect(docFanVoltages[i].voltage).toBe(fanVoltages[i].voltage);
+        }
+      });
+
+      it('getFanVoltages gets all FanVoltage of one device in a specific time range', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const fanVoltages = [];
+        for (let i = 1; i <= 10; i += 1) {
+          fanVoltages.push({
+            device: '000000000000000001111111',
+            voltage: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          fanVoltages.map(async (a) => {
+            await database.addFanVoltage(a);
+          }),
+        );
+
+        const docFanVoltages = await database.getFanVoltages('000000000000000001111111', new Date(3 * 10000), new Date(7 * 10000));
+
+        expect(docFanVoltages.length).toBe(fanVoltages.length - 5);
+
+        for (let i = 0; i < docFanVoltages.length; i += 1) {
+          expect(docFanVoltages[i].device).toBe('000000000000000001111111');
+          expect(docFanVoltages[i].fanVoltage).toBe(fanVoltages[i + 2].fanVoltage);
+        }
+      });
+    });
+
     describe('Device Alarm functions', () => {
       beforeEach(async () => {
         await database.clearCollection('uvcdevices');
@@ -1648,6 +1828,40 @@ describe('MongoDBAdapter Functions', () => {
       });
       try {
         await database.getDurationOfAvailableData('1', 'tacho');
+      } catch (error) {
+        expect(error).toEqual(new Error('No data available.'));
+        done();
+      }
+    });
+
+    it('Returns the latest fanVoltage Date', async () => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '000000000000000000000001',
+      });
+
+      for (let i = 0; i < 10; i += 1) {
+        await database.addFanVoltage({
+          voltage: 10,
+          device: '000000000000000000000001',
+          date: new Date((i + 1) * 100),
+        });
+      }
+      const duration = await database.getDurationOfAvailableData('000000000000000000000001', 'fanVoltage');
+      expect(duration).toEqual({
+        to: new Date(10 * 100),
+        from: new Date(100),
+      });
+    });
+
+    it('Returns undefined if no fanVoltage Document for that device exists', async (done) => {
+      await database.addDevice({
+        name: 'Test Device',
+        serialnumber: '000000000000000000000001',
+      });
+
+      try {
+        await database.getDurationOfAvailableData('1', 'fanVoltage');
       } catch (error) {
         expect(error).toEqual(new Error('No data available.'));
         done();

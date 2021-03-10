@@ -168,6 +168,12 @@ async function updateDatabase(db, newState) {
         state: newState.newValue,
       });
       break;
+    case 'currentFanVoltage':
+      await db.addFanVoltage({
+        device: newState.serialnumber,
+        voltage: newState.newValue,
+      });
+      break;
 
     default:
       device = {
@@ -218,6 +224,8 @@ function mapMQTTTopicToDatabase(topic) {
       return { serialnumber, prop: 'identifyMode' };
     case 'eventMode':
       return { serialnumber, prop: 'eventMode' };
+    case 'fan':
+      return { serialnumber, prop: 'currentFanVoltage' };
     case 'alarm':
       if (subprop === undefined) {
         throw new Error(`Can not parse state with propertie ${prop}`);

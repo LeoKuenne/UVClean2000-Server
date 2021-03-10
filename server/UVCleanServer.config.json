@@ -80,7 +80,7 @@
       "cert": "./ssl/127.0.0.1_cert.pem"
     },
     "mqtt": {
-      "broker": "127.0.0.1",
+      "broker": "192.168.4.10",
       "port": 1883
     },
     "database": {
