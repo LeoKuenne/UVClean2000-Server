@@ -48,7 +48,9 @@ export default {
       .then((response) => {
         this.users = response;
       })
-      .catch();
+      .catch((err) => {
+        console.error(err);
+      });
   },
 
 };

@@ -94,6 +94,8 @@ module.exports = class ExpressServer {
       }
     });
 
+    this.app.get('/logout', (req, res) => res.clearCookie('UVCleanSID').send({ url: '/ui/login' }));
+
     apiRouter.get('/user', async (req, res) => {
       const { username } = req.query;
       logger.info(`Got GET request on /user with username=${username}`);
