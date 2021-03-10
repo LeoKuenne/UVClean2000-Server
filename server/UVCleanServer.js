@@ -98,11 +98,11 @@ class UVCleanServer extends EventEmitter {
             logger.info(`Checking User ${user.username} exists in database.`);
           } catch (error) {
             if (error.message === 'User does not exists') {
-              logger.info(`Adding User ${user.username} to database.`);
+              logger.info(`Adding User ${user.username} to database with object %o`, user);
               this.database.addUser({
                 username: user.username,
                 password: user.username,
-                canEdit: (user.canEdit) ? user.canEdit : false,
+                canEdit: (user.canEdit !== undefined) ? user.canEdit === 'true' : false,
               });
               return;
             }
