@@ -28,10 +28,10 @@ const uvcDeviceSchema = new mongoose.Schema({
 const uvcDeviceModel = mongoose.model('UVCDevice', uvcDeviceSchema);
 
 function checkAlarmState(device) {
-  const lampStates = device.currentLampState.filter((state) => state.state === 'Alarm');
+  const lampStates = device.currentLampState.filter((state) => state.state.toLowerCase() === 'alarm');
   if (lampStates.length !== 0
-      || device.currentFanState.state === 'Alarm'
-      || device.currentBodyState.state === 'Alarm') {
+      || device.currentFanState.state.toLowerCase() === 'alarm'
+      || device.currentBodyState.state.toLowerCase() === 'alarm') {
     return true;
   }
   return false;

@@ -108,7 +108,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
 
     if (typeof serialnumber !== 'string') { throw new Error('Serialnumber has to be a string'); }
 
-    logger.info('Getting device %s', serialnumber);
+    logger.debug('Getting device %s', serialnumber);
 
     const device = await UVCDeviceModel.findOne({
       serialnumber,

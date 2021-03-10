@@ -175,6 +175,7 @@ export default {
       this.formDevice = {
         serialnumber: device.serialnumber,
         name: device.name,
+        group: device.group,
       };
       this.isFormEdit = true;
       this.showEditForm = true;

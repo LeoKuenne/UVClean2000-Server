@@ -305,9 +305,9 @@ export default {
     device: {
       deep: true,
       handler() {
-        this.showCurrentBodyStateSection = this.device.currentBodyState.state !== 'Ok';
-        this.showCurrentFanStateSection = this.device.currentFanState.state !== 'Ok';
-        this.currentLampStates = this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok');
+        this.showCurrentBodyStateSection = this.device.currentBodyState.state.toLowerCase() !== 'ok';
+        this.showCurrentFanStateSection = this.device.currentFanState.state.toLowerCase() !== 'ok';
+        this.currentLampStates = this.device.currentLampState.filter((lampState) => lampState.state.toLowerCase() !== 'ok');
 
         this.alarmPropertie = [];
         this.currentLampStates.forEach((states) => {
@@ -326,9 +326,9 @@ export default {
     },
   },
   created() {
-    this.showCurrentBodyStateSection = this.device.currentBodyState.state !== 'Ok';
-    this.showCurrentFanStateSection = this.device.currentFanState.state !== 'Ok';
-    this.currentLampStates = this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok');
+    this.showCurrentBodyStateSection = this.device.currentBodyState.state.toLowerCase() !== 'ok';
+    this.showCurrentFanStateSection = this.device.currentFanState.state.toLowerCase() !== 'ok';
+    this.currentLampStates = this.device.currentLampState.filter((lampState) => lampState.state.toLowerCase() !== 'ok');
 
     this.alarmPropertie = [];
     this.currentLampStates.forEach((states) => {
@@ -351,9 +351,9 @@ export default {
       hasDeviceAlarm: false,
       showAlarmPopup: false,
       alarmPropertie: [],
-      showCurrentBodyStateSection: this.device.currentBodyState.state !== 'Ok',
-      showCurrentFanStateSection: this.device.currentFanState.state !== 'Ok',
-      currentLampStates: this.device.currentLampState.filter((lampState) => lampState.state !== 'Ok'),
+      showCurrentBodyStateSection: this.device.currentBodyState.state.toLowerCase() !== 'ok',
+      showCurrentFanStateSection: this.device.currentFanState.state.toLowerCase() !== 'ok',
+      currentLampStates: this.device.currentLampState.filter((lampState) => lampState.state.toLowerCase() !== 'ok'),
     };
   },
   computed: {
