@@ -296,7 +296,6 @@ export default {
           this.showAlarmPopup = false;
           break;
         default:
-          console.log(event);
           break;
       }
     },

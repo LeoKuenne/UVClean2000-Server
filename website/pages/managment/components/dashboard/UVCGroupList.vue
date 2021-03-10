@@ -18,7 +18,9 @@
       </button>
     </div>
     <router-link to="groups"
-      class="flex flex-row flex-wrap content-center justify-center cursor-default">
+      class="cursor-default flex flex-wrap items-start justify-center"
+      tag="div"
+      @click="$route.query.group=''">
       <UVCGroup
         @edit="editGroup($event)"
         @setDevices="setDevicesInGroup($event)"

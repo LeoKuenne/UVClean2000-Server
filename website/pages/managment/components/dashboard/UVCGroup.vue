@@ -1,8 +1,8 @@
 <template>
-  <router-link :to="'groups?group=' + group.id" class="cursor-default">
+  <router-link :to="{ name: 'groups', query: { group: this.group.id } }"
+    class="cursor-default" tag="div">
     <div>
-      <div
-        :class="[group.alarmState ? 'bg-red-500' : 'bg-primary']"
+      <div :class="[group.alarmState ? 'bg-red-500' : 'bg-primary']"
         class="p-2 items-center text-white">
         <div class="flex flex-row justify-between items-center">
           <div>
@@ -10,7 +10,7 @@
             <h4 class="text-sm text-gray-200">ID: {{group.id}}</h4>
           </div>
           <dropdownMenu
-            class="text-primary"
+            class="text-primary z-10"
             :showIcon="true"
             :menuItems="[
               {text: 'Edit', disabled: this.$root.$dataStore.user.canEdit === false},
@@ -129,13 +129,16 @@ export default {
     dropdownMenu: DropdownMenu,
   },
   methods: {
-    menuItemClicked(event) {
+    async menuItemClicked(event) {
       switch (event) {
         case 'Edit':
           this.$emit('edit', this.group);
           break;
         case 'View chart':
-          this.$router.push({ name: 'GroupChart', query: { group: this.group.serialnumber } });
+          await this.$router.push({ name: 'GroupChart', query: { group: this.group.serialnumber } })
+            .catch((failure) => {
+              console.log(failure);
+            });
           break;
         case 'Set Devices':
           this.$emit('setDevices', this.group);

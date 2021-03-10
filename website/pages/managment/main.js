@@ -154,7 +154,7 @@ new Vue({
     });
 
     socket.on('device_stateChanged', (props) => {
-      console.log('Event: device_stateChanged', props);
+      // console.log('Event: device_stateChanged', props);
 
       this.$dataStore.devices.filter((device) => {
         if (device.serialnumber === props.serialnumber) {

@@ -1,8 +1,8 @@
 <template>
   <div class="relative"
-      @click="dropdownMenuClicked"
       v-click-outside="dropdownOutsideClicked">
     <button
+      @click="dropdownMenuClicked"
       class="w-full h-full hover:transform hover:scale-105 transition-all">
       <svg v-show="showIcon && !showDropdown"
         xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6 text-white" viewBox="0 0 16 16">

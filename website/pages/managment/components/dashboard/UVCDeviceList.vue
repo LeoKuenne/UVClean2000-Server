@@ -20,7 +20,6 @@
     <!-- flex flex-wrap item-center justify-center  -->
     <router-link to="devices"
       class="cursor-default flex flex-wrap items-start justify-center"
-      id="uvcdevicelist"
       tag="div"
       @click="$route.query.device=''">
       <UVCDevice
@@ -200,6 +199,7 @@ export default {
       this.formDevice = {
         name: '',
         serialnumber: '',
+        group: { name: '' },
       };
       this.showGroupAssignmentForm = false;
     },
@@ -240,6 +240,7 @@ export default {
       this.formDevice = {
         name: '',
         serialnumber: '',
+        group: { name: '' },
       };
       this.errorMessage = '';
     },
@@ -327,7 +328,7 @@ export default {
       formDevice: {
         name: '',
         serialnumber: '',
-        group: '',
+        group: { name: '' },
       },
       groupAssignmentOptions: {
         device: {
