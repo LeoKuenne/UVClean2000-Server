@@ -174,6 +174,18 @@ async function updateDatabase(db, newState) {
         voltage: newState.newValue,
       });
       break;
+    case 'currentCO2':
+      await db.addCO2({
+        device: newState.serialnumber,
+        co2: newState.newValue,
+      });
+      break;
+    case 'currentTVOC':
+      await db.addTVOC({
+        device: newState.serialnumber,
+        tvoc: newState.newValue,
+      });
+      break;
 
     default:
       device = {
@@ -240,6 +252,10 @@ function mapMQTTTopicToDatabase(topic) {
       }
     case 'tacho':
       return { serialnumber, prop: 'tacho' };
+    case 'co2':
+      return { serialnumber, prop: 'currentCO2' };
+    case 'tvoc':
+      return { serialnumber, prop: 'currentTVOC' };
     default:
       throw new Error(`Can not parse state with propertie ${prop}`);
   }

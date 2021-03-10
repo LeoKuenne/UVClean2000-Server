@@ -63,6 +63,7 @@
             <option value="lampValues">Lamp Values</option>
             <option value="tacho">Tachos</option>
             <option value="fanVoltage">Fan Voltage</option>
+            <option value="co2">CO2</option>
           </select>
         </div>
         <div :class="[showDatepicker ? 'visible' : 'invisible' ] ">
@@ -339,6 +340,25 @@ export default {
             this.datacollection.datasets[0].data.push({
               t: DateTime.fromISO(event.date),
               y: event.voltage,
+            });
+          });
+          break;
+        case 'co2':
+          this.datacollection.datasets = [
+            {
+              label: this.device,
+              backgroundColor: '#00666F',
+              borderColor: '#00666F',
+              borderWidth: 1,
+              data: [],
+              fill: false,
+            },
+          ];
+
+          data.forEach((event) => {
+            this.datacollection.datasets[0].data.push({
+              t: DateTime.fromISO(event.date),
+              y: event.co2,
             });
           });
           break;

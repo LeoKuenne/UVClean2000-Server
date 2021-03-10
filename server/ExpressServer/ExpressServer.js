@@ -199,6 +199,11 @@ module.exports = class ExpressServer {
               (from === undefined || from === '') ? undefined : new Date(from),
               (to === undefined || to === '') ? undefined : new Date(to));
             break;
+          case 'co2':
+            db = await this.database.getCO2s(serialnumber,
+              (from === undefined || from === '') ? undefined : new Date(from),
+              (to === undefined || to === '') ? undefined : new Date(to));
+            break;
           default:
             res.sendStatus(404);
             return;
@@ -270,6 +275,9 @@ module.exports = class ExpressServer {
           break;
         case 'fanVoltage':
           prop = 'fanVoltage';
+          break;
+        case 'co2':
+          prop = 'co2';
           break;
         default:
           res.sendStatus(404);

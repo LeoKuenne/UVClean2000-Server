@@ -9,6 +9,8 @@ const TachoModel = require('./models/tacho');
 const FanStateModel = require('./models/fanState');
 const BodyStateModel = require('./models/bodyState');
 const FanVoltageModel = require('./models/fanVoltage');
+const CO2Model = require('./models/co2');
+const TVOCModel = require('./models/TVOC');
 const UVCDeviceModel = require('../../dataModels/UVCDevice').uvcDeviceModel;
 const UVCGroup = require('../../dataModels/UVCGroup');
 const MainLogger = require('../../Logger.js').logger;
@@ -119,6 +121,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
       .populate('currentFanVoltage', 'date voltage')
+      .populate('currentCO2', 'date co2')
+      .populate('currentTVOC', 'date tvoc')
       .populate('currentLampValue', 'date lamp value')
       .populate('group', 'name')
       .exec();
@@ -133,6 +137,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       engineState: device.engineState,
       engineLevel: device.engineLevel,
       alarmState: device.alarmState,
+      currentCO2: (device.currentCO2) ? device.currentCO2 : { co2: '' },
+      currentTVOC: (device.currentTVOC) ? device.currentTVOC : { tvoc: '' },
       currentFanVoltage: (device.currentFanVoltage) ? device.currentFanVoltage : { voltage: '' },
       currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
       currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
@@ -158,6 +164,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       .populate('currentBodyState', 'date state')
       .populate('currentFanState', 'date state')
       .populate('currentFanVoltage', 'date voltage')
+      .populate('currentCO2', 'date co2')
+      .populate('currentTVOC', 'date tvoc')
       .populate('currentLampValue', 'date lamp value')
       .exec();
 
@@ -172,6 +180,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
         engineState: device.engineState,
         engineLevel: device.engineLevel,
         alarmState: device.alarmState,
+        currentCO2: (device.currentCO2) ? device.currentCO2 : { co2: '' },
+        currentTVOC: (device.currentTVOC) ? device.currentTVOC : { tvoc: '' },
         currentFanVoltage: (device.currentFanVoltage) ? device.currentFanVoltage : { voltage: '' },
         currentBodyState: (device.currentBodyState) ? device.currentBodyState : { state: '' },
         currentFanState: (device.currentFanState) ? device.currentFanState : { state: '' },
@@ -619,6 +629,110 @@ module.exports = class MongoDBAdapter extends EventEmitter {
   }
 
   /**
+   * Adds a CO2 document to the database.
+   * @param {Object} co2 The CO2 object with the device serialnumber of that device and
+   * the co2
+   * @param {string} co2.device the device serialnumber of that device
+   * @param {string} co2.co2 the alarm co2
+   * @returns {Document<any>} Returns the CO2 Document
+   */
+  async addCO2(co2) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    const docCO2 = new CO2Model(co2);
+    const err = docCO2.validateSync();
+    if (err !== undefined) throw err;
+
+    await docCO2.save().catch((e) => {
+      logger.error(e);
+      throw e;
+    });
+
+    await UVCDeviceModel.updateOne({
+      serialnumber: co2.device,
+    }, {
+      $set: {
+        currentCO2: docCO2._id,
+      },
+    }).catch((e) => {
+      logger.error(e);
+      throw e;
+    });
+
+    return docCO2;
+  }
+
+  /**
+   * Gets all CO2 documents of that device
+   * @param {String} serialnumber The device serialnumber of that device
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
+   */
+  async getCO2s(serialnumber, fromDate, toDate) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    const query = CO2Model.find({ device: serialnumber }, 'device co2 date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
+  }
+
+  /**
+   * Adds a TVOC document to the database.
+   * @param {Object} tvoc The TVOC object with the device serialnumber of that device and
+   * the tvoc
+   * @param {string} tvoc.device the device serialnumber of that device
+   * @param {string} tvoc.tvoc the alarm tvoc
+   * @returns {Document<any>} Returns the TVOC Document
+   */
+  async addTVOC(tvoc) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    const docTVOC = new TVOCModel(tvoc);
+    const err = docTVOC.validateSync();
+    if (err !== undefined) throw err;
+
+    await docTVOC.save().catch((e) => {
+      logger.error(e);
+      throw e;
+    });
+
+    await UVCDeviceModel.updateOne({
+      serialnumber: tvoc.device,
+    }, {
+      $set: {
+        currentTVOC: docTVOC._id,
+      },
+    }).catch((e) => {
+      logger.error(e);
+      throw e;
+    });
+
+    return docTVOC;
+  }
+
+  /**
+   * Gets all TVOC documents of that device
+   * @param {String} serialnumber The device serialnumber of that device
+   * @param {Date} [fromDate] The Date after the documents should be selected
+   * @param {Date} [toDate] The Date before the documents should be selected
+   */
+  async getTVOCs(serialnumber, fromDate, toDate) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    const query = TVOCModel.find({ device: serialnumber }, 'device tvoc date');
+    if (fromDate !== undefined && fromDate instanceof Date) {
+      query.gte('date', fromDate);
+    }
+    if (toDate !== undefined && toDate instanceof Date) {
+      query.lte('date', toDate);
+    }
+    query.sort({ lamp: 'asc', date: 'asc' });
+    return query.exec();
+  }
+
+  /**
    * Gets the first and last date where a document of the provided propertie can be found
    * @param {string} serialnumber The device serialnumber of that device
    * @param {string} propertie The propertie to get the duration of
@@ -678,6 +792,21 @@ module.exports = class MongoDBAdapter extends EventEmitter {
         dataLatest = await FanVoltageModel.find({ device: serialnumber }).sort({ date: -1 })
           .limit(1);
         dataOldest = await FanVoltageModel.find({ device: serialnumber }).sort({ date: 1 })
+          .limit(1);
+        if (dataLatest.length === 1 && dataOldest.length === 1) {
+          return {
+            from: dataOldest[0].date,
+            to: dataLatest[0].date,
+          };
+        }
+        if (dataLatest.length === 0 && dataOldest.length === 0) {
+          throw new Error('No data available.');
+        }
+        return undefined;
+      case 'co2':
+        dataLatest = await CO2Model.find({ device: serialnumber }).sort({ date: -1 })
+          .limit(1);
+        dataOldest = await CO2Model.find({ device: serialnumber }).sort({ date: 1 })
           .limit(1);
         if (dataLatest.length === 1 && dataOldest.length === 1) {
           return {

@@ -1596,6 +1596,366 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
+    describe.only('CO2 functions', () => {
+      beforeEach(async () => {
+        await database.clearCollection('uvcdevices');
+        await database.clearCollection('co2');
+      });
+
+      it('addCO2 adds a CO2 Document correct and returns the object', async () => {
+        const CO2 = {
+          device: '000000000000000001111111',
+          co2: 1,
+        };
+
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const addedCO2 = await database.addCO2(CO2);
+        expect(addedCO2.device).toBe(CO2.device);
+        expect(addedCO2.co2).toBe(CO2.co2);
+
+        const d = await database.getDevice(CO2.device);
+        expect(d.currentCO2.co2).toStrictEqual(addedCO2.co2);
+      });
+
+      it('addCO2 throws an error if the validation fails', async () => {
+        const CO2 = {
+          co2: 1,
+        };
+
+        await database.addCO2(CO2).catch((e) => {
+          expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
+        });
+      });
+
+      it('addCO2 throws an error if the device does not exists', async () => {
+        const CO2 = {
+          device: '000000000000000001111111',
+          co2: 1,
+        };
+
+        await database.addCO2(CO2).catch((e) => {
+          expect(e.toString()).toBe('Error: Device does not exists');
+        });
+      });
+
+      it('getCO2s gets all CO2 of one device', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const CO2s = [];
+        for (let i = 1; i <= 10; i += 1) {
+          CO2s.push({
+            device: '000000000000000001111111',
+            co2: i * 10,
+          });
+        }
+
+        await Promise.all(
+          CO2s.map(async (a) => {
+            await database.addCO2(a);
+          }),
+        );
+
+        const docCO2s = await database.getCO2s('000000000000000001111111');
+
+        expect(docCO2s.length).toBe(CO2s.length);
+
+        for (let i = 0; i < docCO2s.length; i += 1) {
+          expect(docCO2s[i].device).toBe('000000000000000001111111');
+          expect(docCO2s[i].co2).toBe(CO2s[i].co2);
+        }
+      });
+
+      it('getCO2s gets all CO2 of one device before a specific date', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const CO2s = [];
+        for (let i = 1; i <= 10; i += 1) {
+          CO2s.push({
+            device: '000000000000000001111111',
+            co2: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          CO2s.map(async (a) => {
+            await database.addCO2(a);
+          }),
+        );
+
+        const docCO2s = await database.getCO2s('000000000000000001111111', new Date(3 * 10000));
+
+        expect(docCO2s.length).toBe(CO2s.length - 2);
+
+        for (let i = 0; i < docCO2s.length; i += 1) {
+          expect(docCO2s[i].device).toBe('000000000000000001111111');
+          expect(docCO2s[i].co2).toBe(CO2s[i + 2].co2);
+        }
+      });
+
+      it('getCO2s gets all CO2 of one device after a specific date', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const CO2s = [];
+        for (let i = 1; i <= 10; i += 1) {
+          CO2s.push({
+            device: '000000000000000001111111',
+            co2: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          CO2s.map(async (a) => {
+            await database.addCO2(a);
+          }),
+        );
+
+        const docCO2s = await database.getCO2s('000000000000000001111111', undefined, new Date(7 * 10000));
+
+        expect(docCO2s.length).toBe(CO2s.length - 3);
+
+        for (let i = 0; i < docCO2s.length; i += 1) {
+          expect(docCO2s[i].device).toBe('000000000000000001111111');
+          expect(docCO2s[i].co2).toBe(CO2s[i].co2);
+        }
+      });
+
+      it('getCO2s gets all CO2 of one device in a specific time range', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const CO2s = [];
+        for (let i = 1; i <= 10; i += 1) {
+          CO2s.push({
+            device: '000000000000000001111111',
+            co2: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          CO2s.map(async (a) => {
+            await database.addCO2(a);
+          }),
+        );
+
+        const docCO2s = await database.getCO2s('000000000000000001111111', new Date(3 * 10000), new Date(7 * 10000));
+
+        expect(docCO2s.length).toBe(CO2s.length - 5);
+
+        for (let i = 0; i < docCO2s.length; i += 1) {
+          expect(docCO2s[i].device).toBe('000000000000000001111111');
+          expect(docCO2s[i].co2).toBe(CO2s[i + 2].co2);
+        }
+      });
+    });
+
+    describe.only('TVOC functions', () => {
+      beforeEach(async () => {
+        await database.clearCollection('uvcdevices');
+        await database.clearCollection('tvocs');
+      });
+
+      it('addTVOC adds a TVOC Document correct and returns the object', async () => {
+        const TVOC = {
+          device: '000000000000000001111111',
+          tvoc: 1,
+        };
+
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const addedTVOC = await database.addTVOC(TVOC);
+        expect(addedTVOC.device).toBe(TVOC.device);
+        expect(addedTVOC.tvoc).toBe(TVOC.tvoc);
+
+        const d = await database.getDevice(TVOC.device);
+        expect(d.currentTVOC.tvoc).toStrictEqual(addedTVOC.tvoc);
+      });
+
+      it('addTVOC throws an error if the validation fails', async () => {
+        const TVOC = {
+          tvoc: 1,
+        };
+
+        await database.addTVOC(TVOC).catch((e) => {
+          expect(e.toString()).toBe('ValidationError: device: Path `device` is required.');
+        });
+      });
+
+      it('addTVOC throws an error if the device does not exists', async () => {
+        const TVOC = {
+          device: '000000000000000001111111',
+          tvoc: 1,
+        };
+
+        await database.addTVOC(TVOC).catch((e) => {
+          expect(e.toString()).toBe('Error: Device does not exists');
+        });
+      });
+
+      it('getTVOCs gets all TVOC of one device', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const TVOCs = [];
+        for (let i = 1; i <= 10; i += 1) {
+          TVOCs.push({
+            device: '000000000000000001111111',
+            tvoc: i * 10,
+          });
+        }
+
+        await Promise.all(
+          TVOCs.map(async (a) => {
+            await database.addTVOC(a);
+          }),
+        );
+
+        const docTVOCs = await database.getTVOCs('000000000000000001111111');
+
+        expect(docTVOCs.length).toBe(TVOCs.length);
+
+        for (let i = 0; i < docTVOCs.length; i += 1) {
+          expect(docTVOCs[i].device).toBe('000000000000000001111111');
+          expect(docTVOCs[i].tvoc).toBe(TVOCs[i].tvoc);
+        }
+      });
+
+      it('getTVOCs gets all TVOC of one device before a specific date', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const TVOCs = [];
+        for (let i = 1; i <= 10; i += 1) {
+          TVOCs.push({
+            device: '000000000000000001111111',
+            tvoc: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          TVOCs.map(async (a) => {
+            await database.addTVOC(a);
+          }),
+        );
+
+        const docTVOCs = await database.getTVOCs('000000000000000001111111', new Date(3 * 10000));
+
+        expect(docTVOCs.length).toBe(TVOCs.length - 2);
+
+        for (let i = 0; i < docTVOCs.length; i += 1) {
+          expect(docTVOCs[i].device).toBe('000000000000000001111111');
+          expect(docTVOCs[i].tvoc).toBe(TVOCs[i + 2].tvoc);
+        }
+      });
+
+      it('getTVOCs gets all TVOC of one device after a specific date', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const TVOCs = [];
+        for (let i = 1; i <= 10; i += 1) {
+          TVOCs.push({
+            device: '000000000000000001111111',
+            tvoc: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          TVOCs.map(async (a) => {
+            await database.addTVOC(a);
+          }),
+        );
+
+        const docTVOCs = await database.getTVOCs('000000000000000001111111', undefined, new Date(7 * 10000));
+
+        expect(docTVOCs.length).toBe(TVOCs.length - 3);
+
+        for (let i = 0; i < docTVOCs.length; i += 1) {
+          expect(docTVOCs[i].device).toBe('000000000000000001111111');
+          expect(docTVOCs[i].tvoc).toBe(TVOCs[i].tvoc);
+        }
+      });
+
+      it('getTVOCs gets all TVOC of one device in a specific time range', async () => {
+        const device = {
+          serialnumber: '000000000000000001111111',
+          name: 'Test Device 1',
+        };
+
+        await database.addDevice(device);
+
+        const TVOCs = [];
+        for (let i = 1; i <= 10; i += 1) {
+          TVOCs.push({
+            device: '000000000000000001111111',
+            tvoc: i * 10,
+            date: new Date(i * 10000),
+          });
+        }
+
+        await Promise.all(
+          TVOCs.map(async (a) => {
+            await database.addTVOC(a);
+          }),
+        );
+
+        const docTVOCs = await database.getTVOCs('000000000000000001111111', new Date(3 * 10000), new Date(7 * 10000));
+
+        expect(docTVOCs.length).toBe(TVOCs.length - 5);
+
+        for (let i = 0; i < docTVOCs.length; i += 1) {
+          expect(docTVOCs[i].device).toBe('000000000000000001111111');
+          expect(docTVOCs[i].tvoc).toBe(TVOCs[i + 2].tvoc);
+        }
+      });
+    });
+
     describe('Device Alarm functions', () => {
       beforeEach(async () => {
         await database.clearCollection('uvcdevices');
