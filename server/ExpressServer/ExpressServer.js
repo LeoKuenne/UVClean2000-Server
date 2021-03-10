@@ -75,8 +75,8 @@ module.exports = class ExpressServer {
             expiresIn: '1d',
           });
 
-          res.cookie('UVCleanSID', token, { httpOnly: true, domain: '127.0.0.1' });
-          logger.info('Responding with cookie "UVCleanSID", token, %o with user %o', { httpOnly: true, domain: '127.0.0.1' }, user);
+          res.cookie('UVCleanSID', token, { httpOnly: true });
+          logger.info('Responding with cookie "UVCleanSID", token, %o with user %o', { httpOnly: true }, user);
           return res.status(201).send({
             user,
             url: `/ui/managment?user=${user.username}`,

@@ -1,5 +1,5 @@
 {
-  "env": "development",
+  "env": "production",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
     "user": [
@@ -85,7 +85,7 @@
     },
     "database": {
       "mongoDB": {
-        "uri": "192.168.4.10",
+        "uri": "127.0.0.1",
         "port": 27017,
         "database": "uvclean-server"
       }
