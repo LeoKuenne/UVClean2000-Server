@@ -48,7 +48,7 @@
           Charts
           </dropdown-menu>
         </div>
-        <router-link :to="{ path: '' }"
+        <router-link :to="{ name: 'settings' }"
           class="text-color px-5 text-base align-baseline"
           v-if="$dataStore.user.canEdit === true">
           Settings

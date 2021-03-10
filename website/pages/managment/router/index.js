@@ -2,11 +2,13 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import DashboardView from '../views/Dashboard.vue';
 import ChartView from '../views/Chart.vue';
+import SettingsView from '../views/Settings.vue';
 // import Login from '../views/Login.vue';
 import DeviceChart from '../components/diagram/DeviceChart.vue';
 import GroupChart from '../components/diagram/GroupChart.vue';
 import UVCDeviceList from '../components/dashboard/UVCDeviceList.vue';
 import UVCGroupList from '../components/dashboard/UVCGroupList.vue';
+import UserList from '../components/user/UserList.vue';
 
 Vue.use(VueRouter);
 
@@ -63,11 +65,21 @@ const routes = [
       },
     ],
   },
-  // {
-  //   path: '/',
-  //   name: 'login',
-  //   component: Login,
-  // },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: SettingsView,
+    children: [
+      {
+        path: 'user',
+        name: 'settingsUserList',
+        component: UserList,
+        props(route) {
+          return route.query || {};
+        },
+      },
+    ],
+  },
 ];
 
 const router = new VueRouter({

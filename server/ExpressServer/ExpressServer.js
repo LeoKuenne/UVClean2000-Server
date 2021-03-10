@@ -107,6 +107,17 @@ module.exports = class ExpressServer {
       }
     });
 
+    apiRouter.get('/users', async (req, res) => {
+      logger.info('Got GET request on /users');
+      try {
+        const db = await this.database.getUsers();
+        return res.json(db);
+      } catch (error) {
+        server.emit('error', { service: 'ExpressServer', error });
+        return res.sendStatus(500);
+      }
+    });
+
     apiRouter.get('/devices', async (req, res) => {
       try {
         const db = await this.database.getDevices();
