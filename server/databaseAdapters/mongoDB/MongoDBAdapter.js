@@ -534,6 +534,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async addBodyState(bodyState) {
     if (this.db === undefined) throw new Error('Database is not connected');
+
     const docBodyState = new BodyStateModel(bodyState);
     const err = docBodyState.validateSync();
     if (err !== undefined) throw err;
@@ -849,7 +850,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       throw new Error('GroupID has to be a string');
     }
 
-    logger.info(`Getting group ${groupID}`);
+    logger.debug(`Getting group ${groupID}`);
 
     const groupData = await UVCGroupModel.findOne({ _id: groupID })
       .populate('devices')
@@ -891,7 +892,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
       throw new Error('GroupID has to be a string');
     }
 
-    logger.info(`Getting group ${groupID}`);
+    logger.debug(`Getting devices in group ${groupID}`);
 
     const groupData = await UVCGroupModel.findOne({ _id: groupID })
       .populate('devices')
@@ -1132,9 +1133,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
         _id: new ObjectId(groupID),
       }, {
         $set: updateProp,
-      }, { new: true }).exec().catch((e) => {
-        throw e;
-      });
+      }, { new: true });
     }
 
     switch (propertie) {

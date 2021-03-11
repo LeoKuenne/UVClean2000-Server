@@ -65,6 +65,8 @@ Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/14 | 7.55
 Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/15 | 7.58
 Event: MQTT-Message: UVClean/0002145702154/state_changed/lamp/16 | 3.04
 Event: MQTT-Message: UVClean/0002145702154/state_changed/Tacho | 4.88
+UVClean/0000000064/stateChanged/co2 gAAAAABgPDFSYPj2eNlD38nCjDJHOl1AfNmYKrcoc4Z61t-PJYAnAU23kOpRKljEhjJ1y34LSRjeeBAKRW7o6gDDU_p0wUJ9Xw==
+UVClean/0000000064/stateChanged/co2 gAAAAABgPDFSYPj2eNlD38nCjDJHOl1AfNmYKrcoc4Z61t-PJYAnAU23kOpRKljEhjJ1y34LSRjeeBAKRW7o6gDDU_p0wUJ9Xw==
 
 ## Project setup
 ```

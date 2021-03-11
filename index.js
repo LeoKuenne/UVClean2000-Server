@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fernet = require('fernet');
 const MainLogger = require('./server/Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });

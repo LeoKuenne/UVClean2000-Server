@@ -1,3 +1,4 @@
+const fs = require('fs');
 const socketio = require('socket.io');
 const mqtt = require('mqtt');
 const EventEmitter = require('events');
@@ -17,6 +18,7 @@ const RemoveDeviceFromGroup = require('./controlModules/SocketIOCommands/RemoveD
 const ResetDevice = require('./controlModules/SocketIOCommands/ResetDevice');
 const AcknowledgeDeviceAlarm = require('./controlModules/SocketIOCommands/AcknowledgeDeviceAlarm');
 const SetDevicesInGroup = require('./controlModules/SocketIOCommands/SetDevicesInGroup');
+const { decrypt } = require('./controlModules/MQTTEvents/middleware/decrypt');
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
@@ -30,6 +32,7 @@ class UVCleanServer extends EventEmitter {
       this.config.database.mongoDB.database);
 
     this.express = new ExpressServer(this, this.config.http, this.database);
+    fs.writeFileSync(`${__dirname}/ssl/fernetSecret.txt`, 'NQCNtEul3sEuOwMSRExMeh_RQ0iYD0USEemo00G4pCg=', { encoding: 'base64' });
   }
 
   async stopServer() {
@@ -131,6 +134,7 @@ class UVCleanServer extends EventEmitter {
       this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
 
       // Register MQTT actions
+      DeviceStateChanged.use(decrypt);
       DeviceStateChanged.register(this, this.database, this.io, this.client);
 
       this.client.on('connect', async () => {

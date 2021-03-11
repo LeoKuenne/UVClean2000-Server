@@ -1,5 +1,5 @@
 {
-  "env": "production",
+  "env": "development",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
     "user": [
@@ -80,7 +80,7 @@
       "cert": "./ssl/127.0.0.1_cert.pem"
     },
     "mqtt": {
-      "broker": "192.168.4.10",
+      "broker": "127.0.0.1",
       "port": 1883
     },
     "database": {

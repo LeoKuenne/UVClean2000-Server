@@ -1,4 +1,7 @@
 const mongoose = require('mongoose');
+const MainLogger = require('../Logger').logger;
+
+const logger = MainLogger.child({ service: 'UVCDeviceDataModel' });
 
 const { Schema } = mongoose;
 
@@ -41,6 +44,7 @@ function checkAlarmState(device) {
 }
 
 function parseStates(propertie, subpropertie, value) {
+  logger.debug(`parsingState for propertie ${propertie}, subpropertie ${subpropertie} and Value ${value}`);
   switch (propertie) {
     case 'name':
     case 'currentBodyState':

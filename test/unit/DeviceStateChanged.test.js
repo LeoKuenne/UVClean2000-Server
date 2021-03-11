@@ -1,5 +1,7 @@
 /* eslint-disable no-await-in-loop */
 const EventEmitter = require('events');
+const DeviceStateChanged = require('../../server/controlModules/MQTTEvents/DeviceStateChanged');
+
 const {
   mapMQTTTopicToDatabase,
   hasDeviceAlarm,
@@ -9,6 +11,45 @@ const {
   updateGroupState,
 } = require('../../server/controlModules/MQTTEvents/DeviceStateChanged');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
+
+describe.only('Middleware functionality', () => {
+  it('Middleware chain calls one after another and does not calls the next one if next is not called', () => {
+    const middleware1 = jest.fn();
+    const middleware2 = jest.fn();
+    const middleware3 = jest.fn();
+    const middleware4 = jest.fn();
+
+    const server = jest.fn();
+    const db = jest.fn();
+    const io = jest.fn();
+    const mqtt = jest.fn();
+    const message = 'Message';
+
+    DeviceStateChanged.use((server, db, io, mqtt, message, next) => {
+      middleware1();
+      next();
+    });
+
+    DeviceStateChanged.use((server, db, io, mqtt, message, next) => {
+      middleware2();
+      next();
+    });
+
+    DeviceStateChanged.use((server, db, io, mqtt, message, next) => {
+      middleware3();
+    });
+
+    DeviceStateChanged.use((server, db, io, mqtt, message, next) => {
+      middleware4();
+    });
+
+    DeviceStateChanged.execute(server, db, io, mqtt, message);
+    expect(middleware1).toHaveBeenCalledTimes(1);
+    expect(middleware1).toHaveBeenCalledTimes(1);
+    expect(middleware3).toHaveBeenCalledTimes(1);
+    expect(middleware4).toHaveBeenCalledTimes(0);
+  });
+});
 
 describe('function mapMQTTTopicToDatabase', () => {
   it.each([

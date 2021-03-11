@@ -1,11 +1,11 @@
 const UVCDevice = require('../../dataModels/UVCDevice');
-
 const MainLogger = require('../../Logger.js').logger;
 
 const logger = MainLogger.child({ service: 'DeviceStateChangedEvent' });
 
-async function getDevicesWithWrongState(groupID, prop, db) {
-  const group = await db.getGroup(groupID);
+const stack = [];
+
+async function getDevicesWithWrongState(group, prop, db) {
   return group.devices.filter((dev) => dev[prop] !== group[prop]);
 }
 
@@ -18,6 +18,7 @@ async function getDevicesWithWrongState(groupID, prop, db) {
  * @param {Array} devicesWrongState Array of serialnumbers of the devices
  */
 async function updateGroupState(database, groupID, prop, devicesWrongState) {
+  logger.debug('updateGroup devices with other state');
   switch (prop) {
     case 'engineState':
       return database.updateGroupDevicesWithOtherState(groupID, 'engineState', devicesWrongState);
@@ -31,13 +32,13 @@ async function updateGroupState(database, groupID, prop, devicesWrongState) {
 }
 
 async function updateGroup(groupID, prop, db, io) {
-  const devicesWrongState = await getDevicesWithWrongState(groupID, prop, db);
+  logger.debug('updateGroup states');
+  let group = await db.getGroup(groupID);
+  const devicesWrongState = await getDevicesWithWrongState(group, prop, db);
   const serialnumbers = [];
   devicesWrongState.forEach((device) => {
     serialnumbers.push(device.serialnumber);
   });
-
-  let group = null;
 
   switch (prop) {
     case 'engineState':
@@ -86,9 +87,8 @@ function hasDeviceAlarm(databaseDevice, hasAlarm) {
   return undefined;
 }
 
-async function checkAlarm(db, io, newState) {
+async function checkAlarm(db, device, io, newState) {
   // Alarm Checking
-  const device = await db.getDevice(newState.serialnumber);
   const deviceShouldHaveAlarm = UVCDevice.checkAlarmState(device);
   const deviceGroup = (device.group.id !== undefined)
     ? await db.getGroup(device.group.id) : undefined;
@@ -126,7 +126,7 @@ async function checkAlarm(db, io, newState) {
 }
 
 async function updateDatabase(db, newState) {
-  logger.info(`Updating device ${newState.serialnumber} in database with new State`, newState);
+  logger.info(`Updating device ${newState.serialnumber} in database with new State %o`, newState);
   let device = {};
 
   switch (newState.prop) {
@@ -261,12 +261,11 @@ function mapMQTTTopicToDatabase(topic) {
   }
 }
 
-async function execute(db, io, mqtt, topic, message) {
-  logger.info(`Got MQTT message at topic ${topic} with message ${message}`);
-
+async function execute(db, io, mqtt, topic, message, next) {
+  logger.info(`Got MQTT message at topic ${topic} with message ${message.message}`);
   const props = mapMQTTTopicToDatabase(topic);
 
-  const parsed = UVCDevice.parseStates(props.prop, props.subprop, message);
+  const parsed = UVCDevice.parseStates(props.prop, props.subprop, message.message);
 
   const newState = {
     serialnumber: props.serialnumber,
@@ -280,20 +279,49 @@ async function execute(db, io, mqtt, topic, message) {
 
   await updateDatabase(db, newState);
 
-  await checkAlarm(db, io, newState);
-
   const device = await db.getDevice(newState.serialnumber);
+
+  await checkAlarm(db, device, io, newState);
+
   if (device.group._id) { await updateGroup(device.group._id.toString(), newState.prop, db, io); }
 
   io.emit('device_stateChanged', newState);
+}
+
+function use(...middleware) {
+  stack.push(...middleware);
+}
+
+async function executeMiddleware(db, io, mqtt, topic, message) {
+  let prevIndex = -1;
+
+  async function runner(index) {
+    if (index === prevIndex) {
+      throw new Error('next() called multiple times');
+    }
+
+    prevIndex = index;
+
+    const middleware = stack[index];
+
+    if (middleware) {
+      await middleware(db, io, mqtt, topic, message, () => runner(index + 1));
+    }
+  }
+
+  await runner(0);
 }
 
 function register(server, db, io, mqtt) {
   logger.info('Registering socketIO module');
   mqtt.on('message', async (topic, message) => {
     if (topic.split('/')[2] !== 'stateChanged') return;
+    const msg = {
+      message: message.toString(),
+    };
     try {
-      await execute(db, io, mqtt, topic, message);
+      await executeMiddleware(db, io, mqtt, topic, msg);
+      await execute(db, io, mqtt, topic, msg);
     } catch (e) {
       server.emit('error', { service: 'DeviceStateChangedEvent', error: e });
     }
@@ -301,6 +329,7 @@ function register(server, db, io, mqtt) {
 }
 module.exports = {
   register,
+  use,
   mapMQTTTopicToDatabase,
   checkAlarm,
   updateDatabase,
