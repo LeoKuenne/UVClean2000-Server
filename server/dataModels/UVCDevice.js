@@ -71,7 +71,7 @@ function parseStates(propertie, subpropertie, value) {
       };
     case 'currentLampValue':
       return {
-        value: parseInt(value, 10),
+        value: parseFloat(value),
         lamp: parseInt(subpropertie, 10),
       };
     default:

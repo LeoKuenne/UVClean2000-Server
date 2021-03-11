@@ -60,9 +60,9 @@ describe('parseStates function', () => {
   });
 
   it('Parses currentLampValue correctly', () => {
-    const d = UVCDevice.parseStates('currentLampValue', '1', '1');
+    const d = UVCDevice.parseStates('currentLampValue', '1', '112.125125');
     expect(d.lamp).toBe(1);
-    expect(d.value).toBe(1);
+    expect(d.value).toBe(112.125125);
 
     const d1 = UVCDevice.parseStates('currentLampValue', 'True', false);
     expect(d1.lamp).toBe(NaN);

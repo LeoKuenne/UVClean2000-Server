@@ -4,7 +4,9 @@ const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAda
 
 let database;
 
-global.config.useEncryption = false;
+global.config = {
+  useEncryption: false,
+};
 
 beforeAll(async () => {
   database = new MongoDBAdapter(global.__MONGO_URI__.replace('mongodb://', ''), '');
