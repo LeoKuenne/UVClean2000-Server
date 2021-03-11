@@ -325,6 +325,10 @@ module.exports = class ExpressServer {
     });
 
     this.app.use('/api/', apiRouter);
+
+    this.app.get('*', (req, res) => {
+      res.redirect('/ui/login');
+    });
   }
 
   startExpressServer() {

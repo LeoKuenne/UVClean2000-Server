@@ -1,8 +1,8 @@
 const fs = require('fs');
-const fernet = require('fernet');
 const MainLogger = require('./server/Logger.js').logger;
+const { setTransports } = require('./server/Logger.js');
 
-const logger = MainLogger.child({ service: 'UVCleanServer' });
+const logger = MainLogger.child({ service: 'Startup' });
 
 logger.info('Reading config file UVCleanServer.config.json');
 const file = fs.readFileSync('./server/UVCleanServer.config.json');
@@ -28,8 +28,9 @@ switch (configFile.env) {
     process.exit(1);
     break;
 }
-
+config.env = configFile.env;
 global.config = config;
+setTransports();
 
 const { UVCleanServer } = require('./server/UVCleanServer.js');
 

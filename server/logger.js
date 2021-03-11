@@ -44,7 +44,7 @@ const logger = winston.createLogger({
     }),
   ],
   exceptionHandlers: [
-    new winston.transports.File({ filename: 'logs/rejections.log' }),
+    new winston.transports.File({ filename: 'logs/exceptions.log' }),
     new winston.transports.Console({
       format: format.combine(
         format.colorize(),
@@ -58,19 +58,27 @@ const logger = winston.createLogger({
     }),
   ],
 });
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    level: 'debug',
-    format: format.combine(
-      format.colorize(),
-      format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss',
-      }),
-      format.errors({ stack: true }),
-      format.splat(),
-      myFormat,
-    ),
-  }));
+
+function setTransports() {
+  const d = Date.now();
+  console.log(d);
+  if (config.env === 'production') {
+    logger.add(new winston.transports.File({ filename: `logs/error/${d}.log`, level: 'error' }));
+    logger.add(new winston.transports.File({ filename: `logs/combined/${d}.log`, level: 'debug' }));
+  } else {
+    logger.add(new winston.transports.Console({
+      level: 'debug',
+      format: format.combine(
+        format.colorize(),
+        format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        format.errors({ stack: true }),
+        format.splat(),
+        myFormat,
+      ),
+    }));
+  }
 }
 
-module.exports = { logger };
+module.exports = { logger, setTransports };
