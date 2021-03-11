@@ -172,4 +172,5 @@ class UVCleanServer extends EventEmitter {
 
 module.exports = {
   UVCleanServer,
+  useEncryption,
 };

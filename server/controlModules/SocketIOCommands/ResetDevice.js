@@ -1,4 +1,5 @@
 const MainLogger = require('../../Logger.js').logger;
+const { encrypt } = require('./middleware/encrypt');
 
 const logger = MainLogger.child({ service: 'AddDeviceCommand' });
 
@@ -8,6 +9,7 @@ async function execute(db, io, mqtt, message) {
   if (message.serialnumber !== undefined && typeof message.serialnumber !== 'string') {
     throw new Error('Serialnumber must be defined and of type string');
   }
+  const encryptedValue = encrypt('true');
 
   await db.getDevice(message.serialnumber)
     .catch((e) => {
@@ -15,7 +17,7 @@ async function execute(db, io, mqtt, message) {
     }).then((databaseDevice) => {
       logger.info('Sending device reset mqtt message');
 
-      mqtt.publish(`UVClean/${databaseDevice.serialnumber}/reset`, 'true');
+      mqtt.publish(`UVClean/${databaseDevice.serialnumber}/reset`, (useEncryption) ? encryptedValue : 'true');
     });
 }
 

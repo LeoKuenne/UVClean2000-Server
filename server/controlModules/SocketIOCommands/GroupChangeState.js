@@ -1,4 +1,5 @@
 const MainLogger = require('../../Logger.js').logger;
+const { encrypt } = require('./middleware/encrypt');
 
 const logger = MainLogger.child({ service: 'GroupChangeStateCommand' });
 
@@ -22,6 +23,7 @@ async function execute(db, io, mqtt, message) {
   };
 
   let group = null;
+  const encryptedValue = encrypt(newState.newValue);
 
   switch (newState.prop) {
     case 'name':
@@ -44,7 +46,7 @@ async function execute(db, io, mqtt, message) {
       });
       group = await db.getGroup(newState.id);
       group.devices.forEach((device) => {
-        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineState`, newState.newValue);
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineState`, (useEncryption) ? encryptedValue : newState.newValue);
       });
       io.emit('group_stateChanged', {
         id: newState.id,
@@ -59,7 +61,7 @@ async function execute(db, io, mqtt, message) {
       });
       group = await db.getGroup(newState.id);
       group.devices.forEach((device) => {
-        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineLevel`, newState.newValue);
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineLevel`, (useEncryption) ? encryptedValue : newState.newValue);
       });
       io.emit('group_stateChanged', {
         id: newState.id,
@@ -74,7 +76,7 @@ async function execute(db, io, mqtt, message) {
       });
       group = await db.getGroup(newState.id);
       group.devices.forEach((device) => {
-        mqtt.publish(`UVClean/${device.serialnumber}/changeState/eventMode`, newState.newValue);
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/eventMode`, (useEncryption) ? encryptedValue : newState.newValue);
       });
       io.emit('group_stateChanged', {
         id: newState.id,

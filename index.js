@@ -29,6 +29,8 @@ switch (configFile.env) {
     break;
 }
 
+global.useEncryption = config.useEncryption;
+
 const { UVCleanServer } = require('./server/UVCleanServer.js');
 
 const server = new UVCleanServer(config);

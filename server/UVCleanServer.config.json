@@ -2,6 +2,7 @@
   "env": "development",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
+    "useEncryption": true,
     "user": [
       {
         "username": "admin",
@@ -33,6 +34,7 @@
   },
   "staging": {
     "desc": "Testing on server. Frontend build is running on 127.0.0.1, Backend is running on server",
+    "useEncryption": true,
     "user": [
       {
         "username": "admin",
@@ -63,6 +65,7 @@
   },
   "development": {
     "desc": "Development on 127.0.0.1. Database and MQTT Broker is running on 127.0.0.1",
+    "useEncryption": true,
     "user": [
       {
         "username": "admin",

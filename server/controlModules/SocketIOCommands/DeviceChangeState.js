@@ -1,4 +1,5 @@
 const MainLogger = require('../../Logger.js').logger;
+const { encrypt } = require('./middleware/encrypt');
 
 const logger = MainLogger.child({ service: 'DeviceChangeStateCommand' });
 
@@ -17,14 +18,15 @@ async function execute(db, io, mqtt, message) {
     throw new Error('New value must be defined and of type string');
   }
 
-  const device = {
+  const newState = {
     serialnumber: message.serialnumber,
     prop: message.prop,
     newValue: message.newValue,
   };
+  const encryptedValue = encrypt(newState.newValue);
 
   let propertie = '';
-  switch (device.prop) {
+  switch (newState.prop) {
     case 'engineState':
       propertie = 'engineState';
       break;
@@ -41,9 +43,9 @@ async function execute(db, io, mqtt, message) {
       propertie = 'engineLevel';
       break;
     default:
-      throw new Error(`Can not parse state ${device.prop} for MQTT`);
+      throw new Error(`Can not parse state ${newState.prop} for MQTT`);
   }
-  mqtt.publish(`UVClean/${device.serialnumber}/changeState/${propertie}`, `${device.newValue}`);
+  mqtt.publish(`UVClean/${newState.serialnumber}/changeState/${propertie}`, (useEncryption) ? encryptedValue : newState.newValue);
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {
