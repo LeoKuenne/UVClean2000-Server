@@ -195,11 +195,13 @@ export default {
         return;
       }
 
+      this.showEditForm = false;
+      this.errorMessage = '';
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('group_add', {
         name: group.name,
       });
-      this.showEditForm = false;
-      this.errorMessage = '';
     },
     /**
      *
@@ -209,11 +211,14 @@ export default {
         this.errorMessage = 'Name has to be vaild.';
         return;
       }
+
+      this.showSetDeviceForm = false;
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('group_setDevices', {
         group: this.formGroup.id,
         devices: this.checkedDevices,
       });
-      this.showSetDeviceForm = false;
     },
     /**
      * Called when the assign button of the group form is clicked
@@ -244,17 +249,20 @@ export default {
         return;
       }
 
+      this.showEditForm = false;
+      this.errorMessage = '';
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('group_changeState', {
         id: group.id,
         prop: 'name',
         newValue: group.name,
       });
-      this.showEditForm = false;
-      this.errorMessage = '';
     },
     deleteGroup(group) {
-      this.$root.$data.socket.emit('group_delete', { id: group.id });
       this.showEditForm = false;
+      if (this.$root.$data.socket === null) return;
+      this.$root.$data.socket.emit('group_delete', { id: group.id });
     },
     /**
      * Called when any state in the devices should be changed
@@ -266,7 +274,7 @@ export default {
         console.log('New State can not be parsed', newState);
         return;
       }
-      console.log(newState);
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('group_changeState', {
         id: newState.id,
         prop: newState.prop,

@@ -114,10 +114,11 @@ export default {
       this.showUserForm = false;
     },
     deleteUser() {
+      this.showUserForm = false;
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('user_delete', {
         username: this.formUser.username,
       });
-      this.showUserForm = false;
     },
     addUser(user) {
       if (user.username === '' || user.username.match(/[^0-9A-Za-z+ ]/gm) !== null) {
@@ -129,21 +130,25 @@ export default {
         this.errorMessage = 'Passwords do not match';
         return;
       }
+      this.showUserForm = false;
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('user_add', {
         username: user.username,
         password: user.password,
         canEdit: user.canEdit,
       });
-      this.showUserForm = false;
     },
     updateUser() {
       this.errorMessage = '';
+      this.showUserForm = false;
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('user_update', {
         username: this.formUser.username,
         password: this.formUser.password,
         canEdit: this.formUser.canEdit,
       });
-      this.showUserForm = false;
     },
   },
   computed: {

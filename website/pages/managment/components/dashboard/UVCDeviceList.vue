@@ -212,6 +212,7 @@ export default {
         return;
       }
 
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('group_addDevice', {
         device: this.formDevice.serialnumber,
         group: this.formSelectedGroup,
@@ -219,11 +220,12 @@ export default {
       this.showGroupAssignmentForm = false;
     },
     removeGroupAssignment() {
+      this.showGroupAssignmentForm = false;
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('group_deviceDelete', {
         device: this.formDevice.serialnumber,
         group: this.formSelectedGroup,
       });
-      this.showGroupAssignmentForm = false;
     },
     /**
      * Called by the Add UVClean Device button in the menu bar
@@ -258,30 +260,35 @@ export default {
         return;
       }
 
+      this.showEditForm = false;
+      this.errorMessage = '';
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('device_add', {
         name: device.name,
         serialnumber: device.serialnumber,
       });
-      this.showEditForm = false;
-      this.errorMessage = '';
     },
     /**
      * Called when the Update button in the modal is pressed
      */
     updateDevice(device) {
+      this.showEditForm = false;
+
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('device_changeState', {
         serialnumber: device.serialnumber,
         prop: 'name',
         newValue: `${device.name}`,
       });
-      this.showEditForm = false;
     },
     /**
      * Called when the Delete button in the modal is pressed
      */
     deleteDevice(serialnumber) {
-      this.$root.$data.socket.emit('device_delete', { serialnumber: `${serialnumber}` });
       this.showEditForm = false;
+      if (this.$root.$data.socket === null) return;
+      this.$root.$data.socket.emit('device_delete', { serialnumber: `${serialnumber}` });
     },
     /**
      * Called when any state in the devices should be changed
@@ -294,6 +301,7 @@ export default {
         return;
       }
 
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('device_changeState', {
         serialnumber: newState.serialnumber,
         prop: `${newState.prop}`,
@@ -304,6 +312,7 @@ export default {
      * Called when the acknowledge button in the alarm popup or in the menu is pressed
      */
     acknowledgeAlarm(device) {
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('device_acknowledgeAlarm', {
         serialnumber: device.serialnumber,
       });
@@ -312,6 +321,7 @@ export default {
      * Called when the reset menuitem in the menu is pressed
      */
     resetDevice(device) {
+      if (this.$root.$data.socket === null) return;
       this.$root.$data.socket.emit('device_reset', {
         serialnumber: device.serialnumber,
       });

@@ -43,14 +43,12 @@ new Vue({
   render: (h) => h(App),
   router,
   data: {
-    socket,
+    socket: (store.user.canEdit) ? socket : null,
   },
   async created() {
     window.onbeforeunload = () => {
       socket.emit('leave', this.username);
     };
-
-    console.log('Created: datastore:', this.$dataStore);
 
     socket.on('error', (error) => {
       console.error('error in backend', error);
@@ -265,6 +263,7 @@ new Vue({
 
     try {
       await this.fetchDataFromServer();
+      this.socket = (this.$dataStore.user.canEdit) ? socket : null;
     } catch (error) {
       console.error('error in backend', error);
       Vue.$toast.open({
@@ -284,9 +283,7 @@ new Vue({
           return response.json();
         })
         .then((data) => {
-          console.log(data);
           this.$dataStore.devices = data;
-          console.log(this.$dataStore);
         });
 
       await fetch('/api/groups')
@@ -297,9 +294,7 @@ new Vue({
           return response.json();
         })
         .then((data) => {
-          console.log(data);
           this.$dataStore.groups = data;
-          console.log(this.$dataStore);
         });
     },
   },

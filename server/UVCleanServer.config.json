@@ -65,7 +65,7 @@
   },
   "development": {
     "desc": "Development on 127.0.0.1. Database and MQTT Broker is running on 127.0.0.1",
-    "useEncryption": true,
+    "useEncryption": false,
     "user": [
       {
         "username": "admin",
