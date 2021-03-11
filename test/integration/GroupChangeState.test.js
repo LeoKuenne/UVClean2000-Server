@@ -4,6 +4,8 @@ const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAda
 
 let database;
 
+global.useEncryption = false;
+
 beforeAll(async () => {
   database = new MongoDBAdapter(global.__MONGO_URI__.replace('mongodb://', ''), '');
   await database.connect();

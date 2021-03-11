@@ -33,7 +33,7 @@ afterAll(async () => {
   expressServer.stopExpressServer();
 });
 
-describe('Express Route testing', () => {
+describe.skip('Express Route testing', () => {
   beforeEach(() => {
     database.clearCollection('uvcdevices');
     database.clearCollection('uvcgroups');

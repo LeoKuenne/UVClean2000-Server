@@ -12,7 +12,7 @@ const {
 } = require('../../server/controlModules/MQTTEvents/DeviceStateChanged');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
-describe.only('Middleware functionality', () => {
+describe('Middleware functionality', () => {
   it('Middleware chain calls one after another and does not calls the next one if next is not called', () => {
     const middleware1 = jest.fn();
     const middleware2 = jest.fn();
@@ -21,7 +21,7 @@ describe.only('Middleware functionality', () => {
 
     const server = jest.fn();
     const db = jest.fn();
-    const io = jest.fn();
+    const io = new EventEmitter();
     const mqtt = jest.fn();
     const message = 'Message';
 
@@ -43,7 +43,8 @@ describe.only('Middleware functionality', () => {
       middleware4();
     });
 
-    DeviceStateChanged.execute(server, db, io, mqtt, message);
+    DeviceStateChanged.executeMiddleware(server, db, io, mqtt, message);
+
     expect(middleware1).toHaveBeenCalledTimes(1);
     expect(middleware1).toHaveBeenCalledTimes(1);
     expect(middleware3).toHaveBeenCalledTimes(1);
@@ -230,7 +231,9 @@ describe('function checkAlarm', () => {
       });
     }
 
-    await checkAlarm(database, io, { serialnumber: '0002145702154' });
+    const device = await database.getDevice('0002145702154');
+
+    await checkAlarm(database, device, io, { serialnumber: '0002145702154' });
     expect(alarm).not.toHaveBeenCalled();
     done();
   });
@@ -267,6 +270,7 @@ describe('function checkAlarm', () => {
           break;
       }
     });
+    let device = null;
 
     for (i = 0; i < 12; i += 1) {
       switch (i % 3) {
@@ -275,7 +279,8 @@ describe('function checkAlarm', () => {
             device: '0002145702154', state: 'Alarm',
           });
 
-          await checkAlarm(database, io, { serialnumber: '0002145702154' });
+          device = await database.getDevice('0002145702154');
+          await checkAlarm(database, device, io, { serialnumber: '0002145702154' });
           break;
         case 1: // Alarm change -> BodyState in, LampState out
           await database.addBodyState({
@@ -285,7 +290,8 @@ describe('function checkAlarm', () => {
           await database.addFanState({
             device: '0002145702154', state: 'Ok',
           });
-          await checkAlarm(database, io, { serialnumber: '0002145702154' });
+          device = await database.getDevice('0002145702154');
+          await checkAlarm(database, device, io, { serialnumber: '0002145702154' });
           expect(alarm).not.toHaveBeenCalled();
           break;
         case 2: // LampState out - no alarm
@@ -293,7 +299,8 @@ describe('function checkAlarm', () => {
             device: '0002145702154', state: (i % 2) ? 'Alarm' : 'Ok',
           });
 
-          await checkAlarm(database, io, { serialnumber: '0002145702154' });
+          device = await database.getDevice('0002145702154');
+          await checkAlarm(database, device, io, { serialnumber: '0002145702154' });
           break;
         default:
           break;
@@ -372,8 +379,9 @@ describe('Iterating function checkAlarm', () => {
         }
       }
     });
+    const device = await database.getDevice('1');
 
-    await checkAlarm(database, io, { serialnumber: '1' });
+    await checkAlarm(database, device, io, { serialnumber: '1' });
 
     if (alarmResult === null) {
       expect(deviceAlarm).not.toHaveBeenCalled();
@@ -409,8 +417,9 @@ describe('Iterating function checkAlarm', () => {
         }
       }
     });
+    const device = await database.getDevice('1');
 
-    await checkAlarm(database, io, { serialnumber: '1' });
+    await checkAlarm(database, device, io, { serialnumber: '1' });
 
     if (alarmResult === null) {
       expect(deviceAlarm).not.toHaveBeenCalled();
@@ -454,8 +463,9 @@ describe('Iterating function checkAlarm', () => {
         }
       }
     });
+    const dev = await database.getDevice(device);
 
-    await checkAlarm(database, io, { serialnumber: device });
+    await checkAlarm(database, dev, io, { serialnumber: device });
     if (groupResult === null) {
       expect(deviceAlarm).not.toHaveBeenCalled();
       done();
@@ -502,15 +512,16 @@ describe('Group update functions', () => {
       engineState: deviceState2,
     });
 
-    const group = await database.addGroup({
+    let group = await database.addGroup({
       name: 'Test Group',
       engineState: groupState,
     });
 
     await database.addDeviceToGroup('1', group._id.toString());
     await database.addDeviceToGroup('2', group._id.toString());
+    group = await database.getGroup(group._id.toString());
 
-    const devicesWrongState = await getDevicesWithWrongState(group._id.toString(),
+    const devicesWrongState = await getDevicesWithWrongState(group,
       'engineState', database);
 
     expect(devicesWrongState.length)

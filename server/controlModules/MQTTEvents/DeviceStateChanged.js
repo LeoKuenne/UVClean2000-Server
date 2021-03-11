@@ -329,6 +329,7 @@ function register(server, db, io, mqtt) {
 }
 module.exports = {
   register,
+  executeMiddleware,
   use,
   mapMQTTTopicToDatabase,
   checkAlarm,

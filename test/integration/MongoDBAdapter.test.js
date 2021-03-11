@@ -1596,7 +1596,7 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
-    describe.only('CO2 functions', () => {
+    describe('CO2 functions', () => {
       beforeEach(async () => {
         await database.clearCollection('uvcdevices');
         await database.clearCollection('co2');
@@ -1776,7 +1776,7 @@ describe('MongoDBAdapter Functions', () => {
       });
     });
 
-    describe.only('TVOC functions', () => {
+    describe('TVOC functions', () => {
       beforeEach(async () => {
         await database.clearCollection('uvcdevices');
         await database.clearCollection('tvocs');
