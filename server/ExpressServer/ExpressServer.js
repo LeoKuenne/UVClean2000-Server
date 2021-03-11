@@ -10,8 +10,7 @@ const userMiddleware = require('./middleware/user');
 const logger = MainLogger.child({ service: 'ExpressServer' });
 
 module.exports = class ExpressServer {
-  constructor(server, config, database) {
-    this.config = config;
+  constructor(server, database) {
     this.database = database;
 
     this.app = express();
@@ -318,8 +317,8 @@ module.exports = class ExpressServer {
   }
 
   startExpressServer() {
-    this.httpServer.listen(this.config.port, () => {
-      logger.info(`HTTP listening on ${this.config.port}`);
+    this.httpServer.listen(config.http.port, () => {
+      logger.info(`HTTP listening on ${config.http.port}`);
     });
   }
 

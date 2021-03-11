@@ -29,11 +29,11 @@ switch (configFile.env) {
     break;
 }
 
-global.useEncryption = config.useEncryption;
+global.config = config;
 
 const { UVCleanServer } = require('./server/UVCleanServer.js');
 
-const server = new UVCleanServer(config);
+const server = new UVCleanServer();
 
 logger.info('Starting UVCServer...');
 

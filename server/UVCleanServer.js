@@ -23,15 +23,13 @@ const { decrypt } = require('./controlModules/MQTTEvents/middleware/decrypt');
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
 class UVCleanServer extends EventEmitter {
-  constructor(config) {
+  constructor() {
     super();
 
-    this.config = config;
+    this.database = new MongoDBAdapter(`${config.database.mongoDB.uri}:${config.database.mongoDB.port}`,
+      config.database.mongoDB.database);
 
-    this.database = new MongoDBAdapter(`${this.config.database.mongoDB.uri}:${this.config.database.mongoDB.port}`,
-      this.config.database.mongoDB.database);
-
-    this.express = new ExpressServer(this, this.config.http, this.database);
+    this.express = new ExpressServer(this, this.database);
     fs.writeFileSync(`${__dirname}/ssl/fernetSecret.txt`, 'NQCNtEul3sEuOwMSRExMeh_RQ0iYD0USEemo00G4pCg=', { encoding: 'base64' });
   }
 
@@ -54,7 +52,7 @@ class UVCleanServer extends EventEmitter {
 
       this.io = socketio(this.express.httpServer, {
         cors: {
-          origin: `http://${this.config.http.cors}`,
+          origin: `http://${config.http.cors}`,
           methods: ['GET', 'POST'],
         },
       });
@@ -94,7 +92,7 @@ class UVCleanServer extends EventEmitter {
       this.database.on('open', async () => {
         logger.info('Emitting info event on socket io for database connected');
         this.io.emit('databaseConnected');
-        await Promise.all(this.config.user.map(async (user) => {
+        await Promise.all(config.user.map(async (user) => {
           logger.info(`Checking User ${user.username} to exists in database.`);
           try {
             await this.database.getUser(user.username);
@@ -130,15 +128,15 @@ class UVCleanServer extends EventEmitter {
         this.io.emit('warn', { message: 'Database disconnected' });
       });
 
-      logger.info(`Trying to connect to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
-      this.client = mqtt.connect(`mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+      logger.info(`Trying to connect to: mqtt://${config.mqtt.broker}:${config.mqtt.port}`);
+      this.client = mqtt.connect(`mqtt://${config.mqtt.broker}:${config.mqtt.port}`);
 
       // Register MQTT actions
       DeviceStateChanged.use(decrypt);
       DeviceStateChanged.register(this, this.database, this.io, this.client);
 
       this.client.on('connect', async () => {
-        logger.info(`Connected to: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+        logger.info(`Connected to: mqtt://${config.mqtt.broker}:${config.mqtt.port}`);
         this.io.emit('info', { message: 'MQTT Client connected' });
         try {
           // Subscribe to all devices that already exists if the database is connected
@@ -155,7 +153,7 @@ class UVCleanServer extends EventEmitter {
       });
 
       this.client.on('offline', async () => {
-        logger.info(`Disconnected from: mqtt://${this.config.mqtt.broker}:${this.config.mqtt.port}`);
+        logger.info(`Disconnected from: mqtt://${config.mqtt.broker}:${config.mqtt.port}`);
         this.io.emit('warn', { message: 'MQTT Client disconnected' });
       });
 
@@ -172,5 +170,4 @@ class UVCleanServer extends EventEmitter {
 
 module.exports = {
   UVCleanServer,
-  useEncryption,
 };

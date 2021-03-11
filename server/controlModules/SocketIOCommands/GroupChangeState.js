@@ -46,7 +46,7 @@ async function execute(db, io, mqtt, message) {
       });
       group = await db.getGroup(newState.id);
       group.devices.forEach((device) => {
-        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineState`, (useEncryption) ? encryptedValue : newState.newValue);
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineState`, (config.useEncryption) ? encryptedValue : newState.newValue);
       });
       io.emit('group_stateChanged', {
         id: newState.id,
@@ -61,7 +61,7 @@ async function execute(db, io, mqtt, message) {
       });
       group = await db.getGroup(newState.id);
       group.devices.forEach((device) => {
-        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineLevel`, (useEncryption) ? encryptedValue : newState.newValue);
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/engineLevel`, (config.useEncryption) ? encryptedValue : newState.newValue);
       });
       io.emit('group_stateChanged', {
         id: newState.id,
@@ -76,7 +76,7 @@ async function execute(db, io, mqtt, message) {
       });
       group = await db.getGroup(newState.id);
       group.devices.forEach((device) => {
-        mqtt.publish(`UVClean/${device.serialnumber}/changeState/eventMode`, (useEncryption) ? encryptedValue : newState.newValue);
+        mqtt.publish(`UVClean/${device.serialnumber}/changeState/eventMode`, (config.useEncryption) ? encryptedValue : newState.newValue);
       });
       io.emit('group_stateChanged', {
         id: newState.id,
