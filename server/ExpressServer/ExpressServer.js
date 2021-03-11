@@ -1,5 +1,6 @@
 const express = require('express');
-const http = require('http');
+const fs = require('fs');
+const http = (config.http.secure) ? require('https') : require('http');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -13,8 +14,18 @@ module.exports = class ExpressServer {
   constructor(server, database) {
     this.database = database;
 
+    const options = {};
+    if (config.http.secure) {
+      try {
+        options.cert = fs.readFileSync(`${config.http.cert}`);
+        options.key = fs.readFileSync(`${config.http.key}`);
+      } catch (err) {
+        logger.error('Could not load key and certificate files! Continuing without tls \n', err);
+      }
+    }
+
     this.app = express();
-    this.httpServer = http.createServer(this.app);
+    this.httpServer = http.createServer(options, this.app);
 
     this.app.use(cors({
       origin: 'http://127.0.0.1:8080',

@@ -15,41 +15,10 @@
     "http": {
       "cors": "",
       "broker": "192.168.4.10",
-      "port": 3000,
-      "secure": false,
-      "key": "./ssl/127.0.0.1_key.pem",
-      "cert": "./ssl/127.0.0.1_cert.pem"
-    },
-    "mqtt": {
-      "broker": "192.168.4.10",
-      "port": 1883
-    },
-    "database": {
-      "mongoDB": {
-        "uri": "192.168.4.10",
-        "port": 27017,
-        "database": "uvclean-server"
-      }
-    }
-  },
-  "staging": {
-    "desc": "Testing on server. Frontend build is running on 127.0.0.1, Backend is running on server",
-    "useEncryption": true,
-    "user": [
-      {
-        "username": "admin",
-        "canEdit": "true"
-      },
-      {
-        "username": "guest"
-      }
-    ],
-    "http": {
-      "cors": "127.0.0.1:8080",
-      "port": 3000,
-      "secure": false,
-      "key": "./ssl/127.0.0.1_key.pem",
-      "cert": "./ssl/127.0.0.1_cert.pem"
+      "port": 80,
+      "secure": true,
+      "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
+      "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
       "broker": "192.168.4.10",
@@ -79,8 +48,8 @@
       "cors": "127.0.0.1:8080",
       "port": 3000,
       "secure": false,
-      "key": "./ssl/127.0.0.1_key.pem",
-      "cert": "./ssl/127.0.0.1_cert.pem"
+      "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
+      "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
       "broker": "127.0.0.1",
@@ -89,6 +58,37 @@
     "database": {
       "mongoDB": {
         "uri": "127.0.0.1",
+        "port": 27017,
+        "database": "uvclean-server"
+      }
+    }
+  },
+  "staging": {
+    "desc": "Testing on server. Frontend build is running on 127.0.0.1, Backend is running on server",
+    "useEncryption": true,
+    "user": [
+      {
+        "username": "admin",
+        "canEdit": "true"
+      },
+      {
+        "username": "guest"
+      }
+    ],
+    "http": {
+      "cors": "127.0.0.1:8080",
+      "port": 3000,
+      "secure": false,
+      "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
+      "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
+    },
+    "mqtt": {
+      "broker": "192.168.4.10",
+      "port": 1883
+    },
+    "database": {
+      "mongoDB": {
+        "uri": "192.168.4.10",
         "port": 27017,
         "database": "uvclean-server"
       }
