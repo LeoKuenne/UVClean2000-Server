@@ -30,7 +30,7 @@ class UVCleanServer extends EventEmitter {
       config.database.mongoDB.database);
 
     this.express = new ExpressServer(this, this.database);
-    fs.writeFileSync(`${__dirname}/ssl/fernetSecret.txt`, 'NQCNtEul3sEuOwMSRExMeh_RQ0iYD0USEemo00G4pCg=', { encoding: 'base64' });
+    fs.writeFileSync(config.mqtt.secret, 'NQCNtEul3sEuOwMSRExMeh_RQ0iYD0USEemo00G4pCg=', { encoding: 'base64' });
   }
 
   async stopServer() {

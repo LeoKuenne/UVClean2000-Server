@@ -65,20 +65,19 @@ function setTransports() {
   if (config.env === 'production') {
     logger.add(new winston.transports.File({ filename: `logs/error/${d}.log`, level: 'error' }));
     logger.add(new winston.transports.File({ filename: `logs/combined/${d}.log`, level: 'debug' }));
-  } else {
-    logger.add(new winston.transports.Console({
-      level: 'debug',
-      format: format.combine(
-        format.colorize(),
-        format.timestamp({
-          format: 'YYYY-MM-DD HH:mm:ss',
-        }),
-        format.errors({ stack: true }),
-        format.splat(),
-        myFormat,
-      ),
-    }));
   }
+  logger.add(new winston.transports.Console({
+    level: 'debug',
+    format: format.combine(
+      format.colorize(),
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss',
+      }),
+      format.errors({ stack: true }),
+      format.splat(),
+      myFormat,
+    ),
+  }));
 }
 
 module.exports = { logger, setTransports };

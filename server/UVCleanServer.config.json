@@ -1,5 +1,5 @@
 {
-  "env": "development",
+  "env": "production",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
     "user": [
@@ -14,12 +14,12 @@
     "http": {
       "cors": "",
       "port": 80,
-      "secure": true,
-      "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
-      "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
+      "secure": false,
+      "key": "/home/pi/UVClean2000-Server/server/ssl/localhost_key.pem",
+      "cert": "/home/pi/UVClean2000-Server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
-      "secret": "C:/workspace_nodejs/uvclean2000-server/server/ssl/fernetSecret",
+      "secret": "/home/pi/UVClean2000-Server/server/ssl/fernetSecret",
       "useEncryption": true,
       "broker": "192.168.4.10",
       "port": 1883
@@ -44,14 +44,14 @@
       }
     ],
     "http": {
-      "secret": "C:/workspace_nodejs/uvclean2000-server/server/ssl/fernetSecret",
       "cors": "127.0.0.1:8080",
       "port": 3000,
-      "secure": false,
+      "secure": true,
       "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
       "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
+      "secret": "C:/workspace_nodejs/uvclean2000-server/server/ssl/fernetSecret",
       "useEncryption": false,
       "broker": "127.0.0.1",
       "port": 1883
