@@ -71,7 +71,7 @@
           </div> Version 2 -->
         </div>
         <div class="p-2 grid grid-cols-2 space-y-2 items-center">
-          <label for="b_device_state">Devie State</label>
+          <label for="b_device_state">Device State</label>
           <button id="b_device_state"
             class="p-2 text-white hover:transform hover:scale-105 transition-all"
             :class="{ 'bg-green-500': device.engineState, 'bg-red-500': !device.engineState }"

@@ -1,8 +1,7 @@
 {
-  "env": "production",
+  "env": "development",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
-    "useEncryption": true,
     "user": [
       {
         "username": "admin",
@@ -14,13 +13,14 @@
     ],
     "http": {
       "cors": "",
-      "broker": "192.168.4.10",
       "port": 80,
       "secure": true,
       "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
       "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
+      "secret": "C:/workspace_nodejs/uvclean2000-server/server/ssl/fernetSecret",
+      "useEncryption": true,
       "broker": "192.168.4.10",
       "port": 1883
     },
@@ -34,7 +34,6 @@
   },
   "development": {
     "desc": "Development on 127.0.0.1. Database and MQTT Broker is running on 127.0.0.1",
-    "useEncryption": false,
     "user": [
       {
         "username": "admin",
@@ -45,6 +44,7 @@
       }
     ],
     "http": {
+      "secret": "C:/workspace_nodejs/uvclean2000-server/server/ssl/fernetSecret",
       "cors": "127.0.0.1:8080",
       "port": 3000,
       "secure": false,
@@ -52,6 +52,7 @@
       "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
+      "useEncryption": false,
       "broker": "127.0.0.1",
       "port": 1883
     },
@@ -65,7 +66,6 @@
   },
   "staging": {
     "desc": "Testing on server. Frontend build is running on 127.0.0.1, Backend is running on server",
-    "useEncryption": true,
     "user": [
       {
         "username": "admin",
@@ -77,13 +77,14 @@
     ],
     "http": {
       "cors": "",
-      "broker": "192.168.4.10",
       "port": 80,
       "secure": true,
       "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
       "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },
     "mqtt": {
+      "secret": "C:/workspace_nodejs/uvclean2000-server/server/ssl/fernetSecret",
+      "useEncryption": true,
       "broker": "192.168.4.10",
       "port": 1883
     },
