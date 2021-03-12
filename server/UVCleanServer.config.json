@@ -1,7 +1,11 @@
 {
-  "env": "production",
+  "env": "development",
   "production": {
     "desc": "Production, frontend build completed and placed in dashboard/static, Backend is running on server. Cors is disabled",
+    "logging": {
+      "console": true,
+      "file": true
+    },
     "user": [
       {
         "username": "admin",
@@ -34,6 +38,10 @@
   },
   "development": {
     "desc": "Development on 127.0.0.1. Database and MQTT Broker is running on 127.0.0.1",
+    "logging": {
+      "console": true,
+      "file": true
+    },
     "user": [
       {
         "username": "admin",
@@ -66,6 +74,10 @@
   },
   "staging": {
     "desc": "Testing on server. Frontend build is running on 127.0.0.1, Backend is running on server",
+    "logging": {
+      "console": true,
+      "file": true
+    },
     "user": [
       {
         "username": "admin",

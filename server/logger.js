@@ -62,22 +62,24 @@ const logger = winston.createLogger({
 function setTransports() {
   const d = Date.now();
   console.log(d);
-  if (config.env === 'production') {
+  if (config.logging.console) {
+    logger.add(new winston.transports.Console({
+      level: 'debug',
+      format: format.combine(
+        format.colorize(),
+        format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        format.errors({ stack: true }),
+        format.splat(),
+        myFormat,
+      ),
+    }));
+  }
+  if (config.logging.file) {
     logger.add(new winston.transports.File({ filename: `logs/error/${d}.log`, level: 'error' }));
     logger.add(new winston.transports.File({ filename: `logs/combined/${d}.log`, level: 'debug' }));
   }
-  logger.add(new winston.transports.Console({
-    level: 'debug',
-    format: format.combine(
-      format.colorize(),
-      format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss',
-      }),
-      format.errors({ stack: true }),
-      format.splat(),
-      myFormat,
-    ),
-  }));
 }
 
 module.exports = { logger, setTransports };
