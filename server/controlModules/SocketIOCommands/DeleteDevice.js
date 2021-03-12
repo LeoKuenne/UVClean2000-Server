@@ -21,6 +21,7 @@ async function execute(db, io, mqtt, message) {
   io.emit('device_deleted', {
     serialnumber: device.serialnumber,
   });
+  io.emit('info', { message: `Device  ${device.serialnumber} deleted` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

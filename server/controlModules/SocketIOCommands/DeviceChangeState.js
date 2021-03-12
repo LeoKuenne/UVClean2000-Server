@@ -46,6 +46,7 @@ async function execute(db, io, mqtt, message) {
       throw new Error(`Can not parse state ${newState.prop} for MQTT`);
   }
   mqtt.publish(`UVClean/${newState.serialnumber}/changeState/${propertie}`, (config.mqtt.useEncryption) ? encryptedValue : newState.newValue);
+  io.emit('info', { message: `Sended changeState (${propertie}) MQTT message to device ${newState.serialnumber}` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

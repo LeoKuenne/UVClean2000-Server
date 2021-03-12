@@ -24,6 +24,7 @@ async function execute(db, io, mqtt, message) {
   };
 
   await db.changeUserPassword(user);
+  io.emit('info', { message: `Changed password for user ${user.username}` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

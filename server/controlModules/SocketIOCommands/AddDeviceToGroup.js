@@ -16,6 +16,7 @@ async function execute(db, io, mqtt, message) {
 
   await db.addDeviceToGroup(device, group);
   io.emit('group_deviceAdded');
+  io.emit('info', { message: `Device  ${device} added to group ${group} added` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

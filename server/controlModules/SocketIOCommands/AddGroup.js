@@ -22,6 +22,7 @@ async function execute(db, io, mqtt, message) {
     logger.info('added Group to database, sending groupAdded event');
 
     io.emit('group_added', databaseGroup);
+    io.emit('info', { message: `Group  ${databaseGroup._id} with name ${databaseGroup.name} added` });
   });
 }
 

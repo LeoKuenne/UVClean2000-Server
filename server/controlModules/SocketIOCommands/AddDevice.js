@@ -33,6 +33,7 @@ async function execute(db, io, mqtt, message) {
     mqtt.subscribe(`UVClean/${databaseDevice.serialnumber}/#`);
 
     io.emit('device_added', databaseDevice);
+    io.emit('info', { message: `Device  ${databaseDevice.serialnumber} with name ${databaseDevice.name} added` });
   });
 }
 

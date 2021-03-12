@@ -16,6 +16,7 @@ async function execute(db, io, mqtt, message) {
 
   await db.deleteDeviceFromGroup(device, group);
   io.emit('group_deviceDeleted');
+  io.emit('info', { message: `Removed device ${device} from group ${group} deleted` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

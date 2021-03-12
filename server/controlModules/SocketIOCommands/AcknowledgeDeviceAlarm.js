@@ -18,6 +18,7 @@ async function execute(db, io, mqtt, message) {
       logger.info('Sending device acknowledge alarm mqtt message');
 
       mqtt.publish(`UVClean/${databaseDevice.serialnumber}/acknowledge `, (config.mqtt.useEncryption) ? encryptedValue : 'true');
+      io.emit('info', { message: `Acknowledgement send to device ${databaseDevice.serialnumber}` });
     });
 }
 

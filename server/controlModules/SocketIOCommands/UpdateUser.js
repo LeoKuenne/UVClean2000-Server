@@ -34,6 +34,7 @@ async function execute(db, io, mqtt, message) {
     newUsername: dbUser.username,
     canEdit: dbUser.canEdit,
   });
+  io.emit('info', { message: `Updated user ${dbUser.username}` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

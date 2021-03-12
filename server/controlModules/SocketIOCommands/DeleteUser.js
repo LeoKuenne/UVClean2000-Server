@@ -15,6 +15,7 @@ async function execute(db, io, mqtt, message) {
 
   await db.deleteUser(user.username);
   io.emit('user_deleted', { username: user.username });
+  io.emit('info', { message: `User  ${user.username} deleted` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {

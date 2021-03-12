@@ -19,6 +19,7 @@ async function execute(db, io, mqtt, message) {
       logger.info('deleted group from database, sending group_deleted event');
 
       io.emit('group_deleted', { id: group.id });
+      io.emit('info', { message: `Group  ${group.id} deleted` });
     }
   });
 }

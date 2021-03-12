@@ -88,6 +88,8 @@ async function execute(db, io, mqtt, message) {
     default:
       throw new Error(`GroupChangeState is not implementet for propertie ${newState.prop}`);
   }
+
+  io.emit('info', { message: `Sended changeState (${newState.prop}) MQTT message to device in group ${newState.id}` });
 }
 
 module.exports = function register(server, db, io, mqtt, ioSocket) {
