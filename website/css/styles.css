@@ -43,7 +43,7 @@
 }
 
 button:focus {
-  outline: none;
+  outline: unset;
 }
 
 @tailwind components;

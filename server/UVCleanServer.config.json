@@ -54,7 +54,7 @@
     "http": {
       "cors": "127.0.0.1:8080",
       "port": 3000,
-      "secure": true,
+      "secure": false,
       "key": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_key.pem",
       "cert": "C:/workspace_nodejs/uvclean2000-server/server/ssl/localhost_cert.pem"
     },

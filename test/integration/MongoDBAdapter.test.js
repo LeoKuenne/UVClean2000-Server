@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-await-in-loop */
+const bcrypt = require('bcrypt');
 const UserModel = require('../../server/databaseAdapters/mongoDB/models/user.js');
 const MongoDBAdapter = require('../../server/databaseAdapters/mongoDB/MongoDBAdapter.js');
 
@@ -117,7 +118,7 @@ describe('MongoDBAdapter Functions', () => {
       };
 
       await database.addDevice(device).catch((e) => {
-        expect(e.toString()).toBe('Error: Serialnumber must be defined.');
+        expect(e.toString()).toBe('Error: Serialnumber has to be defined.');
       });
     });
 
@@ -237,7 +238,7 @@ describe('MongoDBAdapter Functions', () => {
       };
 
       await database.updateDevice(device).catch((e) => {
-        expect(e.toString()).toBe('Error: Serialnumber must be defined.');
+        expect(e.toString()).toBe('Error: Serialnumber has to be defined.');
       });
     });
 
@@ -2044,7 +2045,7 @@ describe('MongoDBAdapter Functions', () => {
 
       it('setDeviceAlarm throws an error if the serialnumber is not a string', async (done) => {
         await database.setDeviceAlarm(123, true).catch((err) => {
-          expect(err.toString()).toMatch('Error: deviceSerialnumber must be defined and of type string');
+          expect(err.toString()).toMatch('Error: deviceSerialnumber has to be defined and of type string');
           done();
         });
       });
@@ -2070,7 +2071,7 @@ describe('MongoDBAdapter Functions', () => {
 
       it('getDeviceAlarm throws an error if the serialnumber is not a string', async (done) => {
         await database.getDeviceAlarm(123, true).catch((err) => {
-          expect(err.toString()).toMatch('Error: deviceSerialnumber must be defined and of type string');
+          expect(err.toString()).toMatch('Error: deviceSerialnumber has to be defined and of type string');
           done();
         });
       });
@@ -2250,7 +2251,7 @@ describe('MongoDBAdapter Functions', () => {
       };
 
       await database.addGroup(device).catch((e) => {
-        expect(e.toString()).toBe('Error: Name must be defined.');
+        expect(e.toString()).toBe('Error: Name has to be defined.');
       });
     });
 
@@ -2396,7 +2397,7 @@ describe('MongoDBAdapter Functions', () => {
       const group = {};
 
       await database.updateGroup(group).catch((e) => {
-        expect(e.toString()).toBe('Error: id must be defined.');
+        expect(e.toString()).toBe('Error: id has to be defined.');
       });
     });
 
@@ -2701,7 +2702,7 @@ describe('MongoDBAdapter Functions', () => {
 
       it('setGroupAlarm throws an error if the id is not a string', async (done) => {
         await database.setGroupAlarm(123, true).catch((err) => {
-          expect(err.toString()).toMatch('Error: groupID must be defined and of type string');
+          expect(err.toString()).toMatch('Error: groupID has to be defined and of type string');
           done();
         });
       });
@@ -2725,7 +2726,7 @@ describe('MongoDBAdapter Functions', () => {
 
       it('getGroupAlarm throws an error if the id is not a string', async (done) => {
         await database.getGroupAlarm(123, true).catch((err) => {
-          expect(err.toString()).toMatch('Error: groupID must be defined and of type string');
+          expect(err.toString()).toMatch('Error: groupID has to be defined and of type string');
           done();
         });
       });
@@ -2890,7 +2891,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.addUser({ password: 'Test', canEdit: false });
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('Username must be defined and of type string');
+          expect(e.toString()).toMatch('Username has to be defined and of type string');
           done();
         } catch (err) {
           done(err);
@@ -2903,7 +2904,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.addUser({ username: false });
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('Username must be defined and of type string');
+          expect(e.toString()).toMatch('Username has to be defined and of type string');
           done();
         } catch (err) {
           done(err);
@@ -2916,7 +2917,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.addUser({ username: 'Test' });
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('Password must be defined and of type string');
+          expect(e.toString()).toMatch('Password has to be defined and of type string');
           done();
         } catch (err) {
           done(err);
@@ -2929,7 +2930,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.addUser({ username: 'Test', password: false });
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('Password must be defined and of type string');
+          expect(e.toString()).toMatch('Password has to be defined and of type string');
           done();
         } catch (err) {
           done(err);
@@ -2942,7 +2943,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.addUser({ username: 'Test', password: 'Test' });
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('canEdit must be defined and of type boolean');
+          expect(e.toString()).toMatch('canEdit has to be defined and of type boolean');
           done();
         } catch (err) {
           done(err);
@@ -2955,7 +2956,274 @@ describe('MongoDBAdapter Functions', () => {
         await database.addUser({ username: 'Test', password: 'Test', canEdit: 'true' });
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('canEdit must be defined and of type boolean');
+          expect(e.toString()).toMatch('canEdit has to be defined and of type boolean');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it('DeleteUser deletes user from database', async (done) => {
+      const user = {
+        username: 'Test User',
+        password: 'Test',
+        canEdit: false,
+      };
+      const newUser = await database.addUser(user);
+      const dbUser = await database.deleteUser(newUser.username);
+      expect(dbUser.id).toMatch(newUser._id.toString());
+      expect(dbUser.username).toEqual(newUser.username);
+      expect(dbUser.password).toEqual(newUser.password);
+      expect(dbUser.canEdit).toEqual(newUser.canEdit);
+      try {
+        await database.getUser(newUser.username);
+      } catch (err) {
+        try {
+          expect(err.toString()).toMatch('User does not exists');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    it('DeleteUser throws error if username is not a string', async (done) => {
+      try {
+        await database.deleteUser();
+      } catch (err) {
+        try {
+          expect(err.toString()).toMatch('Username has to be defined and of type string');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    it('UpdateUser updates user', async () => {
+      const user = {
+        username: 'Test User',
+        password: 'Test',
+        canEdit: false,
+      };
+      const newUser = await database.addUser(user);
+      const dbUser = await database.updateUser({
+        username: user.username,
+        newUsername: `${user.username}1`,
+        canEdit: !user.canEdit,
+      });
+      expect(dbUser.id).toMatch(newUser._id.toString());
+      expect(dbUser.username).toEqual(`${newUser.username}1`);
+      expect(dbUser.password).toEqual(newUser.password);
+      expect(dbUser.canEdit).toEqual(!newUser.canEdit);
+    });
+
+    it('throws error if newUsername is not a string', async (done) => {
+      const user = {
+        username: 'Test User',
+        password: 'Test',
+        canEdit: false,
+      };
+      await database.addUser(user);
+      try {
+        await database.updateUser({
+          username: user.username,
+          newUsername: 1,
+        });
+      } catch (err) {
+        try {
+          expect(err.toString()).toMatch('New username has to be of type string');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    it('UpdateUser throws error if username is not a string', async (done) => {
+      try {
+        await database.updateUser({});
+      } catch (err) {
+        try {
+          expect(err.toString()).toMatch('Username has to be defined and of type string');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    it('UpdateUser throws error if canEdit is not a boolean', async (done) => {
+      try {
+        await database.updateUser({ username: 'User' });
+      } catch (err) {
+        try {
+          expect(err.toString()).toMatch('Can edit has to be defined and of type boolean');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    it('UpdateUser throws error if user does not exists', async (done) => {
+      try {
+        await database.updateUser({ username: 'User', canEdit: false });
+      } catch (err) {
+        try {
+          expect(err.toString()).toMatch('User does not exists');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword changes the password of the user', async () => {
+      const user = {
+        username: 'Test User',
+        password: 'Test',
+        canEdit: false,
+      };
+      const newUser = await database.addUser(user);
+      const dbUser = await database.changeUserPassword({
+        username: user.username,
+        oldPassword: user.password,
+        newPassword: 'New Test',
+      });
+      expect(dbUser.id).toMatch(newUser._id.toString());
+      expect(dbUser.username).toEqual(newUser.username);
+      expect(bcrypt.compareSync('New Test', dbUser.password)).toBe(true);
+    });
+
+    it.only('ChangeUserPassword throws error if the old password does not match with the existing one', async (done) => {
+      const user = {
+        username: 'Test User',
+        password: 'Test',
+        canEdit: false,
+      };
+      await database.addUser(user);
+
+      try {
+        await database.changeUserPassword({
+          username: user.username,
+          oldPassword: 'Test Falsch',
+          newPassword: 'New Test',
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('The old password does not match');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the user does not exists', async (done) => {
+      try {
+        await database.changeUserPassword({
+          username: 'admin',
+          oldPassword: 'Test Falsch',
+          newPassword: 'New Test',
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('User does not exists');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the username is not defined', async (done) => {
+      try {
+        await database.changeUserPassword({
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Username has to be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the username is not type of string', async (done) => {
+      try {
+        await database.changeUserPassword({
+          username: false,
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Username has to be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the oldPassword is not defined', async (done) => {
+      try {
+        await database.changeUserPassword({
+          username: 'Test',
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Old password has to be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the oldPassword is not type of string', async (done) => {
+      try {
+        await database.changeUserPassword({
+          username: 'Test',
+          oldPassword: false,
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('Old password has to be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the newPassword is not defined', async (done) => {
+      try {
+        await database.changeUserPassword({
+          username: 'Test',
+          oldPassword: 'Test',
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('New password has to be defined and of type string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    });
+
+    it.only('ChangeUserPassword throws error if the newPassword is not type of string', async (done) => {
+      try {
+        await database.changeUserPassword({
+          username: 'Test',
+          oldPassword: 'Test',
+          newPassword: false,
+        });
+      } catch (e) {
+        try {
+          expect(e.toString()).toMatch('New password has to be defined and of type string');
           done();
         } catch (err) {
           done(err);
@@ -2982,7 +3250,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.getUser();
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('userid must be defined and of type string');
+          expect(e.toString()).toMatch('userid has to be defined and of type string');
           done();
         } catch (err) {
           done(err);
@@ -2995,7 +3263,7 @@ describe('MongoDBAdapter Functions', () => {
         await database.getUser(false);
       } catch (e) {
         try {
-          expect(e.toString()).toMatch('userid must be defined and of type string');
+          expect(e.toString()).toMatch('userid has to be defined and of type string');
           done();
         } catch (err) {
           done(err);

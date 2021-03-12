@@ -29,7 +29,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   constructor(uri, databaseName) {
     super();
-    if (uri === undefined || databaseName === undefined) throw new Error('uri and databaseName must be defined');
+    if (uri === undefined || databaseName === undefined) throw new Error('uri and databaseName has to be defined');
     this.uri = uri;
     this.databaseName = databaseName;
     mongoose.set('useFindAndModify', false);
@@ -91,7 +91,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
   async addDevice(device) {
     if (this.db === undefined) throw new Error('Database is not connected');
 
-    if (device.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
+    if (device.serialnumber === undefined) throw new Error('Serialnumber has to be defined.');
 
     logger.info('Adding device %s', device.name);
 
@@ -225,7 +225,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async updateDevice(device) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (device.serialnumber === undefined) throw new Error('Serialnumber must be defined.');
+    if (device.serialnumber === undefined) throw new Error('Serialnumber has to be defined.');
 
     const d = await UVCDeviceModel.findOneAndUpdate(
       { serialnumber: device.serialnumber },
@@ -832,7 +832,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async addGroup(group) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (group.name === undefined) throw new Error('Name must be defined.');
+    if (group.name === undefined) throw new Error('Name has to be defined.');
 
     const docGroup = new UVCGroupModel(group);
     const err = docGroup.validateSync();
@@ -965,7 +965,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async updateGroup(group) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined.');
+    if (group.id === undefined || typeof group.id !== 'string') throw new Error('id has to be defined.');
 
     logger.info(`Updating group ${group.id} with %o`, group);
 
@@ -989,7 +989,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async deleteGroup(group) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (group.id === undefined || typeof group.id !== 'string') throw new Error('id must be defined and typeof string.');
+    if (group.id === undefined || typeof group.id !== 'string') throw new Error('id has to be defined and typeof string.');
 
     logger.info(`Deleting group ${group}`);
 
@@ -1026,8 +1026,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async addDeviceToGroup(deviceSerialnumber, groupID) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and typeof string'); }
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber has to be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and typeof string'); }
     logger.info(`Adding device ${deviceSerialnumber} to group ${groupID}`);
 
     const docDevice = await UVCDeviceModel.findOne(
@@ -1077,8 +1077,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async deleteDeviceFromGroup(deviceSerialnumber, groupID) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and typeof string'); }
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber has to be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and typeof string'); }
     logger.info(`Deleting device ${deviceSerialnumber} from group ${groupID}`);
 
     const docDevice = await UVCDeviceModel.findOneAndUpdate({
@@ -1112,8 +1112,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
 
   async updateGroupDevicesWithOtherState(groupID, propertie, serialnumbers) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof propertie !== 'string') { throw new Error('Propertie must be defined and typeof string'); }
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    if (typeof propertie !== 'string') { throw new Error('Propertie has to be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and typeof string'); }
 
     const objectIDs = [];
     const prop = {};
@@ -1153,8 +1153,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
 
   async pushDeviceToEngineStateList(groupID, serialnumber) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof serialnumber !== 'string') { throw new Error('serialnumber must be defined and typeof string'); }
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    if (typeof serialnumber !== 'string') { throw new Error('serialnumber has to be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and typeof string'); }
 
     const devices = await this.getDevicesInGroup(groupID);
     const device = devices.filter((dev) => dev.serialnumber === serialnumber);
@@ -1173,8 +1173,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
 
   async pullDeviceFromEngineStateList(groupID, serialnumber) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof serialnumber !== 'string') { throw new Error('serialnumber must be defined and typeof string'); }
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and typeof string'); }
+    if (typeof serialnumber !== 'string') { throw new Error('serialnumber has to be defined and typeof string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and typeof string'); }
 
     const devices = await this.getDevicesInGroup(groupID);
     const device = devices.filter((dev) => dev.serialnumber === serialnumber);
@@ -1198,8 +1198,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async setDeviceAlarm(deviceSerialnumber, alarmState) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and of type string'); }
-    if (typeof alarmState !== 'boolean') { throw new Error('alarmState must be defined and of type boolean'); }
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber has to be defined and of type string'); }
+    if (typeof alarmState !== 'boolean') { throw new Error('alarmState has to be defined and of type boolean'); }
     logger.info(`Setting alarm state of device ${deviceSerialnumber} to ${alarmState}`);
 
     const d = await UVCDeviceModel.findOneAndUpdate({
@@ -1231,7 +1231,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async getDeviceAlarm(deviceSerialnumber) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber must be defined and of type string'); }
+    if (typeof deviceSerialnumber !== 'string') { throw new Error('deviceSerialnumber has to be defined and of type string'); }
 
     const d = await UVCDeviceModel.findOne({
       serialnumber: deviceSerialnumber,
@@ -1251,8 +1251,8 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async setGroupAlarm(groupID, alarmState) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and of type string'); }
-    if (typeof alarmState !== 'boolean') { throw new Error('alarmState must be defined and of type boolean'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and of type string'); }
+    if (typeof alarmState !== 'boolean') { throw new Error('alarmState has to be defined and of type boolean'); }
     logger.info(`Setting alarm state of group ${groupID} to ${alarmState}`);
     const d = await UVCGroupModel.findOneAndUpdate({
       _id: new ObjectId(groupID),
@@ -1275,7 +1275,7 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async getGroupAlarm(groupID) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof groupID !== 'string') { throw new Error('groupID must be defined and of type string'); }
+    if (typeof groupID !== 'string') { throw new Error('groupID has to be defined and of type string'); }
 
     const d = await UVCGroupModel.findOne({
       _id: new ObjectId(groupID),
@@ -1297,9 +1297,9 @@ module.exports = class MongoDBAdapter extends EventEmitter {
    */
   async addUser(user) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof user.username !== 'string') { throw new Error('Username must be defined and of type string'); }
-    if (typeof user.password !== 'string') { throw new Error('Password must be defined and of type string'); }
-    if (typeof user.canEdit !== 'boolean') { throw new Error('canEdit must be defined and of type boolean'); }
+    if (typeof user.username !== 'string') { throw new Error('Username has to be defined and of type string'); }
+    if (typeof user.password !== 'string') { throw new Error('Password has to be defined and of type string'); }
+    if (typeof user.canEdit !== 'boolean') { throw new Error('canEdit has to be defined and of type boolean'); }
 
     try {
       await this.getUser(user.username);
@@ -1321,12 +1321,79 @@ module.exports = class MongoDBAdapter extends EventEmitter {
   }
 
   /**
+   * Deletes an user with the given username
+   * @param {String} username The Username of the user to be deleted
+   */
+  async deleteUser(username) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    if (typeof username !== 'string') { throw new Error('Username has to be defined and of type string'); }
+
+    return UserModel.findOneAndRemove({ username });
+  }
+
+  /**
+   * Updates an user with the given rights
+   * @param {Object} user The User of the user to be updated
+   * @param {String} user.username The User of the user to be updated
+   * @param {String} user.newUsername The new username of the user
+   * @param {Boolean} user.canEdit The new canEdit value of the user
+   */
+  async updateUser(user) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    if (typeof user.username !== 'string') { throw new Error('Username has to be defined and of type string'); }
+    if (user.newUsername && typeof user.newUsername !== 'string') { throw new Error('New username has to be of type string'); }
+    if (typeof user.canEdit !== 'boolean') { throw new Error('Can edit has to be defined and of type boolean'); }
+
+    await UserModel.findOneAndUpdate(
+      { username: user.username },
+      {
+        username: (user.newUsername) ? user.newUsername : user.username,
+        canEdit: user.canEdit,
+      },
+    );
+
+    const docUser = await UserModel.findOne({
+      username: user.newUsername,
+    });
+
+    if (docUser === null) throw new Error('User does not exists');
+    return docUser;
+  }
+
+  /**
+   * Changes the password of the user with the given rights
+   * @param {Object} user The user object to change the password of
+   * @param {String} user.username The username to change the password of
+   * @param {String} user.oldPassword The old password of the user
+   * @param {String} user.newPassword The new password of the user
+   */
+  async changeUserPassword(user) {
+    if (this.db === undefined) throw new Error('Database is not connected');
+    if (typeof user.username !== 'string') { throw new Error('Username has to be defined and of type string'); }
+    if (typeof user.oldPassword !== 'string') { throw new Error('Old password has to be defined and of type string'); }
+    if (typeof user.newPassword !== 'string') { throw new Error('New password has to be defined and of type string'); }
+
+    const dbUser = await this.getUser(user.username);
+
+    if (!bcrypt.compareSync(user.oldPassword, dbUser.password)) throw new Error('The old password does not match!');
+
+    const newPassword = await bcrypt.hash(user.newPassword, 10);
+
+    return UserModel.findOneAndUpdate(
+      { username: user.username },
+      {
+        password: newPassword,
+      }, { new: true },
+    );
+  }
+
+  /**
    * Gets an user with the given id
    * @param {String} username The user id to get
    */
   async getUser(username) {
     if (this.db === undefined) throw new Error('Database is not connected');
-    if (typeof username !== 'string') { throw new Error('userid must be defined and of type string'); }
+    if (typeof username !== 'string') { throw new Error('userid has to be defined and of type string'); }
 
     const docUser = await UserModel.findOne({
       username,

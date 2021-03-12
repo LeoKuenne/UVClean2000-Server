@@ -83,7 +83,7 @@ export default {
           if (response.status === 401) {
             throw new Error(response.msg);
           }
-          console.log(response);
+          console.log('Test', response);
           if (response.url) {
             window.location.href = response.url;
           }

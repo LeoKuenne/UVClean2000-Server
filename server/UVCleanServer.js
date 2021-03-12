@@ -19,6 +19,10 @@ const ResetDevice = require('./controlModules/SocketIOCommands/ResetDevice');
 const AcknowledgeDeviceAlarm = require('./controlModules/SocketIOCommands/AcknowledgeDeviceAlarm');
 const SetDevicesInGroup = require('./controlModules/SocketIOCommands/SetDevicesInGroup');
 const { decrypt } = require('./controlModules/MQTTEvents/middleware/decrypt');
+const AddUser = require('./controlModules/SocketIOCommands/AddUser');
+const DeleteUser = require('./controlModules/SocketIOCommands/DeleteUser');
+const UpdateUser = require('./controlModules/SocketIOCommands/UpdateUser');
+const UpdateUserPassword = require('./controlModules/SocketIOCommands/UpdateUserPassword');
 
 const logger = MainLogger.child({ service: 'UVCleanServer' });
 
@@ -78,6 +82,10 @@ class UVCleanServer extends EventEmitter {
         AddDeviceToGroup(this, this.database, this.io, this.client, socket);
         RemoveDeviceFromGroup(this, this.database, this.io, this.client, socket);
         SetDevicesInGroup(this, this.database, this.io, this.client, socket);
+        AddUser(this, this.database, this.io, this.client, socket);
+        DeleteUser(this, this.database, this.io, this.client, socket);
+        UpdateUser(this, this.database, this.io, this.client, socket);
+        UpdateUserPassword(this, this.database, this.io, this.client, socket);
 
         // Debug any messages that are coming from the frontend
         socket.onAny((event, ...args) => {

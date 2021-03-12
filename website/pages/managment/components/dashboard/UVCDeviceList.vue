@@ -65,7 +65,7 @@
         </button>
         <div class="float-right space-x-2">
           <button class="font-semibold p-2 hover:transform hover:scale-105 transition-all
-            bg-primary text-white"
+            bg-primary text-white" type="submit"
             @click="(isFormEdit) ? updateDevice(formDevice) : addDevice(formDevice)">
             {{okProp}}
           </button>

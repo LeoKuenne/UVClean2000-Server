@@ -12,6 +12,7 @@ const store = Vue.observable({
   devices: [],
   groups: [],
   user: '',
+  users: [],
 });
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -19,8 +20,8 @@ if (!urlParams.has('user')) {
   throw new Error('No user provided');
 }
 
-const user = urlParams.get('user');
-fetch(`/api/user?username=${user}`)
+const paramUser = urlParams.get('user');
+fetch(`/api/user?username=${paramUser}`)
   .then((response) => {
     if (response.status !== 200) {
       throw new Error(response.msg);
@@ -121,6 +122,36 @@ new Vue({
     socket.on('device_added', (device) => {
       console.log('Event: device_added', device);
       this.$dataStore.devices.push(device);
+    });
+
+    socket.on('user_added', (user) => {
+      console.log('Event: user_added', user);
+      this.$dataStore.users.push(user);
+    });
+
+    socket.on('user_deleted', async (user) => {
+      console.log('Event: user_deleted', user);
+      let index = 0;
+      this.$dataStore.users.filter((u) => {
+        if (u.username === user.username) {
+          index = this.$dataStore.users.indexOf(u);
+        }
+        return u;
+      });
+      console.log(index);
+      this.$dataStore.users.splice(index, 1);
+    });
+
+    socket.on('user_updated', async (user) => {
+      console.log('Event: user_updated', user);
+      this.$dataStore.users.filter((u) => {
+        const us = u;
+        if (u.username === user.username) {
+          us.username = user.newUsername;
+          us.canEdit = user.canEdit;
+        }
+        return u;
+      });
     });
 
     socket.on('device_deleted', async (device) => {

@@ -4,7 +4,8 @@
     class="fixed top-0 left-0 h-full w-full
     bg-black bg-opacity-50 flex justify-center items-center"
     >
-    <div class="flex flex-col w-9/12 text-color space-y-2 whitespace-nowrap bg-white p-5 rounded"
+    <form @submit="submit($event)"
+      class="flex flex-col w-9/12 text-color space-y-2 whitespace-nowrap bg-white p-5 rounded"
       @click.stop>
       <h1 class="text-xl font-bold">{{ title }}</h1>
       <h1 class="font-bold pb-5 text-red-500 whitespace-pre-line"
@@ -12,7 +13,7 @@
         Error: {{ errorMessage }}
       </h1>
       <slot></slot>
-    </div>
+    </form>
   </div>
 </template>
 <script>
@@ -22,6 +23,9 @@ export default {
   methods: {
     close() {
       this.$emit('close');
+    },
+    submit(event) {
+      event.preventDefault();
     },
   },
   mounted() {
